@@ -34,11 +34,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Đăng nhập
-  const login = async (email, password) => {
+  const login = async (email, password, rememberMe = false) => {
     const data = await authService.login({
       email,
       password,
     });
+
+    if (!rememberMe) {
+      // Nếu không chọn "Ghi nhớ", dùng sessionStorage thay vì localStorage
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));

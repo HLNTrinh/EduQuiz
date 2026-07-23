@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiBell, FiHelpCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { quizService } from '../services/authService';
 import '../styles/TeacherDashBoard.css';
+=======
+import React, { useState, useEffect } from 'react';
+import { quizService } from '../services/services';
+import '../styles/Dashboard.css';
+>>>>>>> e385b1f6953b0fddce48352b8e1d22cf77b2539d
 
 export const TeacherDashboardPage = () => {
   const { user, logout } = useAuth();

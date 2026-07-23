@@ -72,7 +72,11 @@ export default function Sidebar() {
                     Cài đặt
                 </NavLink>
 
-                <button className="logout-btn">
+                <button className="logout-btn" onClick={() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                }}>
                     <span className="link-icon">↪️</span>
                     Đăng xuất
                 </button>

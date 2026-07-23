@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { quizAttemptService } from "../services/services";
 import { useAuth } from "../context/AuthContext";
-import ".../styles/ExamTaking.css";
+import "../styles/ExamTaking.css";
 
 const formatTime = (totalSeconds) => {
   const m = Math.floor(totalSeconds / 60);
@@ -26,9 +26,9 @@ export default function ExamTaking() {
   const startQuiz = useCallback(async () => {
     try {
       const res = await quizAttemptService.startQuizAttempt(quizId);
-      setQuiz(res.data.quiz);
-      setAttemptId(res.data.attemptId);
-      setTimeLeft(res.data.quiz.duration * 60);
+      setQuiz(res.quiz);
+      setAttemptId(res.attemptId);
+      setTimeLeft(res.quiz.duration * 60);
     } catch (err) {
       console.error("Failed to start quiz:", err);
     } finally {

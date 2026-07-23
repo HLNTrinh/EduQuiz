@@ -30,6 +30,21 @@ const userSchema = new mongoose.Schema(
       enum: ['active', 'inactive', 'blocked'],
       default: 'active',
     },
+
+    phone: {
+      type: String,
+      default: null,
+    },
+
+    joinDate: {
+      type: Date,
+      default: Date.now,
+    },
+
+    avatar: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -162,7 +162,7 @@ export default function ExamList() {
               onClick={() => {
                 if (e.ctaType === 'primary') setModalExam(e)
                 else if (e.cta === 'Tiếp tục làm bài') navigate(`/quiz/${e.quizId}`)
-                else if (e.cta === 'Xem lại kết quả') navigate('/ket-qua')
+                else if (e.cta === 'Xem lại kết quả') navigate('/student/results')
               }}
             >
               {e.cta}

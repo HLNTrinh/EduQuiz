@@ -26,9 +26,9 @@ export const TakeQuizPage = () => {
   const startQuiz = useCallback(async () => {
     try {
       const response = await quizAttemptService.startQuizAttempt(quizId);
-      setQuiz(response.data.quiz);
-      setAttemptId(response.data.attemptId);
-      setTimeLeft(response.data.quiz.duration * 60);
+      setQuiz(response.quiz);
+      setAttemptId(response.attemptId);
+      setTimeLeft(response.quiz.duration * 60);
     } catch (error) {
       console.error('Failed to start quiz:', error);
     } finally {
