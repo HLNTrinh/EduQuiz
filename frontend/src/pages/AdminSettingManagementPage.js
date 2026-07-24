@@ -1,21 +1,22 @@
 /* /src/pages/AdminSettingManagementPage.js */
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/admin/AdminLayout';
+import { getSettings, updateSettings } from '../services/adminService';
 import '../styles/AdminSettingManagement.css';
 
 // Importing beautiful icons from react-icons
-import { 
-  FaCog, 
-  FaRegClock, 
-  FaShieldAlt, 
-  FaGraduationCap, 
+import {
+  FaCog,
+  FaRegClock,
+  FaShieldAlt,
+  FaGraduationCap,
   FaSave,
   FaCheckCircle
 } from 'react-icons/fa';
 
-import { 
-  MdLoop, 
-  MdTune 
+import {
+  MdLoop,
+  MdTune
 } from 'react-icons/md';
 
 export default function AdminSettingManagementPage() {
@@ -26,7 +27,7 @@ export default function AdminSettingManagementPage() {
   const [registerMethod, setRegisterMethod] = useState('Tự do đăng ký');
   const [twoFactor, setTwoFactor] = useState('required'); // 'required' or 'optional'
   const [ipLimit, setIpLimit] = useState('192.168.1.1/24');
-  
+
   // Toggles (System Status)
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [autoLock, setAutoLock] = useState(true);
@@ -38,6 +39,35 @@ export default function AdminSettingManagementPage() {
   const [activeTab, setActiveTab] = useState('default'); // 'default', 'security', 'regional'
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Load settings từ API khi mount
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const res = await getSettings();
+      if (res.settings) {
+        setTimeLimit(res.settings.timeLimit ?? 60);
+        setMaxAttempts(res.settings.maxAttempts ?? 3);
+        setPasswordPolicy(res.settings.passwordPolicy ?? 'Trung bình (8 ký tự, 1 chữ hoa)');
+        setRegisterMethod(res.settings.registerMethod ?? 'Tự do đăng ký');
+        setTwoFactor(res.settings.twoFactor ?? 'required');
+        setIpLimit(res.settings.ipLimit ?? '192.168.1.1/24');
+        setMaintenanceMode(res.settings.maintenanceMode ?? false);
+        setAutoLock(res.settings.autoLock ?? true);
+        setEmailNotify(res.settings.emailNotify ?? true);
+        setHideResult(res.settings.hideResult ?? false);
+      }
+    } catch (error) {
+      console.error('Lỗi tải cấu hình hệ thống:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Auto-hide toast notification after 3 seconds
   useEffect(() => {
@@ -50,10 +80,28 @@ export default function AdminSettingManagementPage() {
   }, [showToast]);
 
   // Handle saving configurations
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    setToastMessage('Lưu cấu hình hệ thống thành công!');
-    setShowToast(true);
+    try {
+      const payload = {
+        timeLimit,
+        maxAttempts,
+        passwordPolicy,
+        registerMethod,
+        twoFactor,
+        ipLimit,
+        maintenanceMode,
+        autoLock,
+        emailNotify,
+        hideResult,
+      };
+      await updateSettings(payload);
+      setToastMessage('Lưu cấu hình hệ thống thành công!');
+      setShowToast(true);
+    } catch (error) {
+      setToastMessage(error.message || 'Lỗi khi lưu cấu hình');
+      setShowToast(true);
+    }
   };
 
   // Handle cancellation/reset of form to default values
@@ -68,7 +116,7 @@ export default function AdminSettingManagementPage() {
     setAutoLock(true);
     setEmailNotify(true);
     setHideResult(false);
-    
+
     setToastMessage('Đã hủy các thay đổi, khôi phục mặc định.');
     setShowToast(true);
   };
@@ -78,21 +126,21 @@ export default function AdminSettingManagementPage() {
       <div className="asm-content-grid">
         {/* Left Tabs Menu Column */}
         <div className="asm-tabs-menu">
-          <button 
+          <button
             className={`asm-tab-btn ${activeTab === 'default' ? 'active' : ''}`}
             onClick={() => setActiveTab('default')}
           >
             <FaCog />
             <span>Cài đặt mặc định</span>
           </button>
-          <button 
+          <button
             className={`asm-tab-btn ${activeTab === 'security' ? 'active' : ''}`}
             onClick={() => setActiveTab('security')}
           >
             <FaShieldAlt />
             <span>Bảo mật & Đăng ký</span>
           </button>
-          <button 
+          <button
             className={`asm-tab-btn ${activeTab === 'regional' ? 'active' : ''}`}
             onClick={() => {
               setActiveTab('regional');
@@ -121,9 +169,9 @@ export default function AdminSettingManagementPage() {
                 <p className="asm-field-title">Thời gian làm bài mặc định</p>
                 <p className="asm-field-desc">Áp dụng cho các bài thi mới khởi tạo</p>
                 <div className="asm-input-wrapper">
-                  <input 
-                    type="number" 
-                    className="asm-input-number" 
+                  <input
+                    type="number"
+                    className="asm-input-number"
                     value={timeLimit}
                     onChange={(e) => setTimeLimit(Number(e.target.value))}
                     min="1"
@@ -145,9 +193,9 @@ export default function AdminSettingManagementPage() {
                 <p className="asm-field-title">Số lần làm bài cho phép</p>
                 <p className="asm-field-desc">Giới hạn số lần thi lại mặc định</p>
                 <div className="asm-input-wrapper">
-                  <input 
-                    type="number" 
-                    className="asm-input-number" 
+                  <input
+                    type="number"
+                    className="asm-input-number"
                     value={maxAttempts}
                     onChange={(e) => setMaxAttempts(Number(e.target.value))}
                     min="1"
@@ -170,8 +218,8 @@ export default function AdminSettingManagementPage() {
               <div>
                 <div className="asm-field-group">
                   <p className="asm-field-title">Chính sách mật khẩu</p>
-                  <select 
-                    className="asm-select" 
+                  <select
+                    className="asm-select"
                     value={passwordPolicy}
                     onChange={(e) => setPasswordPolicy(e.target.value)}
                   >
@@ -183,8 +231,8 @@ export default function AdminSettingManagementPage() {
 
                 <div className="asm-field-group">
                   <p className="asm-field-title">Phương thức đăng ký</p>
-                  <select 
-                    className="asm-select" 
+                  <select
+                    className="asm-select"
                     value={registerMethod}
                     onChange={(e) => setRegisterMethod(e.target.value)}
                   >
@@ -200,9 +248,9 @@ export default function AdminSettingManagementPage() {
                   <p className="asm-field-title">Xác thực 2 lớp (2FA)</p>
                   <div className="asm-radio-group">
                     <label className="asm-radio-label">
-                      <input 
-                        type="radio" 
-                        name="twoFactor" 
+                      <input
+                        type="radio"
+                        name="twoFactor"
                         className="asm-radio-input"
                         checked={twoFactor === 'required'}
                         onChange={() => setTwoFactor('required')}
@@ -210,9 +258,9 @@ export default function AdminSettingManagementPage() {
                       <span>Bắt buộc</span>
                     </label>
                     <label className="asm-radio-label">
-                      <input 
-                        type="radio" 
-                        name="twoFactor" 
+                      <input
+                        type="radio"
+                        name="twoFactor"
                         className="asm-radio-input"
                         checked={twoFactor === 'optional'}
                         onChange={() => setTwoFactor('optional')}
@@ -224,9 +272,9 @@ export default function AdminSettingManagementPage() {
 
                 <div className="asm-field-group">
                   <p className="asm-field-title">Giới hạn IP đăng nhập</p>
-                  <input 
-                    type="text" 
-                    className="asm-input-text" 
+                  <input
+                    type="text"
+                    className="asm-input-text"
                     value={ipLimit}
                     onChange={(e) => setIpLimit(e.target.value)}
                     placeholder="VD: 192.168.1.1/24"
@@ -244,7 +292,7 @@ export default function AdminSettingManagementPage() {
               </div>
               <h3 className="asm-card-title">Trạng thái hệ thống</h3>
             </div>
-            
+
             <div className="asm-toggle-grid">
               {/* Maintenance Mode Toggle */}
               <div className="asm-toggle-item">
@@ -253,8 +301,8 @@ export default function AdminSettingManagementPage() {
                   <p className="asm-toggle-desc">Tạm dừng tất cả các hoạt động làm bài</p>
                 </div>
                 <label className="asm-switch">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={maintenanceMode}
                     onChange={(e) => setMaintenanceMode(e.target.checked)}
                   />
@@ -269,8 +317,8 @@ export default function AdminSettingManagementPage() {
                   <p className="asm-toggle-desc">Khóa sau 5 lần đăng nhập sai</p>
                 </div>
                 <label className="asm-switch">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={autoLock}
                     onChange={(e) => setAutoLock(e.target.checked)}
                   />
@@ -285,8 +333,8 @@ export default function AdminSettingManagementPage() {
                   <p className="asm-toggle-desc">Tự động gửi email khi có bài thi mới</p>
                 </div>
                 <label className="asm-switch">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={emailNotify}
                     onChange={(e) => setEmailNotify(e.target.checked)}
                   />
@@ -301,8 +349,8 @@ export default function AdminSettingManagementPage() {
                   <p className="asm-toggle-desc">Người học không xem được đáp án ngay</p>
                 </div>
                 <label className="asm-switch">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={hideResult}
                     onChange={(e) => setHideResult(e.target.checked)}
                   />
@@ -314,15 +362,15 @@ export default function AdminSettingManagementPage() {
 
           {/* Action Buttons */}
           <div className="asm-action-bar">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="asm-btn-secondary"
               onClick={handleReset}
             >
               Hủy thay đổi
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="asm-btn-primary"
             >
               <FaSave />
