@@ -251,7 +251,21 @@ export default function AdminUserManagementPage() {
     return name ? name.charAt(0).toUpperCase() : '?';
   };
 
-  const avatarColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+  // Helper: tạo màu ngẫu nhiên nhưng cố định dựa trên tên người dùng
+  const getColorFromName = (name) => {
+    const colors = [
+      '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', 
+      '#14b8a6', '#f97316', '#6366f1', '#84cc16', '#06b6d4', '#d946ef',
+      '#0ea5e9', '#22c55e', '#eab308', '#a855f7', '#f43f5e', '#64748b'
+    ];
+    let hash = 0;
+    const str = name || '';
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  };
 
   return (
     <AdminLayout pageTitle="Quản lý người dùng" pageSubtitle="Xem, tìm kiếm và quản lý phân quyền cho tất cả thành viên trong hệ thống.">
@@ -355,17 +369,9 @@ export default function AdminUserManagementPage() {
                     <td className="user-id-cell">#{user._id?.slice(-6)?.toUpperCase() || '---'}</td>
                     <td>
                       <div className="user-profile-cell">
-                        {user.avatar ? (
-                          <img src={user.avatar} alt={user.name} className="table-user-avatar" />
-                        ) : (
-                          <div className="table-user-avatar" style={{
-                            background: avatarColors[index % avatarColors.length],
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#fff', fontWeight: 600, fontSize: '16px'
-                          }}>
-                            {getInitial(user.name)}
-                          </div>
-                        )}
+                        <div className="table-user-avatar-text" style={{ background: getColorFromName(user.name) }}>
+                          {getInitial(user.name)}
+                        </div>
                         <div className="user-profile-info">
                           <p className="user-full-name">{user.name}</p>
                           <p className="user-email">{user.email}</p>
@@ -589,16 +595,9 @@ export default function AdminUserManagementPage() {
             </div>
             <div className="modal-body">
               <div className="detail-profile-header">
-                {selectedUser.avatar ? (
-                  <img src={selectedUser.avatar} alt={selectedUser.name} className="detail-avatar-large" />
-                ) : (
-                  <div className="detail-avatar-large" style={{
-                    background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#fff', fontWeight: 700, fontSize: '32px', borderRadius: '50%', width: '80px', height: '80px'
-                  }}>
-                    {getInitial(selectedUser.name)}
-                  </div>
-                )}
+                <div className="detail-avatar-large-text" style={{ background: getColorFromName(selectedUser.name) }}>
+                  {getInitial(selectedUser.name)}
+                </div>
                 <h4>{selectedUser.name}</h4>
                 <p>{selectedUser.email}</p>
                 <span className={`badge-role ${
