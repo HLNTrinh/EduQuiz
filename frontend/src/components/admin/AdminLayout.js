@@ -1,14 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FaBars, FaGraduationCap, FaCheckCircle } from 'react-icons/fa';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/AdminSettingManagement.css';
+
+const AVATAR_COLORS = [
+  '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
+  '#ec4899', '#06b6d4', '#6366f1', '#f97316'
+];
 
 export default function AdminLayout({ children, pageTitle, pageSubtitle }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const { user } = useAuth() || {};
+
+  const currentUser = useMemo(() => {
+    if (user) return user;
+    try {
+      const local = localStorage.getItem('user');
+      const session = sessionStorage.getItem('user');
+      return JSON.parse(local || session || '{}');
+    } catch {
+      return {};
+    }
+  }, [user]);
+
+  const adminName = currentUser?.name || 'Quản trị viên';
+  const lastWord = adminName.trim().split(' ').filter(Boolean).pop();
+  const initialLetter = lastWord ? lastWord[0].toUpperCase() : 'A';
+
+  let hash = 0;
+  for (let i = 0; i < adminName.length; i++) {
+    hash = adminName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const bgColor = AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 
   // Auto-hide toast notification after 3 seconds
   useEffect(() => {
@@ -32,18 +60,18 @@ export default function AdminLayout({ children, pageTitle, pageSubtitle }) {
         <button className="asm-hamburger" onClick={() => setIsSidebarOpen(true)}>
           <FaBars />
         </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="asm-logo-icon-box" style={{ width: '32px', height: '32px', fontSize: '18px' }}>
+        <div className="asm-mobile-brand">
+          <div className="asm-logo-icon-box asm-logo-icon-box-small">
             <FaGraduationCap />
           </div>
-          <span style={{ fontWeight: '700', fontSize: '16px', color: '#111c2d' }}>EduQuiz</span>
+          <span className="asm-mobile-brand-text">EduQuiz</span>
         </div>
-        <img 
-          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" 
-          alt="Avatar" 
-          className="asm-avatar" 
-          style={{ width: '30px', height: '30px' }}
-        />
+        <div
+          className="asm-mobile-avatar-text"
+          style={{ backgroundColor: bgColor }}
+        >
+          {initialLetter}
+        </div>
       </div>
 
       {/* Sidebar Overlay for Mobile */}
@@ -51,15 +79,15 @@ export default function AdminLayout({ children, pageTitle, pageSubtitle }) {
         <div className="asm-sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />
       )}
 
-      <AdminSidebar 
-        isSidebarOpen={isSidebarOpen} 
+      <AdminSidebar
+        isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         showToastMessage={showToastMessage}
       />
 
       {/* Main Container */}
       <div className="asm-main">
-        <AdminHeader 
+        <AdminHeader
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           showToastMessage={showToastMessage}
