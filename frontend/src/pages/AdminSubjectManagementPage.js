@@ -68,8 +68,8 @@ export default function AdminSubjectManagementPage() {
     setToast({ message, type });
   };
 
-  // Lấy danh sách departments từ subjects
-  const departments = ['all', ...new Set(subjects.map(s => s.department))];
+  // Lấy danh sách departments từ subjects (dùng cho combobox)
+  const departmentOptions = [...new Set(subjects.map(s => s.department))].sort();
 
   // Fetch subjects từ API
   const fetchSubjects = async () => {
@@ -294,15 +294,16 @@ export default function AdminSubjectManagementPage() {
           </div>
           
           <div className="filter-right">
-            <select 
-              className="custom-select" 
-              value={selectedDept}
-              onChange={(e) => setSelectedDept(e.target.value)}
-            >
-              {departments.map((dept, idx) => (
-                <option key={idx} value={dept}>{dept === 'all' ? 'Tất cả khoa/ngành' : dept}</option>
-              ))}
-            </select>
+             <select 
+               className="custom-select" 
+               value={selectedDept}
+               onChange={(e) => setSelectedDept(e.target.value)}
+             >
+               <option value="all">Tất cả khoa/ngành</option>
+               {departmentOptions.map((dept, idx) => (
+                 <option key={idx} value={dept}>{dept}</option>
+               ))}
+             </select>
 
             <button className="btn-primary" onClick={openAddModal} id="btnAddSubject">
               <MdAddCircle className="btn-primary-icon" />
@@ -462,16 +463,27 @@ export default function AdminSubjectManagementPage() {
                     <input type="text" id="name" name="name" placeholder="Nhập tên môn học..."
                       value={formValues.name} onChange={handleInputChange} required />
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="department">Khoa / Ngành đào tạo</label>
-                    <select id="department" name="department" value={formValues.department} onChange={handleInputChange}>
-                      <option value="Khoa học tự nhiên">Khoa học tự nhiên</option>
-                      <option value="Ngôn ngữ">Ngôn ngữ</option>
-                      <option value="Kỹ thuật & Công nghệ">Kỹ thuật & Công nghệ</option>
-                      <option value="Kinh tế & Quản lý">Kinh tế & Quản lý</option>
-                      <option value="Khoa học xã hội">Khoa học xã hội</option>
-                    </select>
-                  </div>
+                   <div className="form-group">
+                     <label htmlFor="department">Khoa / Ngành đào tạo</label>
+                     <div className="department-input-wrapper">
+                       <input 
+                         type="text" 
+                         id="department" 
+                         name="department" 
+                         placeholder="Chọn hoặc nhập tên khoa/ngành mới..."
+                         value={formValues.department} 
+                         onChange={handleInputChange}
+                         list="department-list"
+                         autoComplete="off"
+                         required
+                       />
+                       <datalist id="department-list">
+                         {departmentOptions.map((dept, idx) => (
+                           <option key={idx} value={dept} />
+                         ))}
+                       </datalist>
+                     </div>
+                   </div>
                   <div className="form-row">
                     <div className="form-group">
                       <label htmlFor="examsCount">Số lượng bộ đề</label>
