@@ -1009,6 +1009,14 @@ body {
   box-shadow: 0 0 0 3px rgba(0, 74, 198, 0.1);
 }
 
+.department-input-wrapper {
+  width: 100%;
+}
+
+.department-input-wrapper input {
+  width: 100%;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
