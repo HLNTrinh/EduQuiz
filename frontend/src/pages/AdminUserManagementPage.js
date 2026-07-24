@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import AdminLayout from '../components/admin/AdminLayout';
+import { useAuth } from '../context/AuthContext';
 import '../styles/AdminUserManagement.css';
 import { 
   Search, 
@@ -24,6 +25,7 @@ import {
 } from '../services/adminService';
 
 export default function AdminUserManagementPage() {
+  const { user: currentAdmin } = useAuth();
   const [users, setUsers] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -202,6 +204,11 @@ export default function AdminUserManagementPage() {
 
   // Toggle Lock/Unlock User
   const handleToggleLock = async (user) => {
+    // Không cho phép admin khóa chính mình
+    if (currentAdmin?._id === user._id) {
+      showToast('Bạn không thể khóa tài khoản của chính mình!', 'error');
+      return;
+    }
     try {
       const res = await toggleLockUser(user._id);
       showToast(res.message || `Đã thay đổi trạng thái của ${user.name}`);

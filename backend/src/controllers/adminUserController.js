@@ -175,6 +175,11 @@ const toggleLockUser = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
     }
 
+    // Không cho phép admin khóa chính mình
+    if (req.user && req.user.id && req.user.id.toString() === req.params.id) {
+      return res.status(403).json({ success: false, message: 'Bạn không thể khóa tài khoản của chính mình!' });
+    }
+
     const newStatus = user.status === 'active' ? 'blocked' : 'active';
     user.status = newStatus;
     await user.save();
