@@ -16,6 +16,10 @@ import Results from "./layouts/Results";
 import Profile from "./layouts/Profile";
 
 import { TeacherDashboardPage } from "./pages/TeacherDashboardPage";
+import { ExamManager } from "./pages/ExamManager";
+import { QuestionManager } from "./pages/QuestionManager";
+import { MembersPage } from "./pages/MembersPage";
+import { ResultPage } from "./pages/ResultPage";
 import { TakeQuizPage } from "./pages/TakeQuizPage";
 
 import "./App.css";
@@ -65,10 +69,13 @@ function AppRoutes() {
 
           {/* ================= TEACHER ================= */}
           {user.role === "teacher" && (
-            <Route
-              path="/teacher/dashboard"
-              element={<TeacherDashboardPage />}
-            />
+            <>
+              <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
+              <Route path="/teacher/exams" element={<ExamManager />} />
+              <Route path="/teacher/questions" element={<QuestionManager />} />
+              <Route path="/teacher/members" element={<MembersPage />} />
+              <Route path="/teacher/results" element={<ResultPage />} />
+            </>
           )}
 
           {/* ================= ADMIN ================= */}
