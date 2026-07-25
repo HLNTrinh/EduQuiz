@@ -5,14 +5,21 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // ✅ Tự động đính kèm token vào mỗi request
+const getAuthToken = () => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token') || sessionStorage.getItem('token');
+};
+
 api.interceptors.request.use(
   (config) => {
     // Đăng nhập không ghi nhớ dùng sessionStorage, còn ghi nhớ dùng localStorage.
     // Cả hai trường hợp đều phải gửi token cho các API cần xác thực.
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    // const token = localStorage.getItem('token') || sessionStorage.getItem('token'); của thuyduy
+    const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

@@ -90,6 +90,96 @@
 }
 
 /* ============ STAT GRID ============ */
+/* =====================================================
+   STAT CARDS
+===================================================== */
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    min-height: 132px;
+    padding: 18px 20px;
+    background: #ffffff;
+    border: 1px solid #edf0f5;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.stat-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.stat-card-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.stat-card--questions .stat-card-icon {
+    background: #eaf0ff;
+    color: #2563eb;
+}
+
+.stat-card--exams .stat-card-icon {
+    background: #fff0eb;
+    color: #f97316;
+}
+
+.stat-card--active .stat-card-icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.stat-card--students .stat-card-icon {
+    background: #e9edff;
+    color: #4f46e5;
+}
+
+.stat-card-trend {
+    color: #16a34a;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.stat-card-live {
+    color: #16a34a;
+    background: #dcfce7;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.stat-card-total {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.stat-card-label {
+    margin: 0 0 4px;
+    color: #8b95a7;
+    font-size: 11px;
+}
+
+.stat-card-value {
+    margin: 0;
+    color: #111827;
+    font-size: 25px;
+    font-weight: 700;
+}
+/*
 .stat-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -148,7 +238,7 @@
     color: #16213e;
     margin-bottom: 6px;
 }
-
+*/
 .stat-value.small {
     font-size: 20px;
 }

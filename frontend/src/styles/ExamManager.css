@@ -1,0 +1,12 @@
+.exam-manager-page {
+  padding: 24px;
+}
+
+.exam-manager-page h2 {
+  margin-bottom: 12px;
+}
+
+.exam-manager-page .message {
+  margin-bottom: 12px;
+  color: #2563eb;
+}

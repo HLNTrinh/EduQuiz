@@ -27,7 +27,6 @@ export default function AdminSettingManagementPage() {
   const [registerMethod, setRegisterMethod] = useState('Tự do đăng ký');
   const [twoFactor, setTwoFactor] = useState('required'); // 'required' or 'optional'
   const [ipLimit, setIpLimit] = useState('192.168.1.1/24');
-
   // Toggles (System Status)
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [autoLock, setAutoLock] = useState(true);
@@ -116,7 +115,6 @@ export default function AdminSettingManagementPage() {
     setAutoLock(true);
     setEmailNotify(true);
     setHideResult(false);
-
     setToastMessage('Đã hủy các thay đổi, khôi phục mặc định.');
     setShowToast(true);
   };

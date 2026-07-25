@@ -46,7 +46,6 @@ export default function AdminNotificationManagementPage() {
   const [sendEmail, setSendEmail] = useState(false);
   const [pinHome, setPinHome] = useState(false);
   const [pushNotification, setPushNotification] = useState(true);
-
   // Edit mode
   const [editingId, setEditingId] = useState(null);
 

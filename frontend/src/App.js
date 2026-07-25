@@ -10,10 +10,10 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 
 import StudentLayout from "./layouts/StudentLayout";
-import StudentDashboardPage from "./pages/StudentDashboardPage";
-import ExamList from "./pages/ExamList";
-import Results from "./pages/Results";
-import Profile from "./pages/Profile";
+import StudentDashboardPage from "./layouts/StudentDashboardPage";
+import ExamList from "./layouts/ExamList";
+import Results from "./layouts/Results";
+import Profile from "./layouts/Profile";
 
 import { TeacherDashboardPage } from "./pages/TeacherDashboardPage";
 import { TakeQuizPage } from "./pages/TakeQuizPage";
