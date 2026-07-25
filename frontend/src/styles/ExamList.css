@@ -256,3 +256,69 @@
   .search-box { width: 100%; }
   .modal-info-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 480px) {
+  .exam-main {
+    padding: 20px 0 40px;
+  }
+
+  .exam-main h1 {
+    font-size: 22px;
+  }
+
+  .exam-sub {
+    font-size: 13px;
+  }
+
+  .tab-row {
+    gap: 8px;
+  }
+
+  .tab-pill {
+    padding: 7px 14px;
+    font-size: 12.5px;
+  }
+
+  .exam-card {
+    padding: 18px;
+  }
+
+  .exam-card h3 {
+    font-size: 14.5px;
+    min-height: auto;
+  }
+
+  .exam-card-meta {
+    font-size: 12px;
+  }
+
+  .btn-primary,
+  .btn-outline,
+  .btn-disabled {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .modal-box {
+    padding: 20px;
+    max-width: 100%;
+    margin: 10px;
+  }
+
+  .modal-head h2 {
+    font-size: 18px;
+  }
+
+  .modal-info-grid {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}
