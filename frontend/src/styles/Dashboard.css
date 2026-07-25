@@ -579,3 +579,104 @@
         gap: 14px;
     }
 }
+
+@media (max-width: 480px) {
+    .dash-main {
+        padding: 20px 16px 40px;
+    }
+
+    .dash-header h1 {
+        font-size: 22px;
+    }
+
+    .dash-header p {
+        font-size: 13px;
+    }
+
+    .dash-header-actions {
+        gap: 10px;
+    }
+
+    .user-chip {
+        padding: 4px 12px 4px 4px;
+    }
+
+    .user-chip span {
+        font-size: 13px;
+    }
+
+    .bell-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .stat-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+    }
+
+    .stat-value.small {
+        font-size: 18px;
+    }
+
+    .card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .exam-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .date-badge {
+        width: 44px;
+        height: 44px;
+    }
+
+    .date-badge span {
+        font-size: 15px;
+    }
+
+    .exam-info {
+        width: 100%;
+    }
+
+    .btn-primary,
+    .btn-outline-sm {
+        width: 100%;
+        text-align: center;
+    }
+
+    .profile-card-body {
+        padding: 44px 16px 16px;
+    }
+
+    .profile-avatar {
+        width: 72px;
+        height: 72px;
+        transform: translateY(36px);
+    }
+
+    .profile-stats {
+        gap: 16px;
+    }
+
+    .profile-stats strong {
+        font-size: 16px;
+    }
+
+    .challenge-card {
+        padding: 18px;
+    }
+
+    .challenge-card p {
+        font-size: 14px;
+    }
+}
