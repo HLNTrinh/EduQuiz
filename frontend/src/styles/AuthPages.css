@@ -709,3 +709,131 @@ font-size: 13px;
 .auth-footer-links a:hover {
   color: var(--primary);
 }
+
+/* ============ RESPONSIVE AuthPages ============ */
+@media (max-width: 640px) {
+  .auth-form-container {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+
+  .auth-form-title {
+    font-size: 24px;
+  }
+
+  .auth-input {
+    padding: 13px 16px 13px 44px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+
+  .auth-btn-login {
+    padding: 13px;
+    font-size: 14px;
+  }
+
+  .auth-social-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-right {
+    padding: 20px 16px;
+  }
+
+  .auth-form-container {
+    padding: 24px 16px;
+    border-radius: 16px;
+    box-shadow: none;
+    border: none;
+  }
+
+  .mobile-logo {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  .mobile-logo .material-symbols-outlined {
+    font-size: 28px;
+  }
+
+  .auth-form-title {
+    font-size: 22px;
+  }
+
+  .auth-form-subtitle {
+    font-size: 12px;
+  }
+
+  .auth-field {
+    margin-bottom: 16px;
+  }
+
+  .auth-label {
+    font-size: 11px;
+  }
+
+  .auth-input {
+    padding: 11px 14px 11px 40px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  .auth-input--password {
+    padding-right: 44px;
+  }
+
+  .auth-field-icon {
+    left: 12px;
+    font-size: 18px;
+  }
+
+  .auth-btn-login {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+
+  .auth-divider {
+    margin: 24px 0;
+  }
+
+  .auth-social-row {
+    gap: 10px;
+  }
+
+  .auth-btn-social {
+    padding: 11px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+
+  .auth-remember {
+    font-size: 13px;
+  }
+
+  .auth-remember input {
+    width: 16px;
+    height: 16px;
+  }
+
+  .auth-footer {
+    margin-top: 28px;
+  }
+
+  .auth-footer-link {
+    font-size: 13px;
+  }
+
+  .auth-footer-links {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .auth-error {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+}
