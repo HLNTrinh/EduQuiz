@@ -6,29 +6,33 @@ exports.createQuiz = async (req, res) => {
   try {
     const { title, description, questions, duration, maxAttempts, startDate, endDate, showAnswerAfter, totalPoints, passingScore } = req.body;
 
-    if (!questions || questions.length === 0) {
+    const normalizedQuestions = (questions || []).map((question, index) => ({
+      questionId: question.questionId || question._id,
+      order: question.order || index + 1,
+    }));
+
+    if (!normalizedQuestions.length) {
       return res.status(400).json({ message: 'Đề thi phải có tối thiểu 1 câu hỏi' });
     }
 
-    // Verify questions exist
-    const questionIds = questions.map(q => q.questionId);
+    const questionIds = normalizedQuestions.map((q) => q.questionId);
     const foundQuestions = await Question.find({ _id: { $in: questionIds } });
-    if (foundQuestions.length !== questions.length) {
+    if (foundQuestions.length !== normalizedQuestions.length) {
       return res.status(400).json({ message: 'Một số câu hỏi không tồn tại' });
     }
 
     const quiz = new Quiz({
       title,
       description,
-      questions,
-      duration,
-      maxAttempts,
-      startDate,
-      endDate,
-      showAnswerAfter,
-      totalPoints,
-      passingScore,
-      createdBy: req.user.id,
+      questions: normalizedQuestions,
+      duration: Number(duration || 45),
+      maxAttempts: Number(maxAttempts || 1),
+      startDate: startDate ? new Date(startDate) : new Date(),
+      endDate: endDate ? new Date(endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      showAnswerAfter: Boolean(showAnswerAfter),
+      totalPoints: Number(totalPoints || normalizedQuestions.length * 10),
+      passingScore: Number(passingScore || 50),
+      createdBy: req.user.id || req.user.userId,
     });
 
     await quiz.save();
@@ -38,12 +42,12 @@ exports.createQuiz = async (req, res) => {
   }
 };
 
-// Lấy danh sách đề thi của giáo viên
+// Lấy danh sách đề thi
 exports.getQuizzes = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
-    const filter = req.user.role === 'student' 
+    const filter = req.user.role === 'student'
       ? { isPublished: true }
       : { createdBy: req.user.id };
 
@@ -94,7 +98,7 @@ exports.updateQuiz = async (req, res) => {
       return res.status(404).json({ message: 'Đề thi không tồn tại' });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id) {
+    if (quiz.createdBy.toString() !== (req.user.id || req.user.userId)) {
       return res.status(403).json({ message: 'Bạn không có quyền chỉnh sửa đề thi này' });
     }
 
@@ -128,7 +132,7 @@ exports.deleteQuiz = async (req, res) => {
       return res.status(404).json({ message: 'Đề thi không tồn tại' });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id) {
+    if (quiz.createdBy.toString() !== (req.user.id || req.user.userId)) {
       return res.status(403).json({ message: 'Bạn không có quyền xóa đề thi này' });
     }
 
@@ -147,7 +151,7 @@ exports.publishQuiz = async (req, res) => {
       return res.status(404).json({ message: 'Đề thi không tồn tại' });
     }
 
-    if (quiz.createdBy.toString() !== req.user.id) {
+    if (quiz.createdBy.toString() !== (req.user.id || req.user.userId)) {
       return res.status(403).json({ message: 'Bạn không có quyền công bố đề thi này' });
     }
 

@@ -30,10 +30,10 @@ services:
       - ./backend/.env
     environment:
       NODE_ENV: development
-      PORT: 8080                                              # ✅
+      PORT: 8080
       MONGO_URI: mongodb://admin:secret@mongodb:27017/examdb?authSource=admin
     ports:
-      - "8080:8080"                                          # ✅
+      - "8080:8080"
     volumes:
       - ./backend:/app
       - backend_node_modules:/app/node_modules
@@ -47,12 +47,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: http://localhost:8080/api
     container_name: exam_frontend
     restart: unless-stopped
     env_file:
       - ./frontend/.env
     environment:
-      REACT_APP_API_URL: http://localhost:8080/api           # ✅
+      REACT_APP_API_URL: http://localhost:8080/api
     ports:
       - "3000:3000"
     volumes:

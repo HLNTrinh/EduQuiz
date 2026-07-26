@@ -25,7 +25,7 @@ exports.startQuizAttempt = async (req, res) => {
 
     // Tạo attempt mới
     const attempt = new QuizAttempt({
-      studentId: req.user.id,
+      studentId: req.user.userId,
       quizId,
       answers: quiz.questions.map((q, index) => ({
         questionId: q.questionId._id,
@@ -192,6 +192,36 @@ exports.getStudentAttempts = async (req, res) => {
       .sort({ createdAt: -1 });
 
     const total = await QuizAttempt.countDocuments({ studentId: req.user.id });
+
+    res.json({
+      data: attempts,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+// Lấy kết quả của học sinh cho giáo viên
+exports.getTeacherAttempts = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const quizzes = await Quiz.find({ createdBy: req.user.userId }).select('_id');
+    const quizIds = quizzes.map((quiz) => quiz._id);
+
+    const attempts = await QuizAttempt.find({ quizId: { $in: quizIds } })
+      .populate('quizId', 'title')
+      .populate('studentId', 'name email')
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    const total = await QuizAttempt.countDocuments({ quizId: { $in: quizIds } });
 
     res.json({
       data: attempts,

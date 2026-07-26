@@ -1,5 +1,5 @@
 const Question = require('../models/Question');
-
+const mongoose = require('mongoose');
 // Tạo câu hỏi
 exports.createQuestion = async (req, res) => {
   try {
@@ -21,7 +21,7 @@ exports.createQuestion = async (req, res) => {
       category,
       difficulty,
       explanation,
-      createdBy: req.user.id,
+      createdBy: req.user.id || req.user.userId,
     });
 
     await question.save();
@@ -32,11 +32,11 @@ exports.createQuestion = async (req, res) => {
 };
 
 // Lấy danh sách câu hỏi của giáo viên
+/*
 exports.getQuestions = async (req, res) => {
   try {
     const { category, difficulty, page = 1, limit = 10 } = req.query;
-    const filter = { createdBy: req.user.id };
-
+    const filter = { createdBy: req.user.userId };
     if (category) filter.category = category;
     if (difficulty) filter.difficulty = difficulty;
 
@@ -59,8 +59,54 @@ exports.getQuestions = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
-};
+};*/
 
+exports.getQuestions = async (req, res) => {
+  try {
+
+    console.log("REQ.USER =", req.user);
+
+    const { category, difficulty, page = 1, limit = 10 } = req.query;
+
+    const userId = req.user.id || req.user.userId;
+
+    const filter = {
+      createdBy: new mongoose.Types.ObjectId(userId)
+    };
+
+    console.log("FILTER =", filter);
+
+    if (category) filter.category = category;
+    if (difficulty) filter.difficulty = difficulty;
+
+    const questions = await Question.find(filter)
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    console.log("QUESTIONS =", questions);
+
+    const total = await Question.countDocuments(filter);
+
+    res.json({
+      data: questions,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        pages: Math.ceil(total / limit),
+      },
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: 'Lỗi server',
+      error: error.message
+    });
+  }
+};
 // Lấy chi tiết câu hỏi
 exports.getQuestion = async (req, res) => {
   try {
@@ -82,7 +128,8 @@ exports.updateQuestion = async (req, res) => {
       return res.status(404).json({ message: 'Câu hỏi không tồn tại' });
     }
 
-    if (question.createdBy.toString() !== req.user.id) {
+    const currentUserId = req.user.id || req.user.userId;
+    if (question.createdBy.toString() !== currentUserId) {
       return res.status(403).json({ message: 'Bạn không có quyền chỉnh sửa câu hỏi này' });
     }
 
@@ -116,7 +163,8 @@ exports.deleteQuestion = async (req, res) => {
       return res.status(404).json({ message: 'Câu hỏi không tồn tại' });
     }
 
-    if (question.createdBy.toString() !== req.user.id) {
+    const currentUserId = req.user.id || req.user.userId;
+    if (question.createdBy.toString() !== currentUserId) {
       return res.status(403).json({ message: 'Bạn không có quyền xóa câu hỏi này' });
     }
 

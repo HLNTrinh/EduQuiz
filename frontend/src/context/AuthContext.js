@@ -3,12 +3,21 @@ import { authService } from "../services/services";
 
 const AuthContext = createContext(null);
 
+const normalizeAuthError = (error) => {
+  if (error?.message) return error.message;
+  if (error?.response?.data?.message) return error.response.data.message;
+  if (error?.response?.data?.error) return error.response.data.error;
+  return "Đã có lỗi xảy ra. Vui lòng thử lại.";
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const localToken = localStorage.getItem("token");
+    const sessionToken = sessionStorage.getItem("token");
+    const token = localToken || sessionToken;
 
     if (!token) {
       setLoading(false);
@@ -18,14 +27,17 @@ export const AuthProvider = ({ children }) => {
     authService
       .getMe()
       .then((data) => {
-        setUser(data);
-        localStorage.setItem("user", JSON.stringify(data));
+        const currentUser = data?.user || data;
+        setUser(currentUser);
+        const storage = localToken ? localStorage : sessionStorage;
+        storage.setItem("user", JSON.stringify(currentUser));
       })
       .catch((error) => {
-        console.log("Get user error:", error.message);
-
+        console.log("Get user error:", normalizeAuthError(error));
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
         setUser(null);
       })
       .finally(() => {
@@ -34,35 +46,41 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Đăng nhập
-  const login = async (email, password, rememberMe = false) => {
+const login = async (email, password, rememberMe = false) => {
+  try {
     const data = await authService.login({
       email,
       password,
     });
 
+    const currentUser = data?.user || data;
+
     if (!rememberMe) {
-      // Nếu không chọn "Ghi nhớ", dùng sessionStorage thay vì localStorage
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      sessionStorage.setItem("token", data.token);
+      sessionStorage.setItem("user", JSON.stringify(currentUser));
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } else {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(currentUser));
     }
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-
-    setUser(data.user);
+    setUser(currentUser);
 
     return data;
-  };
+  } catch (error) {
+    throw new Error(normalizeAuthError(error));
+  }
+};
+
 
   // Đăng ký
   const register = async (name, email, password) => {
-    return authService.register({
-      name,
-      email,
-      password,
-    });
+    try {
+      return await authService.register({ name, email, password });
+    } catch (error) {
+      throw new Error(normalizeAuthError(error));
+    }
   };
 
   // Đăng xuất
@@ -75,12 +93,16 @@ export const AuthProvider = ({ children }) => {
     // Xóa dữ liệu đăng nhập
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
 
     // Xóa user trong Context
     setUser(null);
 
-    // Chuyển về trang đăng nhập
-    window.location.replace("/login");
+    // Chuyển về trang đăng nhập phù hợp (admin hay user thường)
+    const currentPath = window.location.pathname;
+    const redirectPath = currentPath.startsWith("/admin") ? "/admin" : "/login";
+    window.location.href = redirectPath;
   };
 
   return (
