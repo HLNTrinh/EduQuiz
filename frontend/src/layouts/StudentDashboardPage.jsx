@@ -90,6 +90,7 @@ const chartValues = [55, 62, 58, 74, 68, 80];
 export default function StudentDashboardPage() {
   const { user } = useAuth();
   const [currentHour, setCurrentHour] = useState(new Date().getHours());
+  const [activeStat, setActiveStat] = useState(null);
 
   // Tối ưu greeting bằng useMemo
   const greeting = useMemo(() => {
@@ -152,10 +153,12 @@ export default function StudentDashboardPage() {
 
       {/* STATISTICS */}
       <section className="stat-grid">
-        {stats.map((s) => (
+        {stats.map((s, index) => (
           <div
             key={s.label}
-            className={`stat-card ${s.highlight ? "highlight" : ""}`}
+            className={`stat-card ${s.highlight && activeStat === null ? "highlight" : ""} ${activeStat === index ? "active" : ""}`}
+            onClick={() => setActiveStat(activeStat === index ? null : index)}
+            style={{ cursor: "pointer" }}
           >
             <div className="stat-top">
               <span className="stat-label">{s.label}</span>

@@ -15,8 +15,6 @@ export default function Sidebar() {
                     <p className="logo-subtitle">HỌC SINH</p>
                 </div>
             </div>
-
-          
             {/* Navigation */}
             <nav className="sidebar-nav">
                 <NavLink
