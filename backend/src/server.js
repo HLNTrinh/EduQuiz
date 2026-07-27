@@ -87,7 +87,12 @@ app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/quiz-attempts', require('./routes/quizAttemptRoutes'));
 
 /* =========================
-   404 Handler
+   Admin Routes
+========================= */
+app.use('/api/admin', require('./routes/adminRoutes'));
+
+/* =========================
+    404 Handler
 ========================= */
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });

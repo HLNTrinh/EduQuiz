@@ -366,3 +366,157 @@
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
+/* ============ RESPONSIVE ExamTaking ============ */
+@media (max-width: 1024px) {
+  .exam-take-body {
+    grid-template-columns: 1fr;
+  }
+
+  .exam-take-shell {
+    padding: 16px 16px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .exam-take-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .exam-take-header-actions {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .exam-timer-chip {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .btn-submit-exam {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .exam-question-card {
+    padding: 20px;
+  }
+
+  .exam-question-content {
+    font-size: 15px;
+  }
+
+  .exam-option {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .exam-qgrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .exam-take-shell {
+    padding: 10px 10px 32px;
+  }
+
+  .exam-take-brand h1 {
+    font-size: 16px;
+  }
+
+  .exam-take-header {
+    padding: 10px 12px;
+  }
+
+  .exam-take-header-actions {
+    gap: 8px;
+  }
+
+  .exam-timer-chip {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .btn-submit-exam {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .exam-question-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .exam-question-label {
+    font-size: 12px;
+  }
+
+  .exam-question-content {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .exam-option {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  .exam-nav-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .exam-nav-row button {
+    width: 100%;
+  }
+
+  .exam-qlist-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .exam-qlist-card h3 {
+    font-size: 14px;
+  }
+
+  .exam-qlist-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .qlist-stat-value {
+    font-size: 14px;
+  }
+
+  .exam-qgrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .qgrid-btn {
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .exam-student-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .exam-notice-box {
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  .exam-support-btn {
+    bottom: 16px;
+    right: 16px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}

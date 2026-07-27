@@ -129,7 +129,7 @@ export function LoginPage() {
       const userRole = data?.user?.role || 'student';
       navigate(`/${userRole}/dashboard`);
     } catch (err) {
-      setError(err.message || "Email hoặc mật khẩu không chính xác.");
+      setError(err.message || "Đăng nhập thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }

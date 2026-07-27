@@ -7,9 +7,6 @@
     flex-direction: column;
     padding: 24px 20px;
     height: 100vh;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
 }
 
@@ -164,4 +161,96 @@
 
 .logout-btn:hover {
     background: var(--color-danger-bg, #fee2e2);
+}
+
+/* ============ RESPONSIVE Sidebar (Drawer on Mobile) ============ */
+
+/* Mobile overlay */
+.sidebar-overlay {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 999;
+        backdrop-filter: blur(2px);
+    }
+
+    .sidebar-overlay.open {
+        display: block;
+    }
+
+    .sidebar-logo {
+        padding-bottom: 20px;
+        margin-bottom: 12px;
+    }
+
+    .logo-title {
+        font-size: 22px;
+    }
+
+    .sidebar-user {
+        padding: 10px 8px;
+        margin-bottom: 24px;
+    }
+
+    .sidebar-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .user-info h3 {
+        font-size: 14px;
+    }
+
+    .sidebar-link {
+        padding: 11px 14px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 260px;
+        left: -260px;
+        padding: 20px 16px;
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
+    .sidebar-link {
+        padding: 10px 12px;
+        font-size: 13.5px;
+    }
+
+    .link-icon {
+        font-size: 16px;
+        width: 20px;
+    }
+
+    .logout-btn {
+        padding: 10px 12px;
+        font-size: 13.5px;
+    }
 }

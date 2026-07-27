@@ -238,3 +238,109 @@
   .profile-info-top { flex-direction: column; align-items: flex-start; }
   .pw-row { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 480px) {
+  .profile-main {
+    padding: 20px 14px 32px;
+  }
+
+  .profile-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .profile-topbar h1 {
+    font-size: 20px;
+  }
+
+  .dash-header-actions {
+    gap: 8px;
+  }
+
+  .user-chip img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .user-chip-text .name {
+    font-size: 13px;
+  }
+
+  .card {
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .profile-info-top {
+    gap: 14px;
+  }
+
+  .avatar-wrap img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .profile-name-block h2 {
+    font-size: 20px;
+  }
+
+  .badges {
+    flex-wrap: wrap;
+  }
+
+  .info-fields {
+    gap: 14px;
+  }
+
+  .if-value {
+    font-size: 14px;
+  }
+
+  .settings-card h3 {
+    font-size: 15px;
+  }
+
+  .select-field {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .toggle-row {
+    font-size: 13px;
+    padding: 10px 0;
+  }
+
+  .security-card {
+    gap: 24px;
+  }
+
+  .security-left p {
+    font-size: 13px;
+  }
+
+  .pw-input input {
+    font-size: 13px;
+    padding: 7px 0;
+  }
+
+  .pw-row {
+    gap: 12px;
+  }
+
+  .btn-dark {
+    width: 100%;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+
+  .btn-primary {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .profile-footer {
+    font-size: 12px;
+  }
+}

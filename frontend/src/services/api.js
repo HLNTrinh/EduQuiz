@@ -16,6 +16,9 @@ const getAuthToken = () => {
 
 api.interceptors.request.use(
   (config) => {
+    // Đăng nhập không ghi nhớ dùng sessionStorage, còn ghi nhớ dùng localStorage.
+    // Cả hai trường hợp đều phải gửi token cho các API cần xác thực.
+    // const token = localStorage.getItem('token') || sessionStorage.getItem('token'); của thuyduy
     const token = getAuthToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -39,6 +42,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !isAdminRoute && !isPublicRoute) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
       window.location.href = '/login';
     }
 

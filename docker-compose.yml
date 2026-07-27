@@ -47,12 +47,17 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: http://localhost:8080/api
     container_name: exam_frontend
     restart: unless-stopped
     env_file:
       - ./frontend/.env
     environment:
-      REACT_APP_API_URL: http://localhost:8080/api           # ✅
+      # For the built frontend that runs in the user's browser, API calls
+      # must target the host where the backend is exposed. Use localhost:8080
+      # so the browser can reach the backend at http://localhost:8080/api.
+      REACT_APP_API_URL: http://localhost:8080/api
     ports:
       - "3000:3000"
     volumes:

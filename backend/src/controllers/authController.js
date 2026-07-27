@@ -38,6 +38,7 @@ const register = async (req, res) => {
       user: safeUser
     });
   } catch (error) {
+   // console.error("Register error:", error);//thêm
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };

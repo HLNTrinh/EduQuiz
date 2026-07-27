@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { quizService } from '../services/authService';
 import '../styles/TeacherDashBoard.css';
+
 export const TeacherDashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
