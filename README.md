@@ -1,3 +1,36 @@
+# THIẾT KẾ VÀ XÂY DỰNG WEBSITE KIỂM TRA TRẮC NGHIỆM TRỰC TUYẾN
+
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/vitejs/vitejs-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/express/express-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg" width="60"/>
+<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg" width="60"/>
+
+</div>
+
+---
+
+## 🛠️ Công nghệ sử dụng
+
+| Công nghệ | Vai trò |
+|-----------|----------|
+| ⚛️ ReactJS | Xây dựng giao diện người dùng |
+| ⚡ Vite | Công cụ build Frontend |
+| 🟢 Node.js | Phát triển Backend |
+| 🚀 Express.js | Xây dựng RESTful API |
+| 🍃 MongoDB | Cơ sở dữ liệu NoSQL |
+| 📡 Axios | Giao tiếp giữa Frontend và Backend |
+| 🔐 JWT | Xác thực người dùng |
+| 🎨 Material UI | Thiết kế giao diện |
+| 🐳 Docker | Đóng gói và triển khai ứng dụng |
+| 🌿 Git & GitHub | Quản lý mã nguồn |
 # 🏗️ Kiến trúc ứng dụng web
 
 ## 📌 1. Tổng quan kiến trúc
