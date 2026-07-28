@@ -178,7 +178,7 @@ exports.deleteQuestion = async (req, res) => {
 // Lấy danh sách category
 exports.getCategories = async (req, res) => {
   try {
-    const categories = ['Math', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography', 'English', 'Other'];
+    const categories = ['Khai phá dữ liệu', 'Công nghệ phần mềm', 'Lập trình thiết bị di động','Other'];
     res.json(categories);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });

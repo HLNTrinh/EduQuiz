@@ -192,6 +192,33 @@
     border-radius: 16px;
     padding: 20px;
     border: 1px solid #eef0f4;
+    transition: all 0.3s ease;
+}
+
+.stat-card.active {
+    background: #2f6feb;
+    border-color: #2f6feb;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.25);
+}
+
+.stat-card.active .stat-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.stat-card.active .stat-icon {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.stat-card.active .stat-value {
+    color: #fff;
+}
+
+.stat-card.active .stat-sub {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.stat-card.active .stat-sub.success {
+    color: #bbf7d0;
 }
 
 .stat-card.highlight {
