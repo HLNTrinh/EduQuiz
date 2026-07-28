@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Sidebar() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
 
     return (
         <aside className="sidebar">
@@ -70,11 +70,7 @@ export default function Sidebar() {
                     Cài đặt
                 </NavLink>
 
-                <button className="logout-btn" onClick={() => {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    window.location.href = '/login';
-                }}>
+                <button className="logout-btn" onClick={logout}>
                     <span className="link-icon">↪️</span>
                     Đăng xuất
                 </button>
