@@ -30,7 +30,7 @@ export const QuestionManager = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
-  const subjects = ['Tất cả', 'Math', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography', 'English', 'Other'];
+  const subjects = ['Tất cả', 'Toán', 'Vật lý', 'Hóa học', 'Sinh học', 'Lịch sử', 'Địa lý', 'Tiếng anh', 'Khác'];
 
   const loadQuestions = async () => {
     try {
@@ -219,12 +219,13 @@ export const QuestionManager = () => {
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/dashboard'); }}>
             <span className="sidebar-icon">▦</span> Tổng quan
           </a>
-          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
-            <span className="sidebar-icon">🧠</span> Ngân hàng câu hỏi
-          </a>
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/exams'); }}>
             <span className="sidebar-icon">📄</span> Đề thi
           </a>
+          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
+            <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
+          </a>
+
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
             <span className="sidebar-icon">📊</span> Kết quả
           </a>

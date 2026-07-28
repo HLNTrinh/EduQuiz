@@ -112,16 +112,17 @@ export const MembersPage = () => {
             <span className="sidebar-icon">▦</span> Tổng quan
           </a>
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/exams'); }}>
-            <span className="sidebar-icon">📄</span> Quản lý đề thi
+            <span className="sidebar-icon">📄</span> Đề thi
           </a>
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/questions'); }}>
             <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
           </a>
-          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
-            <span className="sidebar-icon">👥</span> Thành viên
-          </a>
+
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
             <span className="sidebar-icon">📊</span> Kết quả
+          </a>
+          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
+            <span className="sidebar-icon">👥</span> Thành viên
           </a>
         </nav>
 

@@ -55,6 +55,7 @@ services:
       - ./frontend/.env
     environment:
       REACT_APP_API_URL: http://localhost:8080/api
+      CHOKIDAR_USEPOLLING: "true" # Thêm dòng này để nhận diện thay đổi file trong Docker
     ports:
       - "3000:3000"
     volumes:

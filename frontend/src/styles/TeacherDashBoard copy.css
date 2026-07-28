@@ -1,0 +1,1423 @@
+/* =========================================================
+   TEACHER DASHBOARD - MODERN UI
+   ========================================================= */
+
+:root {
+    --teacher-bg: #f3f6fb;
+    --teacher-card: #fbfcff;
+    --teacher-primary: #2563eb;
+    --teacher-primary-light: #eef4ff;
+    --teacher-text: #172033;
+    --teacher-muted: #8b95a7;
+    --teacher-border: #e2e9f4;
+}
+/* =========================================================
+   MAIN DASHBOARD LAYOUT
+   ========================================================= */
+
+.dash-shell {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background: var(--teacher-bg);
+}
+
+/* =========================================================
+   LEFT SIDEBAR
+   ========================================================= */
+
+.dash-shell > .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;    
+    
+    width: 237px;
+    min-width: 237px;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    padding:18px 14px;
+    /*padding: 24px 14px 20px;*/
+
+    background: linear-gradient(
+        180deg,
+        #eef4ff 0%,
+        #f8faff 100%
+    );
+
+    border-right: 1px solid #dbe5f5;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+/* =========================================================
+   SIDEBAR LOGO
+   ========================================================= */
+
+   .sidebar-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 4px 12px;
+     /* Khoảng cách rõ ràng giữa logo và menu */
+    margin-bottom: 6px; /* Tăng khoảng cách giữa logo và menu */
+
+    border-bottom: 1px solid #d9dee7;/* Đưa border-bottom về đúng vị trí phân cách */
+}
+
+.sidebar-logo svg {
+    width: 170px;
+    height: 48px;
+    margin-bottom: -10px;
+    display:block;
+    margin-left: -10px;
+    margin-top: -8px;   /* tăng giá trị âm để logo lên cao hơn */
+    background: #ffffff;  
+}
+
+
+.sidebar-subtitle {
+    display: block;
+
+    margin-top: -10px;
+    margin-left: -30px;
+
+    color: #7d8797;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 0.25px;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   SIDEBAR NAV
+   ========================================================= */
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content:flex-start;
+    min-height: 0;
+    padding-top: 8px;
+
+}
+
+.sidebar-link {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    width: 100%;
+    min-height: 38px;
+
+    padding: 9px 10px;
+
+    box-sizing: border-box;
+
+    border-radius: 10px;
+
+    color: #5d687a;
+
+    font-size: 11px;
+    font-weight: 550;
+
+    text-decoration: none;
+
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.sidebar-link:hover {
+    background: linear-gradient(
+        135deg,
+        #eff6ff,
+        #dbeafe
+    );
+
+    color: #2563eb;
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 8px 18px rgba(37, 99, 235, 0.18);
+
+    transition:
+        all 0.25s ease;
+}
+
+.sidebar-link--active,
+.sidebar-link.active {
+    background: #edf3ff;
+    color: #2563eb;
+    font-weight: 650;
+}
+
+.sidebar-icon {
+    width: 23px;
+    height: 23px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    font-size: 17px;
+}
+
+/* =========================================================
+   SIDEBAR BOTTOM
+   ========================================================= */
+/*
+.sidebar-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    padding-top: 14px;
+  
+    border-top: 1px solid #f0f2f6;
+}*/
+.sidebar-bottom{
+
+    margin-top:auto;
+
+    padding-top:12px;
+
+    border-top:1px solid #edf1f7;
+
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.sidebar-link--danger {
+    color: #ef4444;
+}
+
+.sidebar-link--danger:hover {
+    background: #fff1f2;
+    color: #dc2626;
+}
+/* =========================================================
+   PAGE SHELL
+   ========================================================= */
+
+.page-shell {
+    display: flex;
+    min-height: 100vh;
+    background: var(--teacher-bg);
+}
+/*
+.dash-main {
+    flex: 1;
+    min-width: 0;
+    min-height: 100vh;
+    padding: 28px 32px 48px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}*/
+.dash-main{
+
+    margin-left:275px;      /* lớn hơn */
+
+    width:calc(100% - 275px);
+
+    /*padding:24px 34px 40px;*/
+    padding:24px 36px;
+    min-height:100vh;
+
+    box-sizing:border-box;
+}
+
+/* =========================================================
+   WELCOME NAVBAR - MODERN
+   ========================================================= */
+.dash-main .navbar-welcome {
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin: -10px -32px 26px;
+    padding: 12px 32px;
+    /*background: rgba(255, 255, 255, 0.96);*/
+    border-bottom: 1px solid #e7edf6;
+    box-shadow:
+        0 4px 18px rgba(15, 23, 42, 0.04);
+    box-sizing: border-box;
+        background: linear-gradient(
+        135deg,
+        #eef4ff,
+        #dbeafe
+    );
+}
+
+/* ===============================
+   PHẦN CHÀO MỪNG
+================================ */
+
+.dash-main .navbar-welcome-text {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* ===============================
+   MÀU NỀN SIDEBAR
+================================ */
+.dash-shell > .sidebar {
+    background: linear-gradient(
+        180deg,
+        #eef4ff 0%,
+        #f8faff 100%
+    );
+}
+
+/* ===============================
+   LỜI CHÀO
+================================ */
+
+.dash-main .navbar-greeting {
+    color: #7b8799;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    white-space: nowrap;
+}
+
+/* ===============================
+   TÊN NGƯỜI DÙNG
+================================ */
+
+.dash-main .navbar-username {
+    color: #172033;
+
+    font-size: 17px;
+    font-weight: 800;
+
+    letter-spacing: -0.3px;
+
+    white-space: nowrap;
+}
+
+/* ===============================
+   ICON BÊN PHẢI
+================================ */
+
+.dash-main .navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ===============================
+   NÚT ICON
+================================ */
+
+.dash-main .navbar-icon-btn {
+    position: relative;
+
+    width: 38px;
+    height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 11px;
+
+    color: #64748b;
+    background: var(--teacher-card);
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.dash-main .navbar-icon-btn:hover {
+    color: #2563eb;
+
+    background: #eff6ff;
+
+    border-color: #bfdbfe;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 5px 12px rgba(37, 99, 235, 0.12);
+}
+
+/* ===============================
+   CHẤM THÔNG BÁO
+================================ */
+
+.dash-main .navbar-badge {
+    position: absolute;
+
+    top: 6px;
+    right: 6px;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #ef4444;
+
+    border: 2px solid #ffffff;
+}
+
+/* ===============================
+   AVATAR
+================================ */
+
+.dash-main .navbar-avatar {
+    width: 40px;
+    height: 40px;
+    margin-left: 5px;
+    padding: 2px;
+    border: 1px solid #dbe4f0;
+    border-radius: 50%;
+    background: var(--teacher-card);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    transition: all 0.2s ease;
+}
+
+.dash-main .navbar-avatar:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 16px rgba(15, 23, 42, 0.18);
+}
+
+.dash-main .navbar-avatar img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 26px;
+}
+
+.dash-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 750;
+    color: var(--teacher-text);
+}
+
+.dash-header p {
+    margin: 5px 0 0;
+    color: var(--teacher-muted);
+    font-size: 13px;
+}
+
+.dash-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* Notification */
+
+.bell-btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #536074;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+}
+
+.bell-btn:hover {
+    background: #eaf0fb;
+}
+
+.bell-dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 2px solid var(--teacher-bg);
+}
+
+/* User */
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+.user-chip img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-chip span {
+    color: var(--teacher-text);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    min-height: 118px;
+    padding: 18px;
+    background: var(--teacher-card);
+    border: 1px solid var(--teacher-border);
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(31, 41, 55, 0.025);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(31, 41, 55, 0.06);
+}
+
+.stat-card.highlight {
+    background: var(--teacher-primary);
+    border-color: var(--teacher-primary);
+}
+
+.stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.stat-label {
+    font-size: 11px;
+    font-weight: 650;
+    color: #9aa3b2;
+}
+
+.stat-card.highlight .stat-label {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--teacher-primary-light);
+    color: var(--teacher-primary);
+    font-size: 14px;
+}
+
+.stat-card.highlight .stat-icon {
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+}
+
+.stat-value {
+    margin: 0 0 5px;
+    font-size: 26px;
+    line-height: 1;
+    font-weight: 750;
+    color: var(--teacher-text);
+}
+
+.stat-value.small {
+    font-size: 20px;
+}
+
+.stat-card.highlight .stat-value {
+    color: #ffffff;
+}
+
+.stat-sub {
+    font-size: 11px;
+    color: #9aa3b2;
+}
+
+.stat-sub.success {
+    color: #16a34a;
+}
+
+.stat-card.highlight .stat-sub {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* =========================================================
+   MAIN CONTENT GRID
+   ========================================================= */
+
+.dash-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.dash-col-left,
+.dash-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.card {
+    background: var(--teacher-card);
+    border: 1px solid var(--teacher-border);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(31, 41, 55, 0.025);
+}
+
+.card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.card-head h3 {
+    margin: 0;
+    color: var(--teacher-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.card-subtitle {
+    margin: 4px 0 0;
+    color: var(--teacher-muted);
+    font-size: 10px;
+}
+
+.view-all {
+    color: var(--teacher-primary);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* =========================================================
+   CHART
+   ========================================================= */
+
+.chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--teacher-primary);
+}
+
+.legend-label {
+    color: #7c8798;
+    font-size: 11px;
+}
+
+.year-select {
+    border: 1px solid #e6eaf0;
+    border-radius: 6px;
+    padding: 5px 8px;
+    background: #f7f9fd;
+    color: var(--teacher-text);
+    font-size: 11px;
+}
+
+/* Biểu đồ thấp hơn, giống ảnh mẫu */
+
+.mini-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 190px;
+    padding: 12px 4px 0;
+    border-top: 1px solid #f1f3f7;
+}
+
+.chart-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    height: 100%;
+    flex: 1;
+}
+
+.chart-bar {
+    width: 22px;
+    min-height: 10px;
+    border-radius: 5px 5px 0 0;
+    background: #dce7ff;
+}
+
+.chart-bar.active {
+    background: var(--teacher-primary);
+}
+
+.chart-month {
+    color: #a1a9b6;
+    font-size: 10px;
+}
+
+.chart-month.active {
+    color: var(--teacher-text);
+    font-weight: 700;
+}
+
+/* =========================================================
+   RESULT
+   ========================================================= */
+
+.result-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.result-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.result-flag {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+}
+
+.result-flag.ok {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.result-flag.warn {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.result-subject {
+    overflow: hidden;
+    color: var(--teacher-text);
+    font-size: 12px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.result-time {
+    color: var(--teacher-muted);
+    font-size: 10px;
+}
+
+.result-score {
+    color: var(--teacher-text);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+/* =========================================================
+   UPCOMING EXAMS
+   ========================================================= */
+
+.exam-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.exam-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px;
+    border: 1px solid #f0f2f6;
+    border-radius: 8px;
+}
+
+.date-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 9px;
+    background: var(--teacher-primary-light);
+    color: var(--teacher-primary);
+}
+
+.date-badge span {
+    font-size: 15px;
+}
+
+.date-badge small {
+    font-size: 9px;
+}
+
+.exam-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.exam-title {
+    overflow: hidden;
+    margin-bottom: 3px;
+    color: var(--teacher-text);
+    font-size: 12px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.exam-meta {
+    color: var(--teacher-muted);
+    font-size: 10px;
+}
+
+/* =========================================================
+   PROFILE CARD
+   ========================================================= */
+
+.profile-card {
+    background: var(--teacher-card);
+    border: 1px solid var(--teacher-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.profile-card-top {
+    height: 62px;
+    background: linear-gradient(135deg, #dbe6fd, #eef2ff);
+}
+
+.profile-avatar {
+    width: 72px;
+    height: 72px;
+}
+
+.profile-card-body {
+    padding: 45px 18px 18px;
+}
+
+.profile-card-body h3 {
+    font-size: 15px;
+}
+
+.profile-card-body p {
+    font-size: 11px;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn-primary {
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    background: var(--teacher-primary);
+    color: white;
+    font-size: 11px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.btn-outline-sm {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 8px 14px;
+    background: #f7f9fd;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* =========================================================
+   CHALLENGE CARD
+   ========================================================= */
+
+.challenge-card {
+    padding: 20px;
+    border-radius: 10px;
+    background: #172033;
+    color: white;
+}
+
+.challenge-card .eyebrow {
+    color: #93c5fd;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.challenge-card p {
+    margin: 9px 0 14px;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.progress-track {
+    height: 7px;
+    margin-bottom: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #4ade80;
+}
+
+.progress-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 10px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1200px) {
+    .dash-main {
+        padding: 24px;
+    }
+
+    .dash-main .navbar-welcome {
+        margin: -24px -24px 24px;
+        padding-right: 24px;
+        padding-left: 24px;
+    }
+
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .dash-main {
+        padding: 18px;
+    }
+
+    .dash-main .navbar-welcome {
+        min-height: 62px;
+        margin: -18px -18px 20px;
+        padding: 10px 18px;
+    }
+
+    .dash-main .navbar-greeting {
+        display: block;
+        width: 100%;
+        font-size: 11px;
+    }
+
+    .dash-main .navbar-username {
+        font-size: 14px;
+    }
+
+    .dash-main .navbar-right {
+        gap: 6px;
+    }
+
+    .dash-main .navbar-icon-btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .dash-main .navbar-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .dash-header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+/* =========================================================
+   MY CLASSES
+   ========================================================= */
+
+.class-section {
+    margin-top: 22px;
+}
+
+.class-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.class-section-header h3 {
+    margin: 0;
+    color: var(--teacher-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.class-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.class-card {
+    overflow: hidden;
+    background: var(--teacher-card);
+    border: 1px solid var(--teacher-border);
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(31, 41, 55, 0.025);
+}
+
+.class-card-header {
+    padding: 16px;
+    text-align: center;
+    background: #dce4ff;
+}
+
+.class-card:nth-child(2) .class-card-header {
+    background: #ffd9ca;
+}
+
+.class-card:nth-child(3) .class-card-header {
+    background: #5cf58b;
+}
+
+.class-card-header h4 {
+    margin: 0;
+    color: #172033;
+    font-size: 17px;
+}
+
+.class-card-body {
+    padding: 14px;
+}
+
+.class-card-body h4 {
+    margin: 0 0 4px;
+    color: var(--teacher-text);
+    font-size: 12px;
+}
+
+.class-card-body p {
+    margin: 0;
+    color: var(--teacher-muted);
+    font-size: 9px;
+}
+
+.class-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+}
+
+.class-avatar-group {
+    display: flex;
+    align-items: center;
+}
+
+.class-avatar {
+    width: 24px;
+    height: 24px;
+    margin-right: -6px;
+    border: 2px solid white;
+    border-radius: 50%;
+    background: #263238;
+}
+
+.class-more {
+    margin-left: 8px;
+    color: var(--teacher-muted);
+    font-size: 9px;
+}
+
+.class-view-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 5px 9px;
+    background: var(--teacher-primary-light);
+    color: var(--teacher-primary);
+    font-size: 9px;
+    cursor: pointer;
+}
+
+/* =====================================================
+   OVERVIEW GRID
+===================================================== */
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.overview-panel {
+    background: var(--teacher-card);
+    border: 1px solid #edf0f5;
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+/* ===============================
+   KẾT QUẢ TRUNG BÌNH
+================================ */
+
+.overview-summary-card {
+    min-height: 240px;
+    padding: 20px;
+}
+
+.summary-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.panel-title {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.panel-subtitle {
+    margin: 4px 0 0;
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+.btn-outline {
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #2563eb;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.btn-outline:hover {
+    background: #eff6ff;
+}
+
+.summary-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+}
+
+.summary-score-value {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.summary-score-note {
+    margin: 3px 0 0;
+    color: #9ca3af;
+    font-size: 10px;
+}
+
+.summary-score-pill {
+    color: #16a34a;
+    background: #f0fdf4;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.summary-chart-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: end;
+    gap: 20px;
+    min-height: 90px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f3f7;
+}
+
+.summary-chart-item {
+    text-align: center;
+}
+
+.summary-chart-value {
+    margin: 0;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.summary-chart-label {
+    margin: 5px 0 0;
+    color: #9ca3af;
+    font-size: 9px;
+}
+
+/* =====================================================
+   HOẠT ĐỘNG GẦN ĐÂY
+===================================================== */
+
+.overview-activity-card {
+    padding: 20px;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.activity-item-dot {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #eaf0ff;
+    position: relative;
+}
+
+.activity-item-dot::after {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.activity-item-body {
+    min-width: 0;
+}
+
+.activity-item-title {
+    margin: 0;
+    color: #172033;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.activity-item-text {
+    margin: 2px 0;
+    color: #4b5563;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.activity-item-meta {
+    margin: 0;
+    color: #9ca3af;
+    font-size: 9px;
+}
+/* =====================================================
+   LỚP HỌC
+===================================================== */
+
+.class-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.class-card {
+    overflow: hidden;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #edf0f5;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.class-card-header {
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.class-card--blue .class-card-header {
+    background: #dbe4ff;
+}
+
+.class-card--peach .class-card-header {
+    background: #ffdacc;
+}
+
+.class-card--green .class-card-header {
+    background: #5df586;
+}
+
+.class-card-title {
+    margin: 0;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.class-card-subtitle {
+    margin: 0;
+    color: #111827;
+    font-size: 12px;
+}
+
+.class-card-header > div {
+    text-align: center;
+}
+
+.class-card-header .btn-outline {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent !important;
+    color: #6b7280;
+    font-size: 16px;
+    padding: 0;
+}
+
+.class-card-meta {
+    padding: 12px 14px 0;
+    color: #6b7280;
+    font-size: 10px;
+}
+
+.class-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 14px;
+}
+
+.avatar-group {
+    display: flex;
+    align-items: center;
+}
+
+.avatar-small {
+    width: 23px;
+    height: 23px;
+    margin-right: -5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: #263238;
+    color: #ffffff;
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.btn-start {
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    background: #eef2ff;
+    color: #2563eb;
+    font-size: 9px;
+    font-weight: 600;
+    cursor: pointer;
+}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiBell, FiHelpCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
@@ -64,8 +63,8 @@ export const TeacherDashboardPage = () => {
       <div className="sidebar-logo">
 
         <svg
-          width="170"
-          height="48"
+          width="190"
+          height="62"
           viewBox="0 0 220 60"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"

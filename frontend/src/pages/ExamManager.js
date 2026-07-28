@@ -360,11 +360,12 @@ export const ExamManager = () => {
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/questions'); }}>
             <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
           </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/members'); }}>
-            <span className="sidebar-icon">👥</span> Thành viên
-          </a>
+
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
             <span className="sidebar-icon">📊</span> Kết quả
+          </a>
+          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/members'); }}>
+            <span className="sidebar-icon">👥</span> Thành viên
           </a>
         </nav>
 
@@ -580,14 +581,14 @@ export const ExamManager = () => {
                     value={newQuestion.category}
                     onChange={(e) => setNewQuestion({ ...newQuestion, category: e.target.value })}
                   >
-                    <option>Math</option>
-                    <option>Physics</option>
-                    <option>Chemistry</option>
-                    <option>Biology</option>
-                    <option>History</option>
-                    <option>Geography</option>
-                    <option>English</option>
-                    <option>Other</option>
+                    <option>Toán</option>
+                    <option>Vật lý</option>
+                    <option>Hóa học</option>
+                    <option>Sinh học</option>
+                    <option>Lịch sử</option>
+                    <option>Địa lý</option>
+                    <option>Tiếng anh</option>
+                    <option>Khác</option>
                   </select>
                   <select
                     className="form-input"
