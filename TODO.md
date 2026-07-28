@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 # ✅ All bugs fixed in EduQuiz System
 
@@ -27,8 +26,6 @@
 - Sidebar duplication noted but not a breaking issue
 
 # Fix Bug Checklist ✅
-=======
->>>>>>> origin/main
 
 
 

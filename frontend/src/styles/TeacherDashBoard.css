@@ -59,8 +59,7 @@
     flex-direction: column;
     align-items: flex-start;
     padding: 0 4px 20px;
-     /* Khoảng cách rõ ràng giữa logo và menu */
-    margin-bottom: 22px;
+    margin-bottom: 10px;
 
 }
 .sidebar-logo svg {
@@ -100,7 +99,7 @@
     flex-direction: column;
     gap: 3px;
     min-height: 0;
-    padding-top: 30px;
+    padding-top: 8px;
 }
 
 .sidebar-link {
@@ -150,7 +149,6 @@
     transition:
         all 0.25s ease;
 }
-
 .sidebar-link--active,
 .sidebar-link.active {
     background: #edf3ff;
@@ -483,7 +481,6 @@
     font-size: 13px;
     font-weight: 650;
 }
-
 /* =========================================================
    STATISTICS
    ========================================================= */
@@ -635,7 +632,6 @@
     font-weight: 600;
     text-decoration: none;
 }
-
 /* =========================================================
    CHART
    ========================================================= */
@@ -814,7 +810,7 @@
 .exam-title {
     overflow: hidden;
     margin-bottom: 3px;
-    color: var(--teacher-text);
+color: var(--teacher-text);
     font-size: 12px;
     font-weight: 650;
     text-overflow: ellipsis;
@@ -973,7 +969,7 @@
     }
 
     .dash-main .navbar-right {
-        gap: 6px;
+gap: 6px;
     }
 
     .dash-main .navbar-icon-btn {
@@ -1137,7 +1133,6 @@
     min-height: 240px;
     padding: 20px;
 }
-
 .summary-card-header {
     display: flex;
     justify-content: space-between;
@@ -1313,7 +1308,7 @@
 }
 
 .class-card-header {
-    min-height: 64px;
+min-height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
