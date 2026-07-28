@@ -1,376 +1,339 @@
-# Kiến trúc ứng dụng web
+# 🏗️ Kiến trúc ứng dụng web
 
-## 1. Tổng quan kiến trúc
+## 📌 1. Tổng quan kiến trúc
 
-Website kiểm tra trắc nghiệm trực tuyến được thiết kế theo mô hình **Three-Tier Architecture (Kiến trúc 3 tầng)** nhằm đảm bảo tính mở rộng, dễ bảo trì và tăng cường bảo mật. Hệ thống bao gồm ba tầng chính:
+Website **Kiểm tra trắc nghiệm trực tuyến** được thiết kế theo mô hình **Three-Tier Architecture (Kiến trúc 3 tầng)** nhằm đảm bảo tính mở rộng, dễ bảo trì và tăng cường bảo mật.
 
-- **Presentation Layer (Tầng giao diện):** Cung cấp giao diện tương tác cho học sinh, giáo viên và quản trị viên.
-- **Business Logic Layer (Tầng xử lý nghiệp vụ):** Xử lý các yêu cầu từ người dùng, quản lý nghiệp vụ thi trắc nghiệm và giao tiếp với cơ sở dữ liệu.
-- **Data Layer (Tầng dữ liệu):** Lưu trữ thông tin người dùng, đề thi, câu hỏi, kết quả và các dữ liệu liên quan.
+Hệ thống bao gồm ba tầng chính:
 
-### Kiến trúc tổng thể
+- 🖥️ **Presentation Layer (Tầng giao diện):** Giao tiếp với học sinh, giáo viên và quản trị viên.
+- ⚙️ **Business Logic Layer (Tầng xử lý nghiệp vụ):** Xử lý các nghiệp vụ và giao tiếp với cơ sở dữ liệu.
+- 🗄️ **Data Layer (Tầng dữ liệu):** Lưu trữ toàn bộ dữ liệu của hệ thống.
+
+---
+
+## 🏛️ Kiến trúc tổng thể
 
 ```text
-                     +----------------------+
-                     |      Người dùng      |
-                     | Học sinh | Giáo viên |
-                     |    Quản trị viên     |
-                     +----------+-----------+
-                                |
-                           HTTP/HTTPS
-                                |
-                    +-----------v-----------+
-                    |       Frontend        |
-                    | ReactJS + Vite + MUI  |
-                    +-----------+-----------+
-                                |
-                           REST API
-                                |
-                    +-----------v-----------+
-                    |       Backend         |
-                    | Node.js + Express.js  |
-                    +-----------+-----------+
-                                |
-                           MongoDB Database
-                                |
-       +------------------------+------------------------+
-       |           |             |          |            |
-     Users       Exams      Questions    Results     Classes
+                     👨‍🎓👩‍🏫👨‍💼
+                   Người sử dụng
+      (Học sinh - Giáo viên - Quản trị viên)
+                          │
+                     🌐 HTTP/HTTPS
+                          │
+                ┌────────────────────┐
+                │ 🖥️ Frontend         │
+                │ ReactJS + Vite + MUI│
+                └─────────┬──────────┘
+                          │
+                     🔄 REST API
+                          │
+                ┌─────────▼──────────┐
+                │ ⚙️ Backend          │
+                │ Node.js + Express  │
+                └─────────┬──────────┘
+                          │
+                ┌─────────▼──────────┐
+                │ 🗄️ MongoDB          │
+                └─────────┬──────────┘
+                          │
+      ┌──────────┬──────────┬──────────┬──────────┐
+      │ 👤 Users │ 📝 Exams │ ❓Questions │ 📊 Results │
+      └──────────┴──────────┴──────────┴──────────┘
 ```
 
 ---
 
-# 2. Kiến trúc các tầng
+# 🖥️ 2. Presentation Layer (Frontend)
 
-## 2.1. Presentation Layer (Frontend)
+Frontend được phát triển bằng **ReactJS**, **Vite** và **Material UI**.
 
-Frontend được phát triển bằng **ReactJS** kết hợp **Vite** và **Material UI (MUI)** nhằm tạo giao diện hiện đại, thân thiện và dễ sử dụng.
+### ✨ Chức năng
 
-### Chức năng
+- 🔐 Đăng nhập
+- 📝 Đăng ký
+- 👤 Quản lý hồ sơ
+- 📚 Danh sách bài thi
+- ✅ Làm bài thi
+- 📈 Xem kết quả
+- 🧑‍🏫 Quản lý đề thi
+- 👨‍💼 Quản lý người dùng
 
-- Đăng ký tài khoản
-- Đăng nhập
-- Quản lý hồ sơ cá nhân
-- Xem danh sách bài thi
-- Làm bài trắc nghiệm
-- Xem kết quả
-- Quản lý đề thi (Giáo viên)
-- Quản lý người dùng (Quản trị viên)
+### 🛠️ Công nghệ
 
-### Công nghệ sử dụng
-
-- ReactJS
-- Vite
-- Material UI
-- Axios
-- React Router DOM
+- ⚛️ ReactJS
+- ⚡ Vite
+- 🎨 Material UI
+- 🔄 Axios
+- 🧭 React Router DOM
 
 ---
 
-## 2.2. Business Logic Layer (Backend)
+# ⚙️ 3. Business Logic Layer (Backend)
 
-Backend được xây dựng bằng **Node.js** và **Express.js**, chịu trách nhiệm xử lý toàn bộ nghiệp vụ của hệ thống.
+Backend được xây dựng bằng **Node.js** và **Express.js**.
 
-### Chức năng
+### 🚀 Chức năng
 
-- Xác thực người dùng (JWT)
-- Quản lý tài khoản
-- Quản lý đề thi
-- Quản lý câu hỏi
-- Chấm điểm tự động
-- Lưu kết quả bài thi
-- Quản lý lớp học
-- Phân quyền người dùng
+- 🔐 Xác thực JWT
+- 👤 Quản lý người dùng
+- 📄 Quản lý đề thi
+- ❓ Quản lý câu hỏi
+- 🧮 Chấm điểm tự động
+- 💾 Lưu kết quả
+- 🏫 Quản lý lớp học
+- 🛡️ Phân quyền
 
-### Luồng xử lý
+---
+
+### 🔄 Luồng xử lý
 
 ```text
-Frontend
-      |
+🖥️ Frontend
+      │
 POST /api/exams/start
-      |
-Backend
-      |
-Kiểm tra quyền truy cập
-      |
-Lấy dữ liệu đề thi
-      |
-MongoDB
-      |
-Trả dữ liệu bài thi
-      |
-Frontend
+      │
+⚙️ Backend
+      │
+🔒 Kiểm tra quyền
+      │
+📂 MongoDB
+      │
+📄 Đề thi
+      │
+🖥️ Frontend
 ```
 
 ---
 
-## 2.3. Data Layer
+# 🗄️ 4. Data Layer
 
-Hệ thống sử dụng **MongoDB** để lưu trữ dữ liệu.
+Hệ thống sử dụng **MongoDB**.
 
-### Các Collection
+## 📦 Các Collection
 
-- Users
-- Exams
-- Questions
-- Results
-- Classes
-- Subjects
+- 👤 Users
+- 📝 Exams
+- ❓ Questions
+- 📊 Results
+- 🏫 Classes
+- 📖 Subjects
 
-### Ví dụ cấu trúc User
+---
+
+### 👤 User
 
 ```json
 {
   "_id": "...",
   "fullname": "Nguyen Van A",
   "email": "student@gmail.com",
-  "password": "hashedPassword",
   "role": "student"
 }
 ```
 
-### Ví dụ cấu trúc Exam
+### 📝 Exam
 
 ```json
 {
   "_id": "...",
   "title": "Kiểm tra giữa kỳ",
-  "subject": "Lập trình Web",
   "duration": 45,
   "totalQuestions": 40
 }
 ```
 
-### Ví dụ cấu trúc Result
+### 📊 Result
 
 ```json
 {
   "_id": "...",
   "studentId": "...",
   "examId": "...",
-  "score": 8.5,
-  "submitTime": "2026-07-28T10:30:00"
+  "score": 9.0
 }
 ```
 
 ---
 
-# 3. Luồng hoạt động của hệ thống
+# 🔄 5. Luồng hoạt động
 
-## 3.1. Đăng nhập
+## 🔐 Đăng nhập
 
 ```text
-Người dùng
-      |
-Đăng nhập
-      |
-Frontend
-      |
+👤 Người dùng
+      │
+🔑 Đăng nhập
+      │
+🖥️ Frontend
+      │
 POST /login
-      |
-Backend
-      |
-MongoDB
-      |
-JWT Token
-      |
-Frontend
+      │
+⚙️ Backend
+      │
+🗄️ MongoDB
+      │
+🎫 JWT
+      │
+🖥️ Frontend
 ```
 
 ---
 
-## 3.2. Làm bài thi
+## 📝 Làm bài thi
 
 ```text
-Học sinh
-      |
-Chọn bài thi
-      |
-Frontend
-      |
+👨‍🎓 Học sinh
+      │
+📚 Chọn bài thi
+      │
+🖥️ Frontend
+      │
 GET /api/exams/{id}
-      |
-Backend
-      |
-MongoDB
-      |
-Danh sách câu hỏi
-      |
-Frontend
+      │
+⚙️ Backend
+      │
+🗄️ MongoDB
+      │
+📄 Danh sách câu hỏi
+      │
+🖥️ Frontend
 ```
 
 ---
 
-## 3.3. Nộp bài
+## 📤 Nộp bài
 
 ```text
-Học sinh
-      |
-Nộp bài
-      |
-Frontend
-      |
+👨‍🎓 Học sinh
+      │
+📤 Nộp bài
+      │
+🖥️ Frontend
+      │
 POST /api/results
-      |
-Backend
-      |
-Chấm điểm tự động
-      |
-Lưu kết quả
-      |
-MongoDB
-      |
-Trả điểm
-      |
-Frontend
+      │
+⚙️ Backend
+      │
+🧮 Chấm điểm
+      │
+💾 Lưu kết quả
+      │
+🗄️ MongoDB
+      │
+📊 Trả điểm
+      │
+🖥️ Frontend
 ```
 
 ---
 
-## 3.4. Giáo viên tạo đề thi
+## 🧑‍🏫 Giáo viên tạo đề
 
 ```text
-Giáo viên
-      |
-Tạo đề thi
-      |
-Frontend
-      |
+🧑‍🏫 Giáo viên
+      │
+➕ Tạo đề
+      │
+🖥️ Frontend
+      │
 POST /api/exams
-      |
-Backend
-      |
-MongoDB
-      |
-Lưu đề thi
+      │
+⚙️ Backend
+      │
+🗄️ MongoDB
+      │
+💾 Lưu đề thi
 ```
 
 ---
 
-# 4. Kiến trúc thư mục
+# 📁 6. Kiến trúc thư mục
 
 ```text
-online-quiz-system/
+📦 online-quiz-system
 │
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── layouts/
-│   │   ├── contexts/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   ├── routes/
-│   │   ├── utils/
+├── 🎨 frontend
+│   ├── 📁 public
+│   ├── 📁 src
+│   │   ├── 📁 assets
+│   │   ├── 📁 components
+│   │   ├── 📁 pages
+│   │   ├── 📁 layouts
+│   │   ├── 📁 contexts
+│   │   ├── 📁 services
+│   │   ├── 📁 routes
 │   │   └── App.jsx
-│   └── package.json
 │
-├── backend/
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
-│   ├── utils/
+├── ⚙️ backend
+│   ├── 📁 config
+│   ├── 📁 controllers
+│   ├── 📁 middleware
+│   ├── 📁 models
+│   ├── 📁 routes
+│   ├── 📁 services
 │   ├── app.js
-│   ├── server.js
-│   └── package.json
+│   └── server.js
 │
-├── database/
+├── 🗄️ database
 │
-├── docker-compose.yml
+├── 🐳 docker-compose.yml
 │
-└── README.md
+└── 📖 README.md
 ```
 
 ---
 
-# 5. Kiến trúc API
+# 🔌 7. Kiến trúc API
 
 ```text
-                     Frontend
-                         |
-                     REST API
-                         |
-                  Express Router
-                         |
-      +------------------+------------------+
-      |                  |                  |
- AuthController   ExamController   ResultController
-      |                  |                  |
- QuestionController  UserController  ClassController
-      |                  |                  |
-      +------------------+------------------+
-                         |
-                      MongoDB
+                  🖥️ Frontend
+                        │
+                    🌐 REST API
+                        │
+                 ⚙️ Express Router
+                        │
+      ┌──────────┬──────────┬──────────┐
+      │          │          │
+ 🔐 Auth     📝 Exam     📊 Result
+ Controller Controller Controller
+      │          │          │
+      ├──────────┼──────────┤
+      │
+ ❓ Question Controller
+      │
+ 👤 User Controller
+      │
+ 🗄️ MongoDB
 ```
 
 ---
 
-# 6. Kiến trúc triển khai
+# ☁️ 8. Kiến trúc triển khai
 
 ```text
-                      Internet
-                          |
-                     HTTPS Request
-                          |
-                   +--------------+
-                   |    Nginx     |
-                   +------+-------+
-                          |
-          +---------------+---------------+
-          |                               |
- +--------v--------+              +--------v--------+
- | React Frontend  |              | Express Backend |
- | (Vite Build)    |              | Node.js API     |
- +--------+--------+              +--------+--------+
-                                           |
-                                   +-------v-------+
-                                   |   MongoDB     |
-                                   |   Database    |
-                                   +---------------+
+              🌍 Internet
+                   │
+             🔒 HTTPS
+                   │
+            🌐 Nginx Server
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+🖥️ React Frontend      ⚙️ Express API
+        │                     │
+        └──────────┬──────────┘
+                   │
+              🗄️ MongoDB
 ```
 
 ---
 
-# 7. Ưu điểm của kiến trúc
+# ⭐ 9. Ưu điểm
 
-- Phân tách rõ ràng giữa giao diện, xử lý nghiệp vụ và tầng dữ liệu.
-- Hỗ trợ phát triển và bảo trì độc lập giữa Frontend và Backend.
-- Đảm bảo tính bảo mật thông qua xác thực JWT và phân quyền người dùng.
-- Dễ dàng mở rộng để tích hợp các tính năng như thông báo, thống kê kết quả, xuất báo cáo hoặc giám sát trực tuyến.
-- Phù hợp với các hệ thống kiểm tra trắc nghiệm trực tuyến có nhiều vai trò như **Học sinh, Giáo viên và Quản trị viên**.
-## Cấu Trúc Dự Án
-
-```
-myapp/
-├── frontend/              # React Application
-│   ├── src/
-│   │   ├── components/    # React Components
-│   │   ├── pages/         # Pages
-│   │   ├── App.js         # Main App Component
-│   │   ├── index.js       # Entry Point
-│   │   └── index.css      # Global Styles
-│   ├── public/
-│   │   └── index.html     # HTML Template
-│   ├── Dockerfile         # Frontend Docker Configuration
-│   └── package.json
-|   └── .env
-│
-├── backend/               # Node.js + Express API
-│   ├── src/
-│   │   ├── routes/        # API Routes
-│   │   ├── models/        # MongoDB Schemas
-│   │   ├── controllers/   # Business Logic
-│   │   └── server.js      # Express Server
-│   ├── Dockerfile         # Backend Docker Configuration
-│   ├── package.json
-│   └── .env
-│
-├── docker-compose.yml     # Docker Compose Configuration
-├── .gitignore
-└── README.md
-```
+- ✅ Kiến trúc rõ ràng, dễ bảo trì.
+- 🚀 Frontend và Backend phát triển độc lập.
+- 🔐 Bảo mật với JWT và phân quyền.
+- 📈 Dễ mở rộng tính năng.
+- 👥 Hỗ trợ nhiều vai trò: **Học sinh**, **Giáo viên**, **Quản trị viên**.
+- 🧪 Dễ kiểm thử và triển khai bằng Docker.
