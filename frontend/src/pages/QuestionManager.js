@@ -405,7 +405,7 @@ export const QuestionManager = () => {
                   <tr key={item._id || item.id}>
                     <td className="question-bank-row-title">
                       <div>{item.content}</div>
-                      <small>{item._id}</small>
+                      
                     </td>
                     <td>
                       <span className="category-badge">{item.category}</span>

@@ -387,14 +387,6 @@ export const ExamManager = () => {
             <p className="dash-subtitle">Thiết lập đề kiểm tra, chọn câu hỏi và xuất bản cho học sinh.</p>
           </div>
           <div className="overview-actions">
-            {/*}
-            <button className="btn-outline" type="button" onClick={() => {
-              // create new quiz: reset form and selected questions
-              setFormData(buildInitialForm());
-              setSelectedQuestions([]);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}>Tạo đề thi</button>
-            */}
             <button className="btn-outline" type="button" onClick={() => loadData()}>Lưu bản nháp</button>
             <button className="btn-start" type="button" onClick={async () => {
               try {
