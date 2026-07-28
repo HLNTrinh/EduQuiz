@@ -2,7 +2,7 @@
 ##  🎓 THIẾT KẾ VÀ XÂY DỰNG WEBSITE KIỂM TRA TRẮC NGHIỆM TRỰC TUYẾN
 
 ## 🛠️ Công nghệ sử dụng
-<div align="center">
+
 <a href="https://react.dev/" target="_blank">
     <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=white"/>
 </a>
@@ -43,7 +43,7 @@
     <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"/>
 </a>
 
-</div>
+
 
 ---
 
