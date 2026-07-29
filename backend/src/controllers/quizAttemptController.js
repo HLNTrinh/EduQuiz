@@ -189,6 +189,7 @@ exports.getStudentAttempts = async (req, res) => {
 
     const attempts = await QuizAttempt.find({ studentId: req.user.id })
       .populate('quizId', 'title')
+      .populate('answers.questionId', 'category')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
