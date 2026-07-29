@@ -14,6 +14,7 @@ import StudentDashboardPage from "./layouts/StudentDashboardPage";
 import ExamList from "./layouts/ExamList";
 import Results from "./layouts/Results";
 import Profile from "./layouts/Profile";
+
 //Trang giáo viên
 import { TeacherDashboardPage } from "./pages/TeacherDashboardPage";
 import { ExamManager } from "./pages/ExamManager";
@@ -23,6 +24,7 @@ import { ResultPage } from "./pages/ResultPage";
 import { TakeQuizPage } from "./pages/TakeQuizPage";
 
 import "./App.css";
+
 
 // Trang admin
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -64,6 +66,7 @@ function AppRoutes() {
               </Route>
 
               <Route path="/quiz/:quizId" element={<TakeQuizPage />} />
+
             </>
           )}
 

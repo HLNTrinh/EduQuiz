@@ -13,8 +13,10 @@ exports.startQuizAttempt = async (req, res) => {
     }
 
     // Kiểm tra số lần làm bài
+    const studentId = req.user.id || req.user.userId;
+
     const attemptCount = await QuizAttempt.countDocuments({
-      studentId: req.user.id,
+      studentId,
       quizId,
       status: { $in: ['in_progress', 'submitted'] },
     });
@@ -25,7 +27,9 @@ exports.startQuizAttempt = async (req, res) => {
 
     // Tạo attempt mới
     const attempt = new QuizAttempt({
+
       studentId: req.user.id,
+      studentId,
       quizId,
       answers: quiz.questions.map((q, index) => ({
         questionId: q.questionId._id,

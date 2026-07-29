@@ -11,6 +11,7 @@ const {
   updateUser,
   deleteUser,
   toggleLockUser,
+  getTeachers,
 } = require('../controllers/adminUserController');
 
 const {
@@ -62,6 +63,9 @@ router.post('/users', createUser);
 router.put('/users/:id', updateUser);
 router.delete('/users/:id', deleteUser);
 router.patch('/users/:id/toggle-lock', toggleLockUser);
+
+// ==================== Teacher quick search (for autocomplete) ====================
+router.get('/teachers', getTeachers);
 
 // ==================== Subject Management ====================
 router.get('/subjects', getSubjects);
