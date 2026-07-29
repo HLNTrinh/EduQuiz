@@ -89,10 +89,7 @@ export default function ExamList() {
           <button className="icon-btn"><HelpIcon /></button>
           <div className="user-chip">
             <img src="https://i.pravatar.cc/64?img=13" alt="" />
-            <div className="user-chip-text">
-              <span className="name">Nguyễn Minh Quân</span>
-              <span className="role">Học sinh lớp 12A1</span>
-            </div>
+          
           </div>
         </div>
       </header>
