@@ -25,7 +25,7 @@ exports.startQuizAttempt = async (req, res) => {
 
     // Tạo attempt mới
     const attempt = new QuizAttempt({
-      studentId: req.user.userId,
+      studentId: req.user.id,
       quizId,
       answers: quiz.questions.map((q, index) => ({
         questionId: q.questionId._id,
@@ -211,7 +211,7 @@ exports.getTeacherAttempts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
-    const quizzes = await Quiz.find({ createdBy: req.user.userId }).select('_id');
+    const quizzes = await Quiz.find({ createdBy: req.user.id }).select('_id');
     const quizIds = quizzes.map((quiz) => quiz._id);
 
     const attempts = await QuizAttempt.find({ quizId: { $in: quizIds } })
