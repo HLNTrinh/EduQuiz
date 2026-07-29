@@ -66,6 +66,7 @@ function AppRoutes() {
               </Route>
 
               <Route path="/quiz/:quizId" element={<TakeQuizPage />} />
+              <Route path="/result/:attemptId" element={<ResultPage />} />
 
             </>
           )}
