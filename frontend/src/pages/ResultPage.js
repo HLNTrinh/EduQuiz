@@ -10,37 +10,64 @@ export const ResultPage = () => {
   const { user } = useAuth();
   const isTeacherOverview = !attemptId;
   const [result, setResult] = useState(null);
+  const [teacherAttempts, setTeacherAttempts] = useState([]);
+  const [teacherStats, setTeacherStats] = useState({
+    averageScore: 0,
+    passRate: 0,
+    totalAttempts: 0,
+    completedQuizzes: 0,
+    quizPerformance: [],
+    topStudents: [],
+    recentResults: [],
+  });
+ 
   const [loading, setLoading] = useState(Boolean(attemptId));
   const [error, setError] = useState(null);
 
-  const teacherStats = useMemo(
-    () => ({
-      averageScore: 7.8,
-      passRate: 86,
-      totalAttempts: 124,
-      completedQuizzes: 12,
-      quizPerformance: [
-        { title: 'Đại số 10', passRate: 92 },
-        { title: 'Vật lý 11', passRate: 81 },
-        { title: 'Tiếng Anh 12', passRate: 75 },
-      ],
-      topStudents: [
-        { name: 'Nguyễn Nhật', score: 9.6, className: '12A1' },
-        { name: 'Hoàng Anh', score: 9.4, className: '12A2' },
-        { name: 'Mai Lan', score: 9.2, className: '11B3' },
-      ],
-      recentResults: [
-        { quiz: 'Đại số 10', student: 'Phạm Tuấn', score: 8.8, status: 'Đạt' },
-        { quiz: 'Vật lý 11', student: 'Hoàng Linh', score: 7.4, status: 'Đạt' },
-        { quiz: 'Tiếng Anh 12', student: 'Thu Hà', score: 6.8, status: 'Không đạt' },
-      ],
-    }),
-    []
-  );
+  const loadTeacherAttempts = async () => {
+    try {
+      setLoading(true);
+
+      const res = await quizAttemptService.getTeacherAttempts();
+      const attempts = res.data || [];
+
+      setTeacherAttempts(attempts);
+
+      const averageScore =
+        attempts.length === 0
+          ? 0
+          : (
+              attempts.reduce((sum, a) => sum + a.score, 0) /
+              attempts.length
+            ).toFixed(1);
+
+      const passRate =
+        attempts.length === 0
+          ? 0
+          : Math.round(
+              (attempts.filter((a) => a.isPassed).length * 100) /
+                attempts.length
+            );
+
+      setTeacherStats({
+        averageScore,
+        passRate,
+        totalAttempts: attempts.length,
+        completedQuizzes: [...new Set(attempts.map((a) => a.quizId._id))].length,
+        quizPerformance: [],
+        topStudents: [],
+        recentResults: [],
+      });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!attemptId) {
-      setLoading(false);
+      loadTeacherAttempts();
       return;
     }
 
@@ -235,6 +262,7 @@ export const ResultPage = () => {
                 <p className="panel-subtitle">Thống kê điểm cao nhất hiện tại.</p>
               </div>
             </div>
+            /*Học sinh đứng đầu*/
             <ul className="top-students-list">
               {teacherStats.topStudents.map((student) => (
                 <li className="top-student-item" key={student.name}>
@@ -267,6 +295,7 @@ export const ResultPage = () => {
                 </tr>
               </thead>
               <tbody>
+                {/*
                 {teacherStats.recentResults.map((item, index) => (
                   <tr key={`${item.student}-${index}`}>
                     <td>{item.quiz}</td>
@@ -279,7 +308,28 @@ export const ResultPage = () => {
                     </td>
                   </tr>
                 ))}
-              </tbody>
+                  */}
+                    {teacherAttempts.map((item)=>(
+
+                    <tr key={item._id}>
+
+                    <td>{item.quizId.title}</td>
+
+                    <td>{item.studentId.name}</td>
+
+                    <td>{item.score}</td>
+
+                    <td>
+
+                    <span className={ item.isPassed ? "status-chip status-chip--success" : "status-chip status-chip--warning"}> 
+                      {item.isPassed?"Đạt":"Không đạt"} 
+                    </span>
+
+                    </td>
+
+                    </tr>
+                  ))}
+                </tbody>
             </table>
           </div>
         </section>
