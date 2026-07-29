@@ -16,18 +16,7 @@
 .result-overview-shell *::after {
   box-sizing: border-box;
 }
-/*
-.result-sidebar {
-  width: 237px;
-  flex: 0 0 237px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 20px 12px 17px;
-  border-right: 1px solid var(--result-line);
-  background: #ffffff;
-  box-sizing: border-box;
-}*/
+
 .result-sidebar {
     position: fixed;
     left: 0;
@@ -108,14 +97,7 @@
   gap: 5px;
 
 }
-/*
-.result-sidebar-bottom {
-  margin-top: auto;
-  padding-top: 14px;
-  padding-bottom: 20px;
-  border-top: 1px solid #f0f2f6;
-}
-*/
+
 .result-sidebar-bottom {
   margin-top: 310px; /* khoảng cách sau menu Kết quả/Thành viên */
   padding-top: 14px;

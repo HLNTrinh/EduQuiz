@@ -14,7 +14,7 @@ import StudentDashboardPage from "./layouts/StudentDashboardPage";
 import ExamList from "./layouts/ExamList";
 import Results from "./layouts/Results";
 import Profile from "./layouts/Profile";
-
+//Trang giáo viên
 import { TeacherDashboardPage } from "./pages/TeacherDashboardPage";
 import { ExamManager } from "./pages/ExamManager";
 import { QuestionManager } from "./pages/QuestionManager";
