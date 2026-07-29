@@ -74,7 +74,7 @@ export default function Results() {
               <p style={{ fontSize: 18 }}>📝</p>
               <p>Bạn chưa làm bài thi nào.</p>
               <button className="btn-primary" style={{ marginTop: 12 }} onClick={() => navigate('/student/exams')}>
-                Vào làm bài ngay
+                Xem danh sách bài thi
               </button>
             </div>
           ) : (
