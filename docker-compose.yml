@@ -31,7 +31,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 8080
-      MONGO_URI: mongodb://admin:secret@localhost:27017/exam_system?authSource=admin
+      MONGO_URI: mongodb://admin:secret@mongodb:27017/examdb?authSource=admin
     ports:
       - "8080:8080"
     volumes:
