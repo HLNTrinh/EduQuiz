@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { quizAttemptService } from '../services/authService';
+import { quizAttemptService } from '../services/services';
 import '../styles/Result.css';
 
 export const ResultPage = () => {
