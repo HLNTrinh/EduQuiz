@@ -85,6 +85,9 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/questions', require('./routes/questionRoutes'));
 app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/quiz-attempts', require('./routes/quizAttemptRoutes'));
+//mới thêm
+app.use("/api/classes", require("./routes/classRoutes"));
+
 
 /* =========================
    Admin Routes

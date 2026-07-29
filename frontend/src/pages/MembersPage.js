@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+//import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Members.css';
@@ -8,19 +9,31 @@ export const MembersPage = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
-  const classes = [
-    { id: '12A1', title: 'Lớp 12A1', subject: 'Toán học cơ bản', students: 45, progress: 85 },
-    { id: '12A2', title: 'Lớp 12A2', subject: 'Toán học nâng cao', students: 42, progress: 92 },
-    { id: '11B3', title: 'Lớp 11B3', subject: 'Hình học', students: 48, progress: 78 },
-  ];
+  const [classes, setClasses] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [selectedClass, setSelectedClass] = useState(null);
+  
+// Thêm useEffect để lấy danh sách lớp từ API
+useEffect(() => {
+  if (!user?._id) return;
 
-  const students = [
-    { id: 'STU00241', name: 'Hoàng Anh', email: 'hoanganh.stu@school.edu.vn', status: 'Đang học' },
-    { id: 'STU00242', name: 'Mai Lan', email: 'mailan.stu@school.edu.vn', status: 'Đang học' },
-    { id: 'STU00243', name: 'Phạm Tuấn', email: 'phamtuan.stu@school.edu.vn', status: 'Nghỉ phép' },
-    { id: 'STU00244', name: 'Bảo Trân', email: 'baotran.stu@school.edu.vn', status: 'Đang học' },
-  ];
+  fetch(`http://localhost:8080/api/classes/teacher/${user._id}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        setClasses(data.data);
 
+        if (data.data.length > 0) {
+          setSelectedClass(data.data[0]);
+
+          setStudents(data.data[0].students);
+        }
+      }
+    })
+    .catch(console.error);
+}, [user]);
+
+/*xóa
   const filteredStudents = useMemo(() => {
     const query = search.toLowerCase().trim();
     return students.filter((student) =>
@@ -30,6 +43,16 @@ export const MembersPage = () => {
       student.status.toLowerCase().includes(query)
     );
   }, [search]);
+  */
+    const filteredStudents = useMemo(() => {
+    const query = search.toLowerCase();
+
+    return students.filter((student) =>
+      student.name.toLowerCase().includes(query) ||
+      student.email.toLowerCase().includes(query) ||
+      student.status.toLowerCase().includes(query)
+    );
+  }, [students, search]);
 
   return (
     <div className="dash-shell">
@@ -181,12 +204,14 @@ export const MembersPage = () => {
               <div className="members-card" key={item.id}>
                 <div className="class-card-header">
                   <div>
-                    <p className="class-card-title">{item.title}</p>
+                    <p className="class-card-title">{item.name}</p>
                     <p className="class-card-subtitle">Môn: {item.subject}</p>
                   </div>
-                  <button className="btn-outline" onClick={() => navigate('/teacher/members')}>Xem học sinh</button>
+                  <button className="btn-outline" onClick={() => { setSelectedClass(item); setStudents(item.students);}} >
+    Xem học sinh
+</button>
                 </div>
-                <p className="class-card-meta">{item.students} học sinh</p>
+                <p className="class-card-meta">{item.studentCount} học sinh</p>
                 <div className="summary-score-row" style={{ background: 'rgba(47, 111, 235, 0.08)', padding: '16px', borderRadius: '20px' }}>
                   <div>
                     <p className="summary-score-value" style={{ color: '#1f4ec5' }}>{item.progress}%</p>
@@ -201,7 +226,7 @@ export const MembersPage = () => {
         <section className="members-table-panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Danh sách học sinh: Lớp 12A2</h2>
+              <h2 className="panel-title"> Danh sách học sinh: {selectedClass?.name}</h2>
               <p className="panel-subtitle">Hiển thị thông tin cơ bản của tất cả học sinh trong lớp.</p>
             </div>
             <div className="members-search-group">
@@ -228,13 +253,13 @@ export const MembersPage = () => {
             <tbody>
               {filteredStudents.map((student) => (
                 <tr key={student.id}>
-                  <td>{student.id}</td>
+                  <td>{student._id}</td>
                   <td>{student.name}</td>
                   <td>{student.email}</td>
                   <td>
-                    <span className={`status-pill ${student.status === 'Đang học' ? 'status-pill--active' : 'status-pill--inactive'}`}>
+                  <span className={`status-pill ${ student.status === "active" ? "status-pill--active": "status-pill--inactive"}`}>
                       {student.status}
-                    </span>
+                  </span>
                   </td>
                   <td>
                     <button className="btn-outline" onClick={() => alert(`Xem ${student.name}`)}>Xem</button>
