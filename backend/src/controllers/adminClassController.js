@@ -2,6 +2,11 @@ const Class = require('../models/Class');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 
+// Utility: escape regex for exact name matching
+function escapeRegex(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /* =========================
    GET /api/admin/classes
    Lấy danh sách lớp học (có tìm kiếm, phân trang)
@@ -64,10 +69,35 @@ const createClass = async (req, res) => {
   try {
     const { name, teacher, teacherName, year, status } = req.body;
 
+    // Resolve teacher: prefer explicit teacher ObjectId; otherwise try to match by name or email
+    let teacherId = null;
+    let resolvedTeacherName = teacherName || '';
+
+    if (teacher && mongoose.Types.ObjectId.isValid(teacher)) {
+      teacherId = teacher;
+      // try to get canonical name
+      const t = await User.findById(teacherId).select('name');
+      if (t) resolvedTeacherName = t.name;
+    } else if (teacherName) {
+      // try exact email match or exact name (case-insensitive)
+      const found = await User.findOne({
+        $or: [
+          { email: teacherName.toLowerCase() },
+          { name: { $regex: `^${escapeRegex(teacherName)}$`, $options: 'i' } },
+        ],
+        role: 'teacher',
+      }).select('name');
+
+      if (found) {
+        teacherId = found._id;
+        resolvedTeacherName = found.name;
+      }
+    }
+
     const classData = {
       name,
-      teacher: teacher || null,
-      teacherName: teacherName || '',
+      teacher: teacherId,
+      teacherName: resolvedTeacherName,
       year: year || '',
       status: status || 'active',
       students: [],
@@ -92,8 +122,33 @@ const updateClass = async (req, res) => {
 
     const updateData = {};
     if (name) updateData.name = name;
-    if (teacher !== undefined) updateData.teacher = teacher;
-    if (teacherName !== undefined) updateData.teacherName = teacherName;
+
+    // If teacher explicitly provided (could be null to clear), use it
+    if (teacher !== undefined) {
+      updateData.teacher = teacher;
+    }
+
+    // If teacherName provided but teacher not explicitly set, try to resolve to teacher id
+    if ((teacher === undefined || teacher === null) && teacherName) {
+      const found = await User.findOne({
+        $or: [
+          { email: teacherName.toLowerCase() },
+          { name: { $regex: `^${escapeRegex(teacherName)}$`, $options: 'i' } },
+        ],
+        role: 'teacher',
+      }).select('name');
+
+      if (found) {
+        updateData.teacher = found._id;
+        updateData.teacherName = found.name;
+      } else {
+        // If not found, still update teacherName field so admin can store free text
+        updateData.teacherName = teacherName;
+      }
+    } else if (teacherName !== undefined) {
+      updateData.teacherName = teacherName;
+    }
+
     if (year) updateData.year = year;
     if (status) updateData.status = status;
 

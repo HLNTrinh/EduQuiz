@@ -22,6 +22,7 @@ import {
   removeStudentFromClass,
   updateClass,
 } from '../services/adminService';
+import TeacherAutocomplete from '../components/admin/TeacherAutocomplete';
 import '../styles/AdminClassManagementContent.css';
 
 const STATUS_LABELS = { active: 'Đang hoạt động', inactive: 'Tạm dừng' };
@@ -47,12 +48,14 @@ export default function AdminClassManagementPage() {
   const [showEditClass, setShowEditClass] = useState(false);
   const [newClassName, setNewClassName] = useState('');
   const [newClassTeacher, setNewClassTeacher] = useState('');
+  const [newClassTeacherId, setNewClassTeacherId] = useState('');
   const [newClassYear, setNewClassYear] = useState('2025 - 2026');
   const [studentId, setStudentId] = useState('');
   const [availableStudents, setAvailableStudents] = useState([]);
   const [studentsLoading, setStudentsLoading] = useState(false);
   const [editClassName, setEditClassName] = useState('');
   const [editClassTeacher, setEditClassTeacher] = useState('');
+  const [editClassTeacherId, setEditClassTeacherId] = useState('');
   const [editClassYear, setEditClassYear] = useState('');
   const [editClassStatus, setEditClassStatus] = useState('active');
   const [activeMenuStudentId, setActiveMenuStudentId] = useState(null);
@@ -97,10 +100,14 @@ export default function AdminClassManagementPage() {
     event.preventDefault();
     try {
       setSaving(true);
-      const res = await createClass({ name: newClassName, teacherName: newClassTeacher, year: newClassYear, status: 'active' });
+      const payload = { name: newClassName, year: newClassYear, status: 'active' };
+      if (newClassTeacherId) payload.teacher = newClassTeacherId; else payload.teacherName = newClassTeacher;
+
+      const res = await createClass(payload);
       setShowAddClass(false);
       setNewClassName('');
       setNewClassTeacher('');
+      setNewClassTeacherId('');
       await fetchClasses();
       setSelectedClassId(res.class?._id || null);
       showToast('Tạo lớp học thành công.');
@@ -113,6 +120,7 @@ export default function AdminClassManagementPage() {
     if (!activeClass) return;
     setEditClassName(activeClass.name || '');
     setEditClassTeacher(activeClass.teacherName || activeClass.teacher?.name || '');
+    setEditClassTeacherId(activeClass.teacher?._id || '');
     setEditClassYear(activeClass.year || '');
     setEditClassStatus(activeClass.status || 'active');
     setShowEditClass(true);
@@ -123,7 +131,10 @@ export default function AdminClassManagementPage() {
     if (!activeClass) return;
     try {
       setSaving(true);
-      await updateClass(activeClass._id, { name: editClassName, teacherName: editClassTeacher, year: editClassYear, status: editClassStatus });
+      const payload = { name: editClassName, year: editClassYear, status: editClassStatus };
+      if (editClassTeacherId) payload.teacher = editClassTeacherId; else payload.teacherName = editClassTeacher;
+
+      await updateClass(activeClass._id, payload);
       setShowEditClass(false);
       await fetchClasses();
       showToast('Cập nhật lớp học thành công.');
@@ -223,8 +234,8 @@ export default function AdminClassManagementPage() {
           </div>
         </div>
       </div>
-      {showAddClass && <ClassModal title="Tạo lớp học mới" onClose={() => setShowAddClass(false)} onSubmit={handleAddClass} saving={saving}><ClassFields name={newClassName} setName={setNewClassName} teacher={newClassTeacher} setTeacher={setNewClassTeacher} year={newClassYear} setYear={setNewClassYear} /></ClassModal>}
-      {showEditClass && <ClassModal title="Sửa thông tin lớp học" onClose={() => setShowEditClass(false)} onSubmit={handleEditClassSubmit} saving={saving}><ClassFields name={editClassName} setName={setEditClassName} teacher={editClassTeacher} setTeacher={setEditClassTeacher} year={editClassYear} setYear={setEditClassYear} status={editClassStatus} setStatus={setEditClassStatus} /></ClassModal>}
+      {showAddClass && <ClassModal title="Tạo lớp học mới" onClose={() => setShowAddClass(false)} onSubmit={handleAddClass} saving={saving}><ClassFields name={newClassName} setName={setNewClassName} teacher={newClassTeacher} setTeacher={setNewClassTeacher} teacherId={newClassTeacherId} setTeacherId={setNewClassTeacherId} year={newClassYear} setYear={setNewClassYear} /></ClassModal>}
+      {showEditClass && <ClassModal title="Sửa thông tin lớp học" onClose={() => setShowEditClass(false)} onSubmit={handleEditClassSubmit} saving={saving}><ClassFields name={editClassName} setName={setEditClassName} teacher={editClassTeacher} setTeacher={setEditClassTeacher} teacherId={editClassTeacherId} setTeacherId={setEditClassTeacherId} year={editClassYear} setYear={setEditClassYear} status={editClassStatus} setStatus={setEditClassStatus} /></ClassModal>}
       {showAddStudent && <ClassModal title="Thêm học sinh vào lớp" onClose={() => setShowAddStudent(false)} onSubmit={handleAddStudent} saving={saving}><div className="form-group"><label className="form-label">Chọn học sinh <span className="required">*</span></label><select className="form-input" value={studentId} onChange={(e) => setStudentId(e.target.value)} required><option value="">-- Chọn tài khoản học sinh --</option>{availableStudents.map((student) => <option key={student._id} value={student._id}>{student.name} — {student.email}</option>)}</select>{availableStudents.length === 0 && <small>Không còn học sinh đang hoạt động để thêm vào lớp này.</small>}</div></ClassModal>}
       {emailDetails && <div className="modal-overlay" onClick={() => setEmailDetails(null)}><div className="modal-card email-details-modal" onClick={(event) => event.stopPropagation()}><div className="modal-header"><h3 className="modal-title">Email tài khoản</h3><button className="modal-close-btn" type="button" onClick={() => setEmailDetails(null)}><X size={20} /></button></div><div className="modal-body"><strong>{emailDetails.name}</strong><span className="full-student-email">{emailDetails.email}</span></div><div className="modal-footer"><button type="button" className="btn-modal-submit" onClick={() => setEmailDetails(null)}>Đóng</button></div></div></div>}
     </AdminLayout>
@@ -235,10 +246,13 @@ function ClassModal({ title, children, onClose, onSubmit, saving }) {
   return <div className="modal-overlay"><div className="modal-card"><div className="modal-header"><h3 className="modal-title">{title}</h3><button className="modal-close-btn" type="button" onClick={onClose}><X size={20} /></button></div><form onSubmit={onSubmit}><div className="modal-body">{children}</div><div className="modal-footer"><button type="button" className="btn-modal-cancel" onClick={onClose} disabled={saving}>Huỷ</button><button type="submit" className="btn-modal-submit" disabled={saving}>{saving ? 'Đang lưu...' : 'Lưu'}</button></div></form></div></div>;
 }
 
-function ClassFields({ name, setName, teacher, setTeacher, year, setYear, status, setStatus }) {
+function ClassFields({ name, setName, teacher, setTeacher, teacherId, setTeacherId, year, setYear, status, setStatus }) {
   return <>
     <div className="form-group"><label className="form-label">Tên lớp học <span className="required">*</span></label><input type="text" className="form-input" value={name} onChange={(e) => setName(e.target.value)} required /></div>
-    <div className="form-group"><label className="form-label">Giáo viên/Giảng viên</label><input type="text" className="form-input" value={teacher} onChange={(e) => setTeacher(e.target.value)} /></div>
+    <div className="form-group"><label className="form-label">Giáo viên/Giảng viên</label>
+      <TeacherAutocomplete value={teacherId ? { _id: teacherId, name: teacher } : (teacher ? { name: teacher } : null)} onChange={(user) => { setTeacher(user?.name || ''); setTeacherId(user?._id || ''); }} placeholder="Tìm hoặc chọn giáo viên..." />
+      <small>Phải thêm giáo viên đã tồn tại trên hệ thống</small>
+    </div>
     <div className="form-group"><label className="form-label">Năm học</label><input type="text" className="form-input" placeholder="Ví dụ: 2025 - 2026" value={year} onChange={(e) => setYear(e.target.value)} /></div>
     {setStatus && <div className="form-group"><label className="form-label">Trạng thái</label><select className="form-input" value={status} onChange={(e) => setStatus(e.target.value)}><option value="active">Đang hoạt động</option><option value="inactive">Tạm dừng</option></select></div>}
   </>;
