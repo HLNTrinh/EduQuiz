@@ -27,9 +27,7 @@ exports.startQuizAttempt = async (req, res) => {
 
     // Tạo attempt mới
     const attempt = new QuizAttempt({
-
       studentId: req.user.id,
-      studentId,
       quizId,
       answers: quiz.questions.map((q, index) => ({
         questionId: q.questionId._id,
