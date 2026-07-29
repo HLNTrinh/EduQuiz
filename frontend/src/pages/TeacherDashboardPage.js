@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FiBell, FiHelpCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { quizService } from '../services/authService';
+import { quizService } from '../services/services';
 import '../styles/TeacherDashBoard.css';
 
 export const TeacherDashboardPage = () => {
