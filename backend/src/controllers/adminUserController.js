@@ -194,6 +194,33 @@ const toggleLockUser = async (req, res) => {
   }
 };
 
+const getTeachers = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search = '' } = req.query;
+
+    const filter = { role: 'teacher' };
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [users, total] = await Promise.all([
+      User.find(filter).select('name email avatar').sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
+      User.countDocuments(filter),
+    ]);
+
+    res.json({ success: true, users, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
+  }
+};
+
 module.exports = {
   getUsers,
   getUserById,
@@ -201,4 +228,5 @@ module.exports = {
   updateUser,
   deleteUser,
   toggleLockUser,
+  getTeachers,
 };

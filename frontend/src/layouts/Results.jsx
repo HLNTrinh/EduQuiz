@@ -1,3 +1,4 @@
+//Là cái trang lịch sử 
 import '../styles/Results.css';
 
 const history = [
