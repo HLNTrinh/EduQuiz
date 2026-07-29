@@ -31,7 +31,7 @@ const quizSchema = new mongoose.Schema(
     },
     maxAttempts: {
       type: Number,
-      default: 1,
+      default: 999,
       min: [1, 'Tối thiểu 1 lần làm'],
     },
     startDate: {
