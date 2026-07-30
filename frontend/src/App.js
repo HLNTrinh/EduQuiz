@@ -74,11 +74,12 @@ function AppRoutes() {
           {/* ================= TEACHER ================= */}
           {user.role === "teacher" && (
             <>
-              <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
+<Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
               <Route path="/teacher/exams" element={<ExamManager />} />
               <Route path="/teacher/questions" element={<QuestionManager />} />
               <Route path="/teacher/members" element={<MembersPage />} />
               <Route path="/teacher/results" element={<ResultPage />} />
+              <Route path="/teacher/profile" element={<Profile />} />
             </>
           )}
 
