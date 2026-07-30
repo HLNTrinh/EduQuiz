@@ -698,7 +698,8 @@ startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInpu
                       <p className="question-label">{item.category || 'Câu hỏi'}</p>
                       <p className="question-title">{item.content}</p>
                       <div className="question-meta">
-                        <span>{item.category}</span>
+                        {/* <span>{item.category}</span> */}
+                        <span>{item.categoryName}</span>
                         <span>{item.difficulty === 'easy' ? 'Dễ' : item.difficulty === 'hard' ? 'Khó' : 'Trung bình'}</span>
                       </div>
                     </div>
