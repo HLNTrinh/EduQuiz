@@ -1,8 +1,8 @@
 /* ==== SHELL & HEADER ==== */
 .exam-take-shell {
-  background: #f8fafc;
+  background: #f0f4f8;
   min-height: 100vh;
-  padding: 24px 32px 80px;
+  padding: 20px 24px 80px;
   font-family: "Inter", "Segoe UI", sans-serif;
 }
 
@@ -11,10 +11,10 @@
   justify-content: space-between;
   align-items: center;
   background: #fff;
-  padding: 16px 24px;
+  padding: 14px 22px;
   border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
 }
 
 .exam-take-brand {
@@ -35,7 +35,7 @@
 .exam-take-header-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .exam-timer-chip {
@@ -45,12 +45,23 @@
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 700;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 10px;
+  font-size: 15px;
 }
 .exam-timer-chip.danger {
   background: #fef2f2;
   color: #dc2626;
+  animation: pulse-danger 1s infinite;
+}
+
+@keyframes pulse-danger {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.timer-icon {
+  font-size: 16px;
 }
 
 .btn-submit-exam {
@@ -61,6 +72,8 @@
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 14px;
 }
 .btn-submit-exam:hover {
   background: #1d4ed8;
@@ -88,24 +101,147 @@
 }
 .progress-fill-exam {
   height: 100%;
-  background: #16a34a;
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+  transition: width 0.4s ease;
+  border-radius: 999px;
 }
 
-/* ==== BODY LAYOUT ==== */
+/* ====================================================
+   BODY LAYOUT - 3 CỘT
+   ==================================================== */
 .exam-take-body {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 24px;
+  grid-template-columns: 180px 1fr 280px;
+  gap: 20px;
   align-items: start;
 }
 
-/* ==== QUESTION CARD ==== */
+/* ====================================================
+   CỘT TRÁI - DANH SÁCH CÂU HỎI
+   ==================================================== */
+.exam-leftnav {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  position: sticky;
+  top: 20px;
+}
+
+.leftnav-header {
+  padding: 14px 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.leftnav-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.leftnav-list {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.leftnav-list::-webkit-scrollbar {
+  width: 4px;
+}
+.leftnav-list::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 2px;
+}
+
+.leftnav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 600;
+  font-size: 13px;
+  color: #64748b;
+  position: relative;
+}
+
+.leftnav-btn:hover {
+  border-color: #93c5fd;
+  background: #f8fafc;
+}
+
+/* Trạng thái: blank (mặc định) */
+.leftnav-btn--blank {
+  border-color: #e2e8f0;
+  color: #94a3b8;
+}
+
+/* Trạng thái: đã chọn */
+.leftnav-btn--answered {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+.leftnav-btn--answered:hover {
+  background: #1d4ed8;
+}
+
+.leftnav-check-icon {
+  font-size: 11px;
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  opacity: 0.8;
+}
+
+/* Trạng thái: đánh dấu xem sau */
+.leftnav-btn--flagged {
+  background: #fff7ed;
+  color: #c2410c;
+  border-color: #f97316;
+}
+.leftnav-btn--flagged:hover {
+  background: #ffedd5;
+}
+
+.leftnav-flag-icon {
+  font-size: 11px;
+  position: absolute;
+  top: 2px;
+  right: 4px;
+}
+
+/* Trạng thái: đang xem */
+.leftnav-btn--current {
+  border: 2px solid #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.leftnav-btn--current:hover {
+  background: #dbeafe;
+}
+
+/* ====================================================
+   CỘT GIỮA - CÂU HỎI
+   ==================================================== */
 .exam-question-card {
   background: #fff;
   border-radius: 16px;
   padding: 28px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .exam-question-top {
@@ -148,6 +284,12 @@
   font-weight: 600;
   color: #475569;
   cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-flag:hover {
+  border-color: #f97316;
+  background: #fff7ed;
 }
 .btn-flag.active {
   background: #fff7ed;
@@ -155,17 +297,25 @@
   color: #ea580c;
 }
 
+.flag-text {
+  font-size: 13px;
+}
+
 .exam-question-content {
   font-size: 17px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: #1e293b;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
+  padding: 16px 0;
 }
 
 .exam-question-image {
   width: 100%;
+  max-height: 300px;
+  object-fit: contain;
   border-radius: 12px;
   margin-bottom: 20px;
+  border: 1px solid #f1f5f9;
 }
 
 /* ==== OPTIONS ==== */
@@ -173,30 +323,33 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .exam-option {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0;
   padding: 14px 16px;
   border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 15px;
   color: #334155;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
+  position: relative;
 }
 .exam-option:hover {
   border-color: #93c5fd;
   background: #f8fafc;
+  transform: translateX(4px);
 }
 .exam-option.selected {
   border-color: #2563eb;
   background: #eff6ff;
   color: #1d4ed8;
   font-weight: 600;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .exam-option-radio-input {
@@ -205,12 +358,52 @@
   accent-color: #2563eb;
   cursor: pointer;
   flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.exam-option-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  font-weight: 700;
+  font-size: 13px;
+  color: #64748b;
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.exam-option.selected .exam-option-letter {
+  background: #2563eb;
+  color: #fff;
+}
+
+.exam-option-text {
+  flex: 1;
 }
 
 /* ==== NAV ROW ==== */
 .exam-nav-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.exam-nav-center {
+  display: flex;
+  align-items: center;
+}
+
+.exam-nav-progress-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
 }
 
 .btn-outline {
@@ -220,13 +413,19 @@
   background: #fff;
   border: 1px solid #e2e8f0;
   color: #475569;
-  padding: 10px 20px;
+  padding: 10px 18px;
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 14px;
+}
+.btn-outline:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #f8fafc;
 }
 .btn-outline:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -237,20 +436,24 @@
   background: #2563eb;
   border: none;
   color: #fff;
-  padding: 10px 20px;
+  padding: 10px 18px;
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 14px;
 }
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: #1d4ed8;
 }
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* ==== SIDEBAR ==== */
+/* ====================================================
+   CỘT PHẢI - SIDEBAR
+   ==================================================== */
 .exam-sidebar {
   display: flex;
   flex-direction: column;
@@ -259,22 +462,24 @@
 
 .card {
   background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .exam-qlist-card h3 {
-  margin: 0 0 16px;
-  font-size: 16px;
+  margin: 0 0 14px;
+  font-size: 14px;
   color: #1e293b;
+  font-weight: 700;
 }
 
 .exam-qlist-stats {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 18px;
+  justify-content: space-around;
+  margin-bottom: 0;
 }
+
 .qlist-stat {
   display: flex;
   flex-direction: column;
@@ -282,8 +487,8 @@
   gap: 4px;
 }
 .qlist-stat-value {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
 }
 .qlist-stat-value.chosen {
   color: #2563eb;
@@ -291,69 +496,14 @@
 .qlist-stat-value.blank {
   color: #64748b;
 }
+.qlist-stat-value.flagged-count {
+  color: #f97316;
+}
 .qlist-stat-label {
   font-size: 11px;
   color: #94a3b8;
   font-weight: 600;
-  letter-spacing: 0.4px;
-}
-
-/* ==== QUESTION GRID (4 trạng thái) ==== */
-.exam-qgrid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-.qgrid-btn {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #334155;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.15s ease;
-}
-.qgrid-btn:hover {
-  border-color: #93c5fd;
-}
-
-/* trống = mặc định (trắng, viền xám) */
-
-/* đã chọn = xanh dương */
-.qgrid-btn.answered {
-  background: #2563eb;
-  color: #fff;
-  border: none;
-}
-
-/* xem sau = cam, có chấm đỏ báo hiệu */
-.qgrid-btn.flagged {
-  background: #f97316;
-  color: #fff;
-  border: none;
-}
-.qgrid-btn.flagged::after {
-  content: "";
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ef4444;
-}
-
-/* đang xem = viền xanh đậm, nền nhạt (ưu tiên cao nhất, đè lên trên) */
-.qgrid-btn.current {
-  border: 2px solid #2563eb;
-  background: #eff6ff;
-  color: #2563eb;
-  box-shadow: 0 0 0 2px #dbeafe;
+  letter-spacing: 0.3px;
 }
 
 /* ==== STUDENT CARD ==== */
@@ -383,7 +533,7 @@
   background: #eff6ff;
   color: #1e40af;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
   padding: 14px 16px;
   border-radius: 12px;
 }
@@ -403,7 +553,14 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+.exam-support-btn:hover {
+  background: #1e293b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* ==== LOADING ==== */
@@ -416,9 +573,68 @@
   color: #64748b;
 }
 
-/* ==== RESPONSIVE ==== */
-@media (max-width: 900px) {
+/* ====================================================
+   RESPONSIVE
+   ==================================================== */
+@media (max-width: 1100px) {
   .exam-take-body {
     grid-template-columns: 1fr;
   }
+  .exam-leftnav {
+    display: none;
+  }
 }
+
+@media (max-width: 768px) {
+  .exam-take-shell {
+    padding: 12px 14px 80px;
+  }
+  .exam-take-body {
+    grid-template-columns: 1fr;
+  }
+  .exam-leftnav {
+    display: none;
+  }
+  .exam-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .exam-take-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .exam-take-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .exam-question-card {
+    padding: 20px;
+  }
+  .exam-option:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 500px) {
+  .exam-sidebar {
+    grid-template-columns: 1fr;
+  }
+  .exam-question-top {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .btn-flag {
+    width: 100%;
+    justify-content: center;
+  }
+  .exam-timer-chip {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  .btn-submit-exam {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+}
+
