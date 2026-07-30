@@ -1,0 +1,187 @@
+.exam-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.exam-modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.3);
+  animation: modal-pop 0.18s ease-out;
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- Header ---------- */
+.exam-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 28px 28px 20px 28px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.exam-modal-header h2 {
+  margin: 0 0 6px 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.exam-modal-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.exam-modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.exam-modal-close:hover {
+  color: #334155;
+}
+
+/* ---------- Body ---------- */
+.exam-modal-body {
+  padding: 24px 28px;
+}
+
+.exam-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 480px) {
+  .exam-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.exam-info-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.exam-info-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.exam-info-label {
+  margin: 0 0 3px 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.exam-info-value {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ---------- Quy chế ---------- */
+.exam-rules-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+  font-size: 15px;
+}
+
+.exam-rules ul {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exam-rules li {
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+/* ---------- Footer ---------- */
+.exam-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 28px 28px 28px;
+}
+
+.exam-modal-footer .btn {
+  flex: 1;
+  justify-content: center;
+  padding: 13px 20px;
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+.exam-modal-footer .btn-outline {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  color: #334155;
+}
+
+.exam-modal-footer .btn-outline:hover {
+  background: #f8fafc;
+}
+
+.exam-modal-footer .btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exam-modal-footer .btn-primary:hover {
+  background: #1d4ed8;
+}
+

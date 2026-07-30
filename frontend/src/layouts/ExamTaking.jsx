@@ -1,4 +1,4 @@
-//Trang mà làm bài thi có câu hỏi đáp án để chọn
+// Trang làm bài thi - Bố cục 3 cột với danh sách câu hỏi bên trái
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { InlineMath } from "react-katex";
@@ -13,7 +13,7 @@ const formatTime = (totalSeconds) => {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-// Tách chuỗi có công thức $...$ để render bằng KaTeX, phần còn lại giữ nguyên text
+// Tách chuỗi có công thức $...$ để render bằng KaTeX
 const renderContent = (text) => {
   if (!text) return null;
   const parts = text.split(/(\$[^$]+\$)/g);
@@ -33,10 +33,11 @@ export default function ExamTaking() {
   const [quiz, setQuiz] = useState(null);
   const [attemptId, setAttemptId] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({}); // { [questionId]: optionIndex }
-  const [flagged, setFlagged] = useState({}); // { [questionId]: true }
+  const [answers, setAnswers] = useState({});
+  const [flagged, setFlagged] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   const startQuiz = useCallback(async () => {
     try {
@@ -83,6 +84,7 @@ export default function ExamTaking() {
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
   const totalQuestions = quiz?.questions?.length || 0;
   const blankCount = totalQuestions - answeredCount;
+  const flaggedCount = useMemo(() => Object.keys(flagged).length, [flagged]);
   const progressPct = totalQuestions
     ? Math.round((answeredCount / totalQuestions) * 100)
     : 0;
@@ -114,12 +116,24 @@ export default function ExamTaking() {
     if (index >= 0 && index < totalQuestions) setCurrentIndex(index);
   };
 
+  const getQuestionStatus = (q, idx) => {
+    const isCurrent = idx === currentIndex;
+    const isFlagged = flagged[q._id];
+    const isAnswered = answers[q._id] !== undefined;
+
+    if (isCurrent) return "current";
+    if (isFlagged) return "flagged";
+    if (isAnswered) return "answered";
+    return "blank";
+  };
+
   if (loading) return <div className="exam-loading">Đang tải...</div>;
   if (!quiz || !question)
     return <div className="exam-loading">Không thể tải đề thi</div>;
 
   return (
     <div className="exam-take-shell">
+      {/* HEADER */}
       <header className="exam-take-header">
         <div className="exam-take-brand">
           <span className="exam-take-logo">🎓</span>
@@ -127,97 +141,175 @@ export default function ExamTaking() {
         </div>
         <div className="exam-take-header-actions">
           <div className={`exam-timer-chip ${timeLeft < 60 ? "danger" : ""}`}>
-            ⏱ {formatTime(timeLeft)}
+            <span className="timer-icon">⏱</span>
+            {formatTime(timeLeft)}
           </div>
-          <button className="btn-submit-exam" onClick={handleSubmit}>
+          <button
+            className="btn-submit-exam"
+            onClick={() => {
+              if (window.confirm(
+                blankCount > 0
+                  ? `Bạn còn ${blankCount} câu chưa trả lời. Nộp bài ngay?`
+                  : "Bạn có chắc chắn muốn nộp bài?"
+              )) {
+                handleSubmit();
+              }
+            }}
+          >
             Nộp bài
           </button>
         </div>
       </header>
 
+      {/* PROGRESS BAR */}
       <div className="exam-take-progress">
         <span>
-          Tiến độ làm bài: {answeredCount}/{totalQuestions} câu
+          <strong>Tiến độ:</strong> {answeredCount}/{totalQuestions} câu
         </span>
         <span className="progress-pct">{progressPct}% Hoàn thành</span>
       </div>
       <div className="progress-track-exam">
-        <div className="progress-fill-exam" style={{ width: `${progressPct}%` }} />
+        <div
+          className="progress-fill-exam"
+          style={{ width: `${progressPct}%` }}
+        />
       </div>
 
+      {/* BODY - 3 CỘT */}
       <div className="exam-take-body">
-        <div className="exam-question-card">
-          <div className="exam-question-top">
-            <div>
-              <span className="exam-question-label">
-                CÂU HỎI {currentIndex + 1}
-              </span>
-              <div className="exam-question-tags">
-                {question.topic && <span className="tag-pill">{question.topic}</span>}
-                {question.difficulty && (
-                  <span className="tag-pill">MỨC ĐỘ: {question.difficulty}</span>
-                )}
-              </div>
-            </div>
-            <button
-              className={`btn-flag ${flagged[question._id] ? "active" : ""}`}
-              onClick={toggleFlag}
-            >
-              🔖 {flagged[question._id] ? "Bỏ đánh dấu" : "Xem sau"}
-            </button>
+        {/* ===== CỘT TRÁI: Danh sách câu hỏi dạng vertical ===== */}
+        <aside className="exam-leftnav">
+          <div className="leftnav-header">
+            <h3>Danh sách câu</h3>
           </div>
-
-          <p className="exam-question-content">{renderContent(question.content)}</p>
-
-          {question.image && (
-            <img className="exam-question-image" src={question.image} alt="" />
-          )}
-
-          <div className="exam-options">
-            {question.options.map((option, idx) => {
-              const selected = answers[question._id] === idx;
+          <div className="leftnav-list">
+            {quiz.questions.map((q, idx) => {
+              const status = getQuestionStatus(q, idx);
               return (
-                <label
-                  key={idx}
-                  className={`exam-option ${selected ? "selected" : ""}`}
-                  onClick={() => handleSelectAnswer(idx)}
+                <button
+                  key={q._id}
+                  className={`leftnav-btn leftnav-btn--${status}`}
+                  onClick={() => goTo(idx)}
+                  title={`Câu ${idx + 1}${status === "answered" ? " (Đã chọn)" : ""}${status === "flagged" ? " (Xem sau)" : ""}`}
                 >
-                  <input
-                    type="radio"
-                    name={`q-${question._id}`}
-                    checked={selected}
-                    readOnly
-                    className="exam-option-radio-input"
-                  />
-                  <span>
-                    {String.fromCharCode(65 + idx)}. {renderContent(option.text)}
-                  </span>
-                </label>
+                  <span className="leftnav-num">{idx + 1}</span>
+                  {status === "flagged" && (
+                    <span className="leftnav-flag-icon">🔖</span>
+                  )}
+                  {status === "answered" && (
+                    <span className="leftnav-check-icon">✓</span>
+                  )}
+                </button>
               );
             })}
           </div>
+        </aside>
 
-          <div className="exam-nav-row">
-            <button
-              className="btn-outline"
-              onClick={() => goTo(currentIndex - 1)}
-              disabled={currentIndex === 0}
-            >
-              ← Câu trước
-            </button>
-            <button
-              className="btn-primary"
-              onClick={() => goTo(currentIndex + 1)}
-              disabled={currentIndex === totalQuestions - 1}
-            >
-              Câu tiếp theo →
-            </button>
+        {/* ===== CỘT GIỮA: Nội dung câu hỏi ===== */}
+        <main className="exam-center">
+          <div className="exam-question-card">
+            {/* Đầu câu hỏi */}
+            <div className="exam-question-top">
+              <div>
+                <span className="exam-question-label">
+                  CÂU HỎI {currentIndex + 1} / {totalQuestions}
+                </span>
+                <div className="exam-question-tags">
+                  {question.topic && (
+                    <span className="tag-pill">{question.topic}</span>
+                  )}
+                  {question.difficulty && (
+                    <span className="tag-pill">
+                      MỨC ĐỘ: {question.difficulty}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                className={`btn-flag ${flagged[question._id] ? "active" : ""}`}
+                onClick={toggleFlag}
+              >
+                <span>🔖</span>
+                <span className="flag-text">
+                  {flagged[question._id] ? "Bỏ đánh dấu" : "Xem sau"}
+                </span>
+              </button>
+            </div>
+
+            {/* Nội dung câu hỏi */}
+            <p className="exam-question-content">
+              {renderContent(question.content)}
+            </p>
+
+            {/* Ảnh minh họa */}
+            {question.image && (
+              <img
+                className="exam-question-image"
+                src={question.image}
+                alt="Minh họa câu hỏi"
+              />
+            )}
+
+            {/* Các đáp án */}
+            <div className="exam-options">
+              {question.options.map((option, idx) => {
+                const selected = answers[question._id] === idx;
+                return (
+                  <label
+                    key={idx}
+                    className={`exam-option ${selected ? "selected" : ""}`}
+                    onClick={() => handleSelectAnswer(idx)}
+                  >
+                    <input
+                      type="radio"
+                      name={`q-${question._id}`}
+                      checked={selected}
+                      readOnly
+                      className="exam-option-radio-input"
+                    />
+                    <span className="exam-option-letter">
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    <span className="exam-option-text">
+                      {renderContent(option.text)}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            {/* Điều hướng */}
+            <div className="exam-nav-row">
+              <button
+                className="btn-outline"
+                onClick={() => goTo(currentIndex - 1)}
+                disabled={currentIndex === 0}
+              >
+                ← Câu trước
+              </button>
+
+              <div className="exam-nav-center">
+                <span className="exam-nav-progress-text">
+                  {currentIndex + 1} / {totalQuestions}
+                </span>
+              </div>
+
+              <button
+                className="btn-primary"
+                onClick={() => goTo(currentIndex + 1)}
+                disabled={currentIndex === totalQuestions - 1}
+              >
+                Câu tiếp theo →
+              </button>
+            </div>
           </div>
-        </div>
+        </main>
 
+        {/* ===== CỘT PHẢI: Sidebar thông tin ===== */}
         <aside className="exam-sidebar">
+          {/* Thống kê */}
           <div className="card exam-qlist-card">
-            <h3>Danh sách câu hỏi</h3>
+            <h3>Thống kê</h3>
             <div className="exam-qlist-stats">
               <div className="qlist-stat">
                 <span className="qlist-stat-value chosen">{answeredCount}</span>
@@ -228,51 +320,45 @@ export default function ExamTaking() {
                 <span className="qlist-stat-label">TRỐNG</span>
               </div>
               <div className="qlist-stat">
-                <span className="qlist-stat-value flag">🔖</span>
+                <span className="qlist-stat-value flagged-count">
+                  {flaggedCount}
+                </span>
                 <span className="qlist-stat-label">XEM SAU</span>
               </div>
             </div>
-
-            <div className="exam-qgrid">
-              {quiz.questions.map((q, idx) => {
-                const isCurrent = idx === currentIndex;
-                const isFlagged = flagged[q._id];
-                const isAnswered = answers[q._id] !== undefined;
-
-                let cls = "qgrid-btn";
-                if (isFlagged) cls += " flagged";
-                else if (isAnswered) cls += " answered";
-                if (isCurrent) cls += " current";
-
-                return (
-                  <button key={q._id} className={cls} onClick={() => goTo(idx)}>
-                    {idx + 1}
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
+          {/* Thành viên */}
           <div className="card exam-student-card">
             <img
               className="exam-student-avatar"
-              src={user?.avatar || "https://i.pravatar.cc/64?img=12"}
+              src={
+                user?.avatar ||
+                "https://i.pravatar.cc/64?img=12"
+              }
               alt=""
             />
             <div>
-              <div className="exam-student-name">{user?.name || "Học sinh"}</div>
-              <div className="exam-student-msv">MSSV: {user?.studentId || "—"}</div>
+              <div className="exam-student-name">
+                {user?.name || "Học sinh"}
+              </div>
+              <div className="exam-student-msv">
+                MSSV: {user?.studentId || "—"}
+              </div>
             </div>
           </div>
 
+          {/* Notice */}
           <div className="exam-notice-box">
-            ℹ️ Hệ thống tự động lưu đáp án sau mỗi lần chọn. Nếu gặp sự cố mạng, hãy
-            giữ nguyên màn hình và liên hệ giám thị.
+            ℹ️ Hệ thống tự động lưu đáp án sau mỗi lần chọn. Nếu gặp sự cố mạng,
+            hãy giữ nguyên màn hình và liên hệ giám thị.
           </div>
         </aside>
       </div>
 
+      {/* Nút hỗ trợ */}
       <button className="exam-support-btn">🎧 Hỗ trợ</button>
     </div>
   );
 }
+
