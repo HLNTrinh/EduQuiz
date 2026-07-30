@@ -67,15 +67,9 @@ export const TakeQuizPage = () => {
     }
   };
 
-  const getOptionClass = (question, index) => {
+const getOptionClass = (question, index) => {
     const selectedIndex = answers[question._id];
-    if (selectedIndex === undefined) return 'option';
-    if (index === question.options.findIndex((opt) => opt.isCorrect)) {
-      return 'option correct';
-    }
-    if (index === selectedIndex && !question.options[index].isCorrect) {
-      return 'option incorrect';
-    }
+    if (selectedIndex === index) return 'option selected';
     return 'option';
   };
 
@@ -118,22 +112,6 @@ export const TakeQuizPage = () => {
             </button>
           ))}
         </div>
-        {answers[question._id] !== undefined && (
-          <div className="question-feedback">
-            <div className="feedback-row">
-              <span className="feedback-label">Đáp án đúng:</span>
-              <span className="feedback-value">
-                {String.fromCharCode(65 + question.options.findIndex((opt) => opt.isCorrect))}) {question.options.find((opt) => opt.isCorrect)?.text}
-              </span>
-            </div>
-            {question.explanation && (
-              <div className="feedback-row feedback-explanation">
-                <span className="feedback-label">Giải thích:</span>
-                <span className="feedback-value">{question.explanation}</span>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="quiz-navigation">
