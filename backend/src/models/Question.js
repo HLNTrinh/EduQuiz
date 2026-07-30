@@ -21,8 +21,7 @@ const questionSchema = new mongoose.Schema(
     ],
     category: {
       type: String,
-      required: true,
-      enum: ['Math', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography', 'English', 'Other'],
+      required: [true, 'Vui lòng chọn môn học'],
     },
     difficulty: {
       type: String,
