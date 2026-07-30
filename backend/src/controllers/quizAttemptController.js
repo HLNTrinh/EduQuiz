@@ -41,7 +41,7 @@ exports.startQuizAttempt = async (req, res) => {
 
     await attempt.save();
 
-    // Trả lại quiz data (không gồm đáp án đúng)
+    // Trả lại quiz data (có giải thích và đáp án đúng để hiển thị feedback cho học sinh)
     const quizData = {
       _id: quiz._id,
       title: quiz.title,
@@ -52,10 +52,11 @@ exports.startQuizAttempt = async (req, res) => {
         content: q.questionId.content,
         options: q.questionId.options.map(opt => ({
           text: opt.text,
-          // không trả lại isCorrect
+          isCorrect: opt.isCorrect,
         })),
         category: q.questionId.category,
         difficulty: q.questionId.difficulty,
+        explanation: q.questionId.explanation,
         order: q.order,
       })),
     };
@@ -213,8 +214,9 @@ exports.getStudentAttempts = async (req, res) => {
 exports.getTeacherAttempts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-
+    const userId = req.user.id || req.user.userId;
     const quizzes = await Quiz.find({ createdBy: req.user.id }).select('_id');
+    const quizzes = await Quiz.find({ createdBy: userId }).select('_id');
     const quizIds = quizzes.map((quiz) => quiz._id);
 
     const attempts = await QuizAttempt.find({ quizId: { $in: quizIds } })
