@@ -23,7 +23,7 @@ export const ResultPage = () => {
  
   const [loading, setLoading] = useState(Boolean(attemptId));
   const [error, setError] = useState(null);
-
+  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
   const loadTeacherAttempts = async () => {
     try {
       setLoading(true);
