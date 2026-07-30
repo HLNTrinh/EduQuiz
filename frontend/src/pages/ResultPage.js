@@ -88,6 +88,8 @@ export const ResultPage = () => {
     fetchResult();
   }, [attemptId]);
 
+
+
   const getScoreColor = (percentage) => {
     if (percentage >= 80) return '#10b981';
     if (percentage >= 60) return '#f59e0b';
@@ -98,6 +100,14 @@ export const ResultPage = () => {
     if (percentage >= 80) return 'Xuất sắc! 🎉';
     if (percentage >= 60) return 'Khá tốt! 👏';
     return 'Cần cố gắng hơn 💪';
+  };
+
+  const scrollToQuestion = (index) => {
+    setActiveQuestionIndex(index);
+    const el = document.getElementById(`result-question-${index}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   };
 
   if (isTeacherOverview) {
@@ -433,7 +443,7 @@ export const ResultPage = () => {
         </div>
       </div>
 
-      {/* Progress Bar */}
+{/* Progress Bar */}
       <div className="progress-section">
         <div className="progress-bar">
           <div
@@ -446,18 +456,42 @@ export const ResultPage = () => {
         </div>
       </div>
 
-      {/* Detailed Answers */}
+      {/* Question Overview Grid - Giống thi trắc nghiệm trên máy tính */}
+      <div className="result-qgrid-section">
+        <div className="qgrid-header">
+          <h3>📋 Tổng quan câu hỏi</h3>
+          <div className="qgrid-legend">
+            <span><span className="dot-q correct"></span> Đúng ({result.correctAnswers})</span>
+            <span><span className="dot-q incorrect"></span> Sai ({result.totalQuestions - result.correctAnswers})</span>
+          </div>
+        </div>
+        <div className="result-qgrid">
+          {result.answers.map((answer, index) => (
+            <button
+              key={index}
+              className={`qgrid-result-btn ${answer.isCorrect ? 'correct' : 'incorrect'} ${activeQuestionIndex === index ? 'active' : ''}`}
+              onClick={() => scrollToQuestion(index)}
+              title={`Câu ${index + 1}: ${answer.isCorrect ? 'Đúng' : 'Sai'}`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+
+{/* Detailed Answers */}
       <div className="answer-review-section">
-        <h3>Chi tiết câu trả lời</h3>
+        <h3>📝 Chi tiết câu trả lời</h3>
         <div className="answers-list">
           {result.answers.map((answer, index) => (
             <div
               key={index}
+              id={`result-question-${index}`}
               className={`answer-item ${answer.isCorrect ? 'correct' : 'incorrect'}`}
             >
               <div className="answer-header">
                 <div className="question-number">
-                  Câu {index + 1}
+                  <span>Câu {index + 1}</span>
                   {answer.isCorrect ? (
                     <span className="icon-correct">✓</span>
                   ) : (
@@ -466,9 +500,9 @@ export const ResultPage = () => {
                 </div>
                 <div className="answer-status">
                   {answer.isCorrect ? (
-                    <span className="status correct">Đúng</span>
+                    <span className="status correct">✅ Đúng</span>
                   ) : (
-                    <span className="status incorrect">Sai</span>
+                    <span className="status incorrect">❌ Sai</span>
                   )}
                 </div>
               </div>
@@ -491,38 +525,43 @@ export const ResultPage = () => {
 
               <div className="options-list">
                 <p className="options-label"><strong>Các lựa chọn:</strong></p>
-                {answer.questionId.options.map((option, optIndex) => (
-                  <div
-                    key={optIndex}
-                    className={`option ${
-                      optIndex === answer.selectedOptionIndex
-                        ? answer.isCorrect
-                          ? 'selected-correct'
-                          : 'selected-incorrect'
-                        : option.isCorrect
-                        ? 'correct-answer'
-                        : ''
-                    }`}
-                  >
-                    <div className="option-label">
-                      <input
-                        type="radio"
-                        disabled
-                        checked={optIndex === answer.selectedOptionIndex}
-                      />
-                      <span className="option-text">{option.text}</span>
+                {answer.questionId.options.map((option, optIndex) => {
+                  const isSelected = optIndex === answer.selectedOptionIndex;
+                  const isCorrectAnswer = option.isCorrect;
+                  
+                  let optionClass = 'option';
+                  let iconText = '';
+                  
+                  if (isSelected && answer.isCorrect) {
+                    optionClass += ' selected-correct';
+                    iconText = '✅ Bạn chọn (Đúng)';
+                  } else if (isSelected && !answer.isCorrect) {
+                    optionClass += ' selected-incorrect';
+                    iconText = '❌ Bạn chọn (Sai)';
+                  } else if (isCorrectAnswer && !isSelected) {
+                    optionClass += ' correct-answer';
+                    iconText = '✅ Đáp án đúng';
+                  }
+                  
+                  return (
+                    <div
+                      key={optIndex}
+                      className={optionClass}
+                    >
+                      <div className="option-label">
+                        <input
+                          type="radio"
+                          disabled
+                          checked={isSelected}
+                        />
+                        <span className="option-text">{option.text}</span>
+                      </div>
+                      {iconText && (
+                        <span className="option-icon">{iconText}</span>
+                      )}
                     </div>
-                    {optIndex === answer.selectedOptionIndex && answer.isCorrect && (
-                      <span className="option-icon">✓ Bạn chọn (Đúng)</span>
-                    )}
-                    {optIndex === answer.selectedOptionIndex && !answer.isCorrect && (
-                      <span className="option-icon">✗ Bạn chọn (Sai)</span>
-                    )}
-                    {option.isCorrect && optIndex !== answer.selectedOptionIndex && (
-                      <span className="option-icon">✓ Đáp án đúng</span>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
