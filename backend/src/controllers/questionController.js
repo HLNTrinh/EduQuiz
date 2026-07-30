@@ -1,4 +1,5 @@
 const Question = require('../models/Question');
+const Subject = require('../models/Subject');
 const mongoose = require('mongoose');
 // Tạo câu hỏi
 exports.createQuestion = async (req, res) => {
@@ -15,10 +16,18 @@ exports.createQuestion = async (req, res) => {
       return res.status(400).json({ message: 'Phải có đúng 1 đáp án đúng' });
     }
 
+    // Nếu category là ObjectId của Subject, lấy tên subject
+    let categoryName = '';
+    if (category) {
+      const subject = await Subject.findById(category);
+      if (subject) categoryName = subject.name;
+    }
+
     const question = new Question({
       content,
       options,
-      category,
+      category: category || null,
+      categoryName,
       difficulty,
       explanation,
       createdBy: req.user.id || req.user.userId,
@@ -94,7 +103,7 @@ exports.getQuestions = async (req, res) => {
         total,
         page: Number(page),
         limit: Number(limit),
-        pages: Math.ceil(total / limit),
+pages: Math.ceil(total / limit),
       },
     });
 
@@ -146,7 +155,14 @@ exports.updateQuestion = async (req, res) => {
       }
     }
 
-    Object.assign(question, { content, options, category, difficulty, explanation });
+    // Nếu category thay đổi, cập nhật categoryName
+    let categoryName = question.categoryName;
+    if (category && category !== question.category?.toString()) {
+      const subject = await Subject.findById(category);
+      if (subject) categoryName = subject.name;
+    }
+
+    Object.assign(question, { content, options, category, difficulty, explanation, categoryName });
     await question.save();
 
     res.json({ message: 'Cập nhật câu hỏi thành công', data: question });
@@ -175,11 +191,11 @@ exports.deleteQuestion = async (req, res) => {
   }
 };
 
-// Lấy danh sách category
+// Lấy danh sách category (từ Subject model)
 exports.getCategories = async (req, res) => {
   try {
-    const categories = ['Khai phá dữ liệu', 'Công nghệ phần mềm', 'Lập trình thiết bị di động','Other'];
-    res.json(categories);
+const subjects = await Subject.find({ status: 'active' }).select('_id name code').sort({ name: 1 }).lean();
+    res.json(subjects);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }

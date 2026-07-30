@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { questionService } from '../services/authService';
+import { questionService, subjectService } from '../services/authService';
 import '../styles/QuestionsBank.css';
 
 const emptyForm = {
   content: '',
-  category: 'Math',
+  category: '',
   difficulty: 'medium',
   explanation: '',
   options: [
@@ -29,8 +29,21 @@ export const QuestionManager = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [subjectList, setSubjectList] = useState([]);
 
-  const subjects = ['Tất cả', 'Toán', 'Vật lý', 'Hóa học', 'Sinh học', 'Lịch sử', 'Địa lý', 'Tiếng anh', 'Khác'];
+  const tabs = useMemo(() => {
+    return ['Tất cả', ...subjectList.map((s) => s._id)];
+  }, [subjectList]);
+
+  const loadSubjects = async () => {
+    try {
+      const res = await subjectService.getSubjects();
+      const list = Array.isArray(res) ? res : [];
+      setSubjectList(list);
+    } catch (error) {
+      // silent
+    }
+  };
 
   const loadQuestions = async () => {
     try {
@@ -46,8 +59,14 @@ export const QuestionManager = () => {
   };
 
   useEffect(() => {
+    loadSubjects();
     loadQuestions();
   }, []);
+
+  const getSubjectName = (id) => {
+    const found = subjectList.find((s) => s._id === id);
+    return found ? found.name : id || 'Khác';
+  };
 
   const filteredQuestions = useMemo(() => {
     return questions
@@ -64,7 +83,7 @@ export const QuestionManager = () => {
       .sort((a, b) => {
         const aTime = new Date(a.createdAt || 0).getTime();
         const bTime = new Date(b.createdAt || 0).getTime();
-        if (sortOrder === 'Mới nhất') {
+if (sortOrder === 'Mới nhất') {
           return bTime - aTime;
         }
         return aTime - bTime;
@@ -133,9 +152,7 @@ export const QuestionManager = () => {
   return (
     <div className="dash-shell">
       <aside className="sidebar">
-      {/* LOGO SIDEBAR */}
       <div className="sidebar-logo">
-
         <svg
           width="170"
           height="48"
@@ -143,78 +160,22 @@ export const QuestionManager = () => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Icon */}
-          <rect
-            x="0"
-            y="5"
-            width="50"
-            height="50"
-            rx="14"
-            fill="url(#paint0_linear)"
-          />
-
-          <path
-            d="M25 18L36 24L25 30L14 24L25 18Z"
-            fill="white"
-          />
-
-          <path
-            d="M18 28.5V33C18 35.5 21 37 25 37C29 37 32 35.5 32 33V28.5"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-
-          <path
-            d="M33 25.5V32"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-
-          {/* Tên EduQuiz */}
-          <text
-            x="65"
-            y="37"
-            fontFamily="Inter, sans-serif"
-            fontSize="26"
-            fontWeight="800"
-            fill="#0F172A"
-          >
-            Edu
-            <tspan fill="#2563EB">Quiz</tspan>
+          <rect x="0" y="5" width="50" height="50" rx="14" fill="url(#paint0_linear)" />
+          <path d="M25 18L36 24L25 30L14 24L25 18Z" fill="white" />
+          <path d="M18 28.5V33C18 35.5 21 37 25 37C29 37 32 35.5 32 33V28.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M33 25.5V32" stroke="white" strokeWidth="2" strokeLinecap="round" />
+<text x="65" y="37" fontFamily="Inter, sans-serif" fontSize="26" fontWeight="800" fill="#0F172A">
+            Edu<tspan fill="#2563EB">Quiz</tspan>
           </text>
-
-          {/* Gradient */}
           <defs>
-            <linearGradient
-              id="paint0_linear"
-              x1="0"
-              y1="5"
-              x2="50"
-              y2="55"
-              gradientUnits="userSpaceOnUse"
-            >
+            <linearGradient id="paint0_linear" x1="0" y1="5" x2="50" y2="55" gradientUnits="userSpaceOnUse">
               <stop stopColor="#3B82F6" />
               <stop offset="1" stopColor="#1D4ED8" />
             </linearGradient>
           </defs>
         </svg>
-
-          <span className="sidebar-subtitle">
-            EduQuiz-Hệ thống tri thức
-          </span>  
-        </div>      
-{/*
-        <div className="sidebar-brand">
-          <div className="sidebar-logo">🎓</div>
-          <div>
-            <p className="sidebar-brand-name">EduQuiz</p>
-            <p className="sidebar-brand-sub">GIÁO VIÊN</p>
-          </div>
-
-        </div>*/}
-
+        <span className="sidebar-subtitle">EduQuiz-Hệ thống tri thức</span>
+      </div>
         <nav className="sidebar-nav">
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/dashboard'); }}>
             <span className="sidebar-icon">▦</span> Tổng quan
@@ -225,7 +186,6 @@ export const QuestionManager = () => {
           <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
             <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
           </a>
-
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
             <span className="sidebar-icon">📊</span> Kết quả
           </a>
@@ -233,7 +193,6 @@ export const QuestionManager = () => {
             <span className="sidebar-icon">👥</span> Thành viên
           </a>
         </nav>
-
         <div className="sidebar-bottom">
           <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/settings'); }}>
             <span className="sidebar-icon">⚙️</span> Cài đặt
@@ -263,7 +222,7 @@ export const QuestionManager = () => {
             <div className="question-form-header">
               <div>
                 <h3>{formData._id ? 'Chỉnh sửa câu hỏi' : 'Thêm câu hỏi mới'}</h3>
-                <p className="panel-subtitle">Nhập câu hỏi trực tiếp lên giao diện, không cần bật hộp thoại.</p>
+<p className="panel-subtitle">Nhập câu hỏi trực tiếp lên giao diện, không cần bật hộp thoại.</p>
               </div>
               <button className="btn-outline btn-small" type="button" onClick={() => setShowForm(false)}>Ẩn form</button>
             </div>
@@ -283,8 +242,9 @@ export const QuestionManager = () => {
                 value={formData.category}
                 onChange={(event) => setFormData({ ...formData, category: event.target.value })}
               >
-                {subjects.filter((subject) => subject !== 'Tất cả').map((subject) => (
-                  <option key={subject} value={subject}>{subject}</option>
+                <option value="">-- Chọn môn học --</option>
+                {subjectList.map((sub) => (
+                  <option key={sub._id} value={sub._id}>{sub.name}</option>
                 ))}
               </select>
 
@@ -330,7 +290,7 @@ export const QuestionManager = () => {
                 className="form-input"
                 rows="2"
                 value={formData.explanation}
-                onChange={(event) => setFormData({ ...formData, explanation: event.target.value })}
+onChange={(event) => setFormData({ ...formData, explanation: event.target.value })}
               />
 
               <div className="question-form-actions">
@@ -371,13 +331,19 @@ export const QuestionManager = () => {
 
         <section className="question-bank-toolbar question-filter-panel">
           <div className="question-filter-row">
-            {subjects.map((subject) => (
+            <button
+              className={`filter-pill ${selectedSubject === 'Tất cả' ? 'active' : ''}`}
+              onClick={() => setSelectedSubject('Tất cả')}
+            >
+              Tất cả
+            </button>
+            {subjectList.map((sub) => (
               <button
-                key={subject}
-                className={`filter-pill ${selectedSubject === subject ? 'active' : ''}`}
-                onClick={() => setSelectedSubject(subject)}
+                key={sub._id}
+                className={`filter-pill ${selectedSubject === sub._id ? 'active' : ''}`}
+                onClick={() => setSelectedSubject(sub._id)}
               >
-                {subject}
+                {sub.name}
               </button>
             ))}
           </div>
@@ -398,17 +364,16 @@ export const QuestionManager = () => {
                   <th>Độ khó</th>
                   <th>Ngày tạo</th>
                   <th>Thao tác</th>
-                </tr>
+</tr>
               </thead>
               <tbody>
                 {filteredQuestions.map((item) => (
                   <tr key={item._id || item.id}>
                     <td className="question-bank-row-title">
                       <div>{item.content}</div>
-                      
                     </td>
                     <td>
-                      <span className="category-badge">{item.category}</span>
+                      <span className="category-badge">{getSubjectName(item.category)}</span>
                     </td>
                     <td>
                       <span className={`difficulty-pill difficulty-pill--${item.difficulty === 'easy' ? 'easy' : item.difficulty === 'hard' ? 'hard' : 'medium'}`}>
@@ -428,7 +393,6 @@ export const QuestionManager = () => {
             </table>
           )}
         </div>
-
       </main>
     </div>
   );

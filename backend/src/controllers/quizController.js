@@ -1,10 +1,12 @@
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
+const Class = require('../models/Class');
+const QuizAssignment = require('../models/QuizAssignment');
 
 // Tạo đề thi
 exports.createQuiz = async (req, res) => {
   try {
-    const { title, description, questions, duration, maxAttempts, startDate, endDate, showAnswerAfter, totalPoints, passingScore } = req.body;
+    const { title, description, questions, duration, maxAttempts, startDate, endDate, showAnswerAfter, totalPoints, passingScore, subject, class: classId } = req.body;
 
     const normalizedQuestions = (questions || []).map((question, index) => ({
       questionId: question.questionId || question._id,
@@ -33,6 +35,8 @@ exports.createQuiz = async (req, res) => {
       totalPoints: Number(totalPoints || normalizedQuestions.length * 10),
       passingScore: Number(passingScore || 50),
       createdBy: req.user.id || req.user.userId,
+      subject: subject || null,
+      class: classId || null,
     });
 
     await quiz.save();
@@ -47,9 +51,23 @@ exports.getQuizzes = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
-    const filter = req.user.role === 'student'
-      ? { isPublished: true }
-      : { createdBy: req.user.id };
+    let filter = {};
+
+    if (req.user.role === 'student') {
+      // Student: tìm tất cả class có chứa student này
+      const studentClasses = await Class.find({ students: req.user.id }).lean();
+      const classIds = studentClasses.map((c) => c._id);
+      
+      if (classIds.length > 0) {
+        // Lấy các quiz published và có class nằm trong danh sách class của student
+        filter = { isPublished: true, class: { $in: classIds } };
+      } else {
+        filter = { _id: { $in: [] }, isPublished: true };
+      }
+    } else {
+      // Teacher/Admin: lấy quiz do họ tạo
+      filter = { createdBy: req.user.id };
+    }
 
     const quizzes = await Quiz.find(filter)
       .populate('createdBy', 'name email')
@@ -57,8 +75,7 @@ exports.getQuizzes = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
-
-    const total = await Quiz.countDocuments(filter);
+const total = await Quiz.countDocuments(filter);
 
     res.json({
       data: quizzes,
@@ -103,7 +120,7 @@ exports.updateQuiz = async (req, res) => {
       return res.status(403).json({ message: 'Bạn không có quyền chỉnh sửa đề thi này' });
     }
 
-    const { title, description, questions, duration, maxAttempts, startDate, endDate, showAnswerAfter, totalPoints, passingScore } = req.body;
+    const { title, description, questions, duration, maxAttempts, startDate, endDate, showAnswerAfter, totalPoints, passingScore, subject, class: classId } = req.body;
 
     Object.assign(quiz, {
       title,
@@ -116,6 +133,8 @@ exports.updateQuiz = async (req, res) => {
       showAnswerAfter,
       totalPoints,
       passingScore,
+      subject: subject || null,
+      class: classId || null,
     });
 
     await quiz.save();
@@ -158,6 +177,27 @@ exports.publishQuiz = async (req, res) => {
 
     quiz.isPublished = true;
     await quiz.save();
+// Nếu đề thi có chọn lớp → tạo QuizAssignment cho tất cả học sinh trong lớp đó
+    if (quiz.class) {
+      const classDoc = await Class.findById(quiz.class).populate('students', '_id');
+      
+      if (classDoc && classDoc.students && classDoc.students.length > 0) {
+        const studentIds = classDoc.students.map((s) => s._id);
+
+        // Xóa assignment cũ nếu có
+        await QuizAssignment.deleteMany({ quizId: quiz._id, teacherId: req.user.id || req.user.userId });
+
+        // Tạo assignment mới
+        const assignment = new QuizAssignment({
+          quizId: quiz._id,
+          teacherId: req.user.id || req.user.userId,
+          studentIds,
+          assignedDate: new Date(),
+        });
+        await assignment.save();
+      }
+    }
+
     res.json({ message: 'Công bố đề thi thành công', data: quiz });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });

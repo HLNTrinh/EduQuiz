@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { questionService, quizService } from '../services/authService';
+import { questionService, quizService, subjectService, classService } from '../services/authService';
 import '../styles/Exam.css';
 
 const toLocalDatetimeInput = (date) => {
@@ -37,10 +37,14 @@ export const ExamManager = () => {
     content: '',
     options: ['', '', '', ''],
     correctIndex: 0,
-    category: 'Other',
+    category: '',
     difficulty: 'medium',
   });
   const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [subjects, setSubjects] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedClass, setSelectedClass] = useState('');
 
   const loadData = async () => {
     try {
@@ -58,12 +62,26 @@ export const ExamManager = () => {
     }
   };
 
+  const loadSubjectsAndClasses = async () => {
+    try {
+      const [subjectRes, classRes] = await Promise.all([
+        subjectService.getSubjects().catch(() => []),
+        user?._id ? classService.getTeacherClasses(user._id).catch(() => []) : Promise.resolve([]),
+      ]);
+      setSubjects(Array.isArray(subjectRes) ? subjectRes : []);
+      setClasses(Array.isArray(classRes) ? classRes : []);
+    } catch (error) {
+      // silent
+    }
+  };
+
   useEffect(() => {
     loadData();
+    loadSubjectsAndClasses();
   }, []);
 
   const filteredQuestions = useMemo(() => {
-    const query = searchQuery.toLowerCase();
+const query = searchQuery.toLowerCase();
     return questions.filter((item) => {
       const text = `${item.content || ''} ${item.category || ''} ${item.difficulty || ''}`.toLowerCase();
       return text.includes(query);
@@ -87,7 +105,7 @@ export const ExamManager = () => {
       content: '',
       options: ['', '', '', ''],
       correctIndex: 0,
-      category: 'Other',
+      category: '',
       difficulty: 'medium',
     });
     setShowQuestionForm(false);
@@ -101,7 +119,7 @@ export const ExamManager = () => {
         content: question.content || '',
         options: (question.options || []).map((o) => o.text || '') || ['', '', '', ''],
         correctIndex: (question.options || []).findIndex((o) => o.isCorrect) >= 0 ? (question.options || []).findIndex((o) => o.isCorrect) : 0,
-        category: question.category || 'Other',
+        category: question.category || '',
         difficulty: question.difficulty || 'medium',
       });
     } else {
@@ -110,7 +128,7 @@ export const ExamManager = () => {
         content: '',
         options: ['', '', '', ''],
         correctIndex: 0,
-        category: 'Other',
+        category: '',
         difficulty: 'medium',
       });
     }
@@ -150,7 +168,7 @@ export const ExamManager = () => {
       });
 
       if (editingQuestionId) {
-        setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._id ? { ...item, ...savedQuestion } : item)));
+setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._id ? { ...item, ...savedQuestion } : item)));
         setMessage('Đã cập nhật câu hỏi thành công.');
       } else {
         setSelectedQuestions((prev) => [...prev, { ...savedQuestion, score: 10 }]);
@@ -196,6 +214,8 @@ export const ExamManager = () => {
         showAnswerAfter: Boolean(formData.showAnswerAfter),
         totalPoints,
         passingScore: Number(formData.passingScore || 50),
+        subject: selectedSubject || undefined,
+        class: selectedClass || undefined,
       };
 
       const response = formData._id
@@ -210,6 +230,8 @@ export const ExamManager = () => {
       });
       setSelectedQuestions([]);
       setFormData(buildInitialForm());
+      setSelectedSubject('');
+      setSelectedClass('');
       setMessage(response?.message || 'Tạo đề thi thành công.');
       return createdQuiz;
     } catch (error) {
@@ -231,11 +253,13 @@ export const ExamManager = () => {
         description: q.description || '',
         duration: q.duration?.toString() || '45',
         maxAttempts: q.maxAttempts?.toString() || '1',
-        startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInput(new Date()),
+startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInput(new Date()),
         endDate: q.endDate ? toLocalDatetimeInput(q.endDate) : toLocalDatetimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
         showAnswerAfter: Boolean(q.showAnswerAfter),
         passingScore: q.passingScore?.toString() || '50',
       });
+      setSelectedSubject(q.subject || '');
+      setSelectedClass(q.class || '');
 
       // map questions to full objects from questions list
       const selected = (q.questions || []).map((it) => {
@@ -331,7 +355,7 @@ export const ExamManager = () => {
 
           {/* Gradient */}
           <defs>
-            <linearGradient
+<linearGradient
               id="paint0_linear"
               x1="0"
               y1="5"
@@ -399,8 +423,7 @@ export const ExamManager = () => {
             }}>Xuất bản & Giao bài</button>
           </div>
         </header>
-
-        {message ? <div className="notice">{message}</div> : null}
+{message ? <div className="notice">{message}</div> : null}
 
         <form id="exam-form" onSubmit={handleSubmit}>
           <section className="exam-form-grid">
@@ -462,6 +485,32 @@ export const ExamManager = () => {
               />
             </div>
             <div className="exam-form-card">
+              <label className="field-label">Môn học</label>
+              <select
+                className="form-input"
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              >
+                <option value="">-- Chọn môn học --</option>
+                {subjects.map((sub) => (
+<option key={sub._id} value={sub._id}>{sub.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="exam-form-card">
+              <label className="field-label">Lớp</label>
+              <select
+                className="form-input"
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+              >
+                <option value="">-- Chọn lớp --</option>
+                {classes.map((cls) => (
+                  <option key={cls._id} value={cls._id}>{cls.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="exam-form-card">
               <label className="field-label">Điểm đạt</label>
               <input
                 className="form-input"
@@ -515,7 +564,7 @@ export const ExamManager = () => {
                 <p className="panel-subtitle">Chọn câu hỏi phù hợp để thêm vào đề thi.</p>
               </div>
               <div className="panel-actions">
-                <div className="panel-badge">{questions.length.toLocaleString()} câu</div>
+<div className="panel-badge">{questions.length.toLocaleString()} câu</div>
                 <input
                   className="search-input"
                   type="text"
@@ -573,14 +622,10 @@ export const ExamManager = () => {
                     value={newQuestion.category}
                     onChange={(e) => setNewQuestion({ ...newQuestion, category: e.target.value })}
                   >
-                    <option>Toán</option>
-                    <option>Vật lý</option>
-                    <option>Hóa học</option>
-                    <option>Sinh học</option>
-                    <option>Lịch sử</option>
-                    <option>Địa lý</option>
-                    <option>Tiếng anh</option>
-                    <option>Khác</option>
+                    <option value="">-- Chọn môn học --</option>
+                    {subjects.map((sub) => (
+                      <option key={sub._id} value={sub._id}>{sub.name}</option>
+))}
                   </select>
                   <select
                     className="form-input"
@@ -640,7 +685,7 @@ export const ExamManager = () => {
                   <div className="stat-pill stat-pill--blue">{totalPoints.toFixed(1)} điểm</div>
                 </div>
                 <div className="panel-actions-buttons">
-                  <button
+<button
                     className="btn-outline btn-small"
                     type="button"
                     onClick={() => setSelectedQuestions((prev) => {
@@ -706,7 +751,7 @@ export const ExamManager = () => {
                     <td>{item.questions?.length || 0}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}>Sửa</button>
+<button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}>Sửa</button>
                         {!item.isPublished && (
                           <button className="btn-outline btn-small" type="button" onClick={() => handlePublishQuiz(item._id || item.id)}>Công bố</button>
                         )}

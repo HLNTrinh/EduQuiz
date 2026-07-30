@@ -46,6 +46,20 @@ export const quizService = {
   publishQuiz: (id) => api.post(`/quizzes/${id}/publish`),
 };
 
+export const subjectService = {
+  getSubjects: async () => {
+    const response = await api.get('/subjects');
+    return response?.data ?? response ?? [];
+  },
+};
+
+export const classService = {
+  getTeacherClasses: async (teacherId) => {
+    const response = await api.get(`/classes/teacher/${teacherId}`);
+    return response?.data ?? response ?? [];
+  },
+};
+
 export const quizAttemptService = {
   startQuizAttempt: (quizId) => api.post(`/quiz-attempts/start/${quizId}`),
   saveAnswer: (attemptId, data) => api.post(`/quiz-attempts/${attemptId}/answer`, data),

@@ -63,6 +63,16 @@ const quizSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    subject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subject',
+      default: null,
+    },
+    class: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Class',
+      default: null,
+    },
   },
   { timestamps: true }
 );

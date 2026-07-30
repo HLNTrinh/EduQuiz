@@ -20,9 +20,13 @@ const questionSchema = new mongoose.Schema(
       },
     ],
     category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subject',
+      default: null,
+    },
+    categoryName: {
       type: String,
-      required: true,
-      enum: ['Math', 'Physics', 'Chemistry', 'Biology', 'History', 'Geography', 'English', 'Other'],
+      default: '',
     },
     difficulty: {
       type: String,
