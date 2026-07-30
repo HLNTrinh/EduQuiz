@@ -105,6 +105,20 @@ const login = async (email, password, rememberMe = false) => {
     window.location.href = redirectPath;
   };
 
+  // Cập nhật thông tin user trong context
+  const updateUser = (updatedData) => {
+    setUser((prev) => ({ ...prev, ...updatedData }));
+
+    // Cập nhật lại trong storage
+    const localToken = localStorage.getItem("token");
+    const storage = localToken ? localStorage : sessionStorage;
+    const storedUser = storage.getItem("user");
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      storage.setItem("user", JSON.stringify({ ...parsed, ...updatedData }));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -113,6 +127,7 @@ const login = async (email, password, rememberMe = false) => {
         login,
         register,
         logout,
+        updateUser,
       }}
     >
       {!loading && children}

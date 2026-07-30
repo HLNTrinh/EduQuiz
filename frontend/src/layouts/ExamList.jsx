@@ -33,17 +33,35 @@ export default function ExamList() {
     fetchQuizzes()
   }, [])
 
+  // Map category from English to Vietnamese to match tabs
+  const subjectMap = {
+    'Math': 'Toán học',
+    'Physics': 'Vật lý',
+    'Chemistry': 'Hóa học',
+    'Biology': 'Sinh học',
+    'History': 'Lịch sử',
+    'Geography': 'Địa lý',
+    'English': 'Tiếng Anh',
+    'Literature': 'Ngữ văn',
+    'Other': 'Bài thi',
+  }
+
   const filteredExams = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
     return quizzes
-      .map((quiz) => ({
-        ...quiz,
-        subject: quiz.questions?.[0]?.category || 'Bài thi',
-        meta: quiz.description || 'Bài thi trực tuyến',
-        questionCount: quiz.questions?.length || 0,
-        time: `${quiz.duration || 0} phút`,
-        quizId: quiz._id,
-      }))
+      .map((quiz) => {
+        // Get category from populated questionId object
+        const firstQuestion = quiz.questions?.[0]
+        const rawCategory = firstQuestion?.questionId?.category || firstQuestion?.category || 'Other'
+        return {
+          ...quiz,
+          subject: subjectMap[rawCategory] || 'Bài thi',
+          meta: quiz.description || 'Bài thi trực tuyến',
+          questionCount: quiz.questions?.length || 0,
+          time: `${quiz.duration || 0} phút`,
+          quizId: quiz._id,
+        }
+      })
       .filter((e) => {
         const matchesTab =
           activeTab === 'Tất cả' || e.subject === activeTab

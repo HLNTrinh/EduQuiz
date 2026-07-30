@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { authService } from '../services/services';
 import '../styles/Profile.css';
 
+const ROLE_LABELS = {
+  student: 'Học sinh',
+  teacher: 'Giáo viên',
+  admin: 'Quản trị viên',
+};
+
+const ROLE_BADGE = {
+  student: 'HỌC SINH',
+  teacher: 'GIÁO VIÊN',
+  admin: 'QUẢN TRỊ VIÊN',
+};
+
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   // State dữ liệu người dùng
   const [profileData, setProfileData] = useState({
@@ -14,6 +27,11 @@ export default function Profile() {
     role: '',
     joinDate: '',
   });
+
+  // State cho chỉnh sửa thông tin
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
 
   const [emailNotif, setEmailNotif] = useState(true);
   const [pushNotif, setPushNotif] = useState(false);
@@ -28,28 +46,47 @@ export default function Profile() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
 
-  // Fetch thông tin profile
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'Chưa cập nhật';
+    const d = new Date(dateStr);
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  };
+
+  // Fetch thông tin profile từ API
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user?.id) return;
 
       setLoading(true);
       try {
-        // TODO: Thay bằng API thật
-        // const res = await userAPI.getProfile(user.id);
-
-        // Dữ liệu mẫu
+        const data = await authService.getMe();
+        const userData = data?.user || data;
         setProfileData({
-          name: user?.name || "Nguyễn Văn A",
-          avatar: user?.avatar || "https://i.pravatar.cc/200?img=33",
-          email: "nguyenvana@eduquiz.vn",
-          phone: "090 123 4567",
-          role: "Quản lý hệ thống (Super Admin)",
-          joinDate: "15/05/2023",
+          name: userData.name || '',
+          avatar: userData.avatar || 'https://i.pravatar.cc/200?img=33',
+          email: userData.email || '',
+          phone: userData.phone || '',
+          role: ROLE_LABELS[userData.role] || '',
+          joinDate: formatDate(userData.joinDate || userData.createdAt),
         });
+        setEditName(userData.name || '');
+        setEditPhone(userData.phone || '');
       } catch (error) {
         console.error("Lỗi tải profile:", error);
+        // Fallback: dùng dữ liệu từ context
+        setProfileData({
+          name: user?.name || '',
+          avatar: user?.avatar || 'https://i.pravatar.cc/200?img=33',
+          email: user?.email || '',
+          phone: user?.phone || '',
+          role: ROLE_LABELS[user?.role] || '',
+          joinDate: formatDate(user?.joinDate || user?.createdAt),
+        });
+        setEditName(user?.name || '');
+        setEditPhone(user?.phone || '');
       } finally {
         setLoading(false);
       }
@@ -58,21 +95,60 @@ export default function Profile() {
     fetchProfile();
   }, [user?.id]);
 
+  // Cập nhật thông tin cá nhân
+  const handleUpdateProfile = async () => {
+    setSaving(true);
+    try {
+      const data = await authService.updateProfile({
+        name: editName,
+        phone: editPhone,
+      });
+      const updated = data?.user || data;
+      setProfileData((prev) => ({
+        ...prev,
+        name: updated.name || editName,
+        phone: updated.phone || editPhone,
+      }));
+      // Đồng bộ context
+      updateUser({ name: updated.name || editName, phone: updated.phone || editPhone });
+      setIsEditing(false);
+      alert('Cập nhật thông tin thành công!');
+    } catch (error) {
+      alert(error.message || 'Lỗi khi cập nhật thông tin');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSaveSettings = () => {
-    // await userAPI.updateSettings({ emailNotif, pushNotif, language });
     alert("Đã lưu cài đặt thành công!");
   };
 
-  const handleChangePassword = () => {
+  // Đổi mật khẩu
+  const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       alert("Mật khẩu xác nhận không khớp!");
       return;
     }
-    // await userAPI.changePassword({ currentPassword, newPassword });
-    alert("Đổi mật khẩu thành công!");
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    if (newPassword.length < 6) {
+      alert('Mật khẩu mới phải có ít nhất 6 ký tự!');
+      return;
+    }
+    setChangingPw(true);
+    try {
+      await authService.changePassword({
+        currentPassword,
+        newPassword,
+      });
+      alert('Đổi mật khẩu thành công!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      alert(error.message || 'Lỗi khi đổi mật khẩu');
+    } finally {
+      setChangingPw(false);
+    }
   };
 
   if (loading) return <div className="loading-screen">Đang tải hồ sơ...</div>;
@@ -105,11 +181,13 @@ export default function Profile() {
             <div className="profile-name-block">
               <h2>{profileData.name}</h2>
               <div className="badges">
-                <span className="role-badge">QUẢN TRỊ VIÊN</span>
+                <span className="role-badge">{ROLE_BADGE[user?.role] || 'HỌC SINH'}</span>
                 <span className="status-dot" /> Hoạt động
               </div>
             </div>
-            <button className="btn-primary"><EditIcon /> Cập nhật thông tin</button>
+            <button className="btn-primary" onClick={() => { setIsEditing(true); setEditName(profileData.name); setEditPhone(profileData.phone); }}>
+              <EditIcon /> Cập nhật thông tin
+            </button>
           </div>
 
           <div className="info-fields">
@@ -119,7 +197,7 @@ export default function Profile() {
             </div>
             <div className="info-field">
               <span className="if-label"><PhoneIcon /> SỐ ĐIỆN THOẠI</span>
-              <span className="if-value">{profileData.phone}</span>
+              <span className="if-value">{profileData.phone || 'Chưa cập nhật'}</span>
             </div>
             <div className="info-field">
               <span className="if-label"><BriefcaseIcon /> VAI TRÒ</span>
@@ -131,6 +209,49 @@ export default function Profile() {
             </div>
           </div>
         </div>
+
+        {/* Modal chỉnh sửa thông tin */}
+        {isEditing && (
+          <div className="modal-overlay" onClick={() => setIsEditing(false)}>
+            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-head">
+                <div>
+                  <h2>Cập nhật thông tin</h2>
+                  <p>Chỉnh sửa họ tên và số điện thoại của bạn.</p>
+                </div>
+                <button className="modal-close" onClick={() => setIsEditing(false)}>✕</button>
+              </div>
+
+              <div style={{ padding: '20px 0' }}>
+                <label className="field-label">Họ và tên</label>
+                <input
+                  type="text"
+                  className="select-field"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Nhập họ và tên"
+                  style={{ marginBottom: 16 }}
+                />
+
+                <label className="field-label">Số điện thoại</label>
+                <input
+                  type="text"
+                  className="select-field"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="Nhập số điện thoại"
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button className="btn-outline" onClick={() => setIsEditing(false)}>Hủy</button>
+                <button className="btn-primary" onClick={handleUpdateProfile} disabled={saving}>
+                  {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Cài đặt hệ thống */}
         <div className="card settings-card">

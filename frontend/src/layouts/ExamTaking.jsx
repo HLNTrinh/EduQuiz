@@ -1,6 +1,8 @@
 //Trang mà làm bài thi có câu hỏi đáp án để chọn
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { InlineMath } from "react-katex";
+import "katex/dist/katex.min.css";
 import { quizAttemptService } from "../services/services";
 import { useAuth } from "../context/AuthContext";
 import "../styles/ExamTaking.css";
@@ -9,6 +11,18 @@ const formatTime = (totalSeconds) => {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+};
+
+// Tách chuỗi có công thức $...$ để render bằng KaTeX, phần còn lại giữ nguyên text
+const renderContent = (text) => {
+  if (!text) return null;
+  const parts = text.split(/(\$[^$]+\$)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("$") && part.endsWith("$")) {
+      return <InlineMath key={i} math={part.slice(1, -1)} />;
+    }
+    return <span key={i}>{part}</span>;
+  });
 };
 
 export default function ExamTaking() {
@@ -67,10 +81,11 @@ export default function ExamTaking() {
   const question = quiz?.questions?.[currentIndex];
 
   const answeredCount = useMemo(() => Object.keys(answers).length, [answers]);
-  const flaggedCount = useMemo(() => Object.keys(flagged).length, [flagged]);
   const totalQuestions = quiz?.questions?.length || 0;
   const blankCount = totalQuestions - answeredCount;
-  const progressPct = totalQuestions ? Math.round((answeredCount / totalQuestions) * 100) : 0;
+  const progressPct = totalQuestions
+    ? Math.round((answeredCount / totalQuestions) * 100)
+    : 0;
 
   const handleSelectAnswer = async (optionIndex) => {
     if (!question) return;
@@ -100,7 +115,8 @@ export default function ExamTaking() {
   };
 
   if (loading) return <div className="exam-loading">Đang tải...</div>;
-  if (!quiz || !question) return <div className="exam-loading">Không thể tải đề thi</div>;
+  if (!quiz || !question)
+    return <div className="exam-loading">Không thể tải đề thi</div>;
 
   return (
     <div className="exam-take-shell">
@@ -120,7 +136,9 @@ export default function ExamTaking() {
       </header>
 
       <div className="exam-take-progress">
-        <span>Tiến độ làm bài: {answeredCount}/{totalQuestions} câu</span>
+        <span>
+          Tiến độ làm bài: {answeredCount}/{totalQuestions} câu
+        </span>
         <span className="progress-pct">{progressPct}% Hoàn thành</span>
       </div>
       <div className="progress-track-exam">
@@ -131,7 +149,9 @@ export default function ExamTaking() {
         <div className="exam-question-card">
           <div className="exam-question-top">
             <div>
-              <span className="exam-question-label">CÂU HỎI {currentIndex + 1}</span>
+              <span className="exam-question-label">
+                CÂU HỎI {currentIndex + 1}
+              </span>
               <div className="exam-question-tags">
                 {question.topic && <span className="tag-pill">{question.topic}</span>}
                 {question.difficulty && (
@@ -147,25 +167,34 @@ export default function ExamTaking() {
             </button>
           </div>
 
-          <p className="exam-question-content">{question.content}</p>
+          <p className="exam-question-content">{renderContent(question.content)}</p>
 
           {question.image && (
             <img className="exam-question-image" src={question.image} alt="" />
           )}
 
           <div className="exam-options">
-            {question.options.map((option, idx) => (
-              <button
-                key={idx}
-                className={`exam-option ${answers[question._id] === idx ? "selected" : ""}`}
-                onClick={() => handleSelectAnswer(idx)}
-              >
-                <span className="exam-option-radio" />
-                <span>
-                  {String.fromCharCode(65 + idx)}. {option.text}
-                </span>
-              </button>
-            ))}
+            {question.options.map((option, idx) => {
+              const selected = answers[question._id] === idx;
+              return (
+                <label
+                  key={idx}
+                  className={`exam-option ${selected ? "selected" : ""}`}
+                  onClick={() => handleSelectAnswer(idx)}
+                >
+                  <input
+                    type="radio"
+                    name={`q-${question._id}`}
+                    checked={selected}
+                    readOnly
+                    className="exam-option-radio-input"
+                  />
+                  <span>
+                    {String.fromCharCode(65 + idx)}. {renderContent(option.text)}
+                  </span>
+                </label>
+              );
+            })}
           </div>
 
           <div className="exam-nav-row">
@@ -209,10 +238,12 @@ export default function ExamTaking() {
                 const isCurrent = idx === currentIndex;
                 const isFlagged = flagged[q._id];
                 const isAnswered = answers[q._id] !== undefined;
+
                 let cls = "qgrid-btn";
-                if (isCurrent) cls += " current";
-                else if (isFlagged) cls += " flagged";
+                if (isFlagged) cls += " flagged";
                 else if (isAnswered) cls += " answered";
+                if (isCurrent) cls += " current";
+
                 return (
                   <button key={q._id} className={cls} onClick={() => goTo(idx)}>
                     {idx + 1}
@@ -235,7 +266,8 @@ export default function ExamTaking() {
           </div>
 
           <div className="exam-notice-box">
-            ℹ️ Hệ thống tự động lưu đáp án sau mỗi lần chọn. Nếu gặp sự cố mạng, hãy giữ nguyên màn hình và liên hệ giám thị.
+            ℹ️ Hệ thống tự động lưu đáp án sau mỗi lần chọn. Nếu gặp sự cố mạng, hãy
+            giữ nguyên màn hình và liên hệ giám thị.
           </div>
         </aside>
       </div>
