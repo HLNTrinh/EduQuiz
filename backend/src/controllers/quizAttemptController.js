@@ -6,14 +6,12 @@ const Question = require('../models/Question');
 exports.startQuizAttempt = async (req, res) => {
   try {
     const { quizId } = req.params;
+    const studentId = req.user.id || req.user.userId;
 
     const quiz = await Quiz.findById(quizId).populate('questions.questionId');
     if (!quiz) {
       return res.status(404).json({ message: 'Đề thi không tồn tại' });
     }
-
-    // Kiểm tra số lần làm bài
-    const studentId = req.user.id || req.user.userId;
 
     const attemptCount = await QuizAttempt.countDocuments({
       studentId,
@@ -22,41 +20,44 @@ exports.startQuizAttempt = async (req, res) => {
     });
 
     if (attemptCount >= quiz.maxAttempts) {
-      return res.status(400).json({ message: 'Bạn đã vượt quá số lần làm bài cho phép' });
+      return res.status(400).json({
+        message: 'Bạn đã vượt quá số lần làm bài cho phép',
+      });
     }
 
-    // Tạo attempt mới
+    // Chỉ lấy câu hỏi còn tồn tại
+    const validQuestions = quiz.questions.filter((q) => q.questionId);
+
     const attempt = new QuizAttempt({
-      studentId: req.user.id,
+      studentId,
       quizId,
-      answers: quiz.questions.map((q, index) => ({
+      answers: validQuestions.map((q) => ({
         questionId: q.questionId._id,
         selectedOptionIndex: null,
         isCorrect: null,
         timeTaken: 0,
       })),
-      totalQuestions: quiz.questions.length,
+      totalQuestions: validQuestions.length,
       startTime: new Date(),
     });
 
     await attempt.save();
 
-    // Trả lại quiz data (có giải thích và đáp án đúng để hiển thị feedback cho học sinh)
+    // KHÔNG trả isCorrect / explanation lúc bắt đầu làm bài
     const quizData = {
       _id: quiz._id,
       title: quiz.title,
       description: quiz.description,
       duration: quiz.duration,
-      questions: quiz.questions.map(q => ({
+      questions: validQuestions.map((q) => ({
         _id: q.questionId._id,
         content: q.questionId.content,
-        options: q.questionId.options.map(opt => ({
+        options: q.questionId.options.map((opt) => ({
           text: opt.text,
-          isCorrect: opt.isCorrect,
+          // không gửi isCorrect
         })),
         category: q.questionId.category,
         difficulty: q.questionId.difficulty,
-        explanation: q.questionId.explanation,
         order: q.order,
       })),
     };
@@ -86,7 +87,15 @@ exports.saveAnswer = async (req, res) => {
       return res.status(400).json({ message: 'Không thể cập nhật câu trả lời' });
     }
 
-    const answerIndex = attempt.answers.findIndex(ans => ans.questionId.toString() === questionId);
+    // Chỉ cho phép chủ bài làm cập nhật
+    const studentId = req.user.id || req.user.userId;
+    if (attempt.studentId.toString() !== studentId.toString()) {
+      return res.status(403).json({ message: 'Bạn không có quyền cập nhật bài làm này' });
+    }
+
+    const answerIndex = attempt.answers.findIndex(
+      (ans) => ans.questionId.toString() === questionId
+    );
     if (answerIndex >= 0) {
       attempt.answers[answerIndex].selectedOptionIndex = selectedOptionIndex;
     }
@@ -102,31 +111,42 @@ exports.saveAnswer = async (req, res) => {
 exports.submitQuizAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
+    const studentId = req.user.id || req.user.userId;
 
     const attempt = await QuizAttempt.findById(attemptId).populate('quizId');
     if (!attempt) {
       return res.status(404).json({ message: 'Lần làm bài không tồn tại' });
     }
 
+    if (attempt.studentId.toString() !== studentId.toString()) {
+      return res.status(403).json({ message: 'Bạn không có quyền nộp bài này' });
+    }
+
     if (attempt.status !== 'in_progress') {
       return res.status(400).json({ message: 'Bài làm không ở trạng thái in progress' });
     }
 
-    // Lấy danh sách câu hỏi để kiểm tra đáp án
-    const questionIds = attempt.answers.map(ans => ans.questionId);
+    const questionIds = attempt.answers.map((ans) => ans.questionId);
     const questions = await Question.find({ _id: { $in: questionIds } });
 
     let correctCount = 0;
     let totalScore = 0;
+    const pointsPerQuestion =
+      attempt.totalQuestions > 0
+        ? (attempt.quizId.totalPoints || 100) / attempt.totalQuestions
+        : 0;
 
-    attempt.answers = attempt.answers.map(answer => {
-      const question = questions.find(q => q._id.toString() === answer.questionId.toString());
+    attempt.answers = attempt.answers.map((answer) => {
+      const question = questions.find(
+        (q) => q._id.toString() === answer.questionId.toString()
+      );
       if (question && answer.selectedOptionIndex !== null) {
-        const isCorrect = question.options[answer.selectedOptionIndex]?.isCorrect || false;
+        const isCorrect =
+          question.options[answer.selectedOptionIndex]?.isCorrect || false;
         answer.isCorrect = isCorrect;
         if (isCorrect) {
           correctCount++;
-          totalScore += attempt.quizId.totalPoints / attempt.totalQuestions;
+          totalScore += pointsPerQuestion;
         }
       }
       return answer;
@@ -134,11 +154,15 @@ exports.submitQuizAttempt = async (req, res) => {
 
     attempt.correctAnswers = correctCount;
     attempt.score = Math.round(totalScore);
-    attempt.percentage = Math.round((correctCount / attempt.totalQuestions) * 100);
+    attempt.percentage = Math.round(
+      (correctCount / attempt.totalQuestions) * 100
+    );
     attempt.status = 'submitted';
     attempt.endTime = new Date();
-    attempt.timeTaken = Math.round((attempt.endTime - attempt.startTime) / 60000); // convert to minutes
-    attempt.isPassed = attempt.score >= attempt.quizId.passingScore;
+    attempt.timeTaken = Math.round(
+      (attempt.endTime - attempt.startTime) / 60000
+    );
+    attempt.isPassed = attempt.score >= (attempt.quizId.passingScore || 0);
 
     await attempt.save();
 
@@ -161,6 +185,7 @@ exports.submitQuizAttempt = async (req, res) => {
 exports.getAttemptResult = async (req, res) => {
   try {
     const { attemptId } = req.params;
+    const userId = req.user.id || req.user.userId;
 
     const attempt = await QuizAttempt.findById(attemptId)
       .populate('quizId')
@@ -173,7 +198,11 @@ exports.getAttemptResult = async (req, res) => {
       return res.status(404).json({ message: 'Lần làm bài không tồn tại' });
     }
 
-    if (attempt.studentId.toString() !== req.user.id && attempt.quizId.createdBy.toString() !== req.user.id) {
+    const isOwner = attempt.studentId.toString() === userId.toString();
+    const isTeacher =
+      attempt.quizId?.createdBy?.toString() === userId.toString();
+
+    if (!isOwner && !isTeacher) {
       return res.status(403).json({ message: 'Bạn không có quyền xem kết quả này' });
     }
 
@@ -187,15 +216,16 @@ exports.getAttemptResult = async (req, res) => {
 exports.getStudentAttempts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
+    const studentId = req.user.id || req.user.userId;
 
-    const attempts = await QuizAttempt.find({ studentId: req.user.id })
+    const attempts = await QuizAttempt.find({ studentId })
       .populate('quizId', 'title')
       .populate('answers.questionId', 'category')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
 
-    const total = await QuizAttempt.countDocuments({ studentId: req.user.id });
+    const total = await QuizAttempt.countDocuments({ studentId });
 
     res.json({
       data: attempts,
@@ -210,12 +240,14 @@ exports.getStudentAttempts = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
 // Lấy kết quả của học sinh cho giáo viên
 exports.getTeacherAttempts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const userId = req.user.id || req.user.userId;
-    const quizzes = await Quiz.find({ createdBy: req.user.id }).select('_id');
+
+    // Chỉ khai báo 1 lần
     const quizzes = await Quiz.find({ createdBy: userId }).select('_id');
     const quizIds = quizzes.map((quiz) => quiz._id);
 
