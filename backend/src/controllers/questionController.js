@@ -41,34 +41,6 @@ exports.createQuestion = async (req, res) => {
 };
 
 // Lấy danh sách câu hỏi của giáo viên
-/*
-exports.getQuestions = async (req, res) => {
-  try {
-    const { category, difficulty, page = 1, limit = 10 } = req.query;
-    const filter = { createdBy: req.user.userId };
-    if (category) filter.category = category;
-    if (difficulty) filter.difficulty = difficulty;
-
-    const questions = await Question.find(filter)
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
-
-    const total = await Question.countDocuments(filter);
-
-    res.json({
-      data: questions,
-      pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / limit),
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi server', error: error.message });
-  }
-};*/
 
 exports.getQuestions = async (req, res) => {
   try {

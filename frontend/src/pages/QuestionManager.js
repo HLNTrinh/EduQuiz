@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { questionService, subjectService } from '../services/authService';
 import '../styles/QuestionsBank.css';
+import { RxCross2 } from "react-icons/rx";
 
 const emptyForm = {
   content: '',
@@ -25,11 +26,13 @@ export const QuestionManager = () => {
   const [difficulty, setDifficulty] = useState('Tất cả');
   const [sortOrder, setSortOrder] = useState('Mới nhất');
   const [showForm, setShowForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);//nút sửa nội dung
   const [formData, setFormData] = useState(emptyForm);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [subjectList, setSubjectList] = useState([]);
+  const [subjects, setSubjects] = useState([]);
 
   const tabs = useMemo(() => {
     return ['Tất cả', ...subjectList.map((s) => s._id)];
@@ -57,10 +60,29 @@ export const QuestionManager = () => {
       setLoading(false);
     }
   };
+/*Gọi API lấy danh sách môn học -> Lưu vào state subjects, state ở <select>*/
+  const loadCategories = async () => {
+    try {
+      const response = await questionService.getCategories();
+
+      const categories = Array.isArray(response)
+        ? response
+        : [];
+
+      setSubjects([
+        "Tất cả",
+        ...categories
+      ]);
+
+    } catch (error) {
+      console.log("Lỗi lấy môn học:", error);
+    }
+  };
 
   useEffect(() => {
     loadSubjects();
     loadQuestions();
+    loadCategories();
   }, []);
 
   const getSubjectName = (id) => {
@@ -97,12 +119,30 @@ if (sortOrder === 'Mới nhất') {
         options: question.options?.map((option) => ({ ...option })) || emptyForm.options,
       });
     } else {
-      setFormData(emptyForm);
+
+      setFormData({
+        ...emptyForm,
+        category:
+          subjects.length > 1
+            ? subjects[1]
+            : "",
+      });
     }
     setMessage('');
     setShowForm(true);
   };
+  //mở hộp thoại sửa câu hỏi
+  const handleOpenEditModal = (question) => {
+    setFormData({
+      ...question,
+      options:
+        question.options?.map((option) => ({
+          ...option,
+        })) || emptyForm.options,
+    });
 
+    setShowEditModal(true);
+  };
   const handleOptionChange = (index, field, value) => {
     const nextOptions = [...formData.options];
     nextOptions[index] = { ...nextOptions[index], [field]: value };
@@ -130,8 +170,15 @@ if (sortOrder === 'Mới nhất') {
         }
         return [savedQuestion, ...prev];
       });
+      /*Sửa khi lưu câu hỏi thành công*/
       setShowForm(false);
-      setFormData(emptyForm);
+      setFormData({
+        ...emptyForm,
+        category:
+          subjects.length > 1
+            ? subjects[1]
+            : "",
+      });
       setMessage(formData._id ? 'Đã cập nhật câu hỏi thành công.' : 'Đã thêm câu hỏi mới thành công.');
     } catch (error) {
       setMessage(error.message || 'Không thể lưu câu hỏi.');
@@ -383,7 +430,7 @@ onChange={(event) => setFormData({ ...formData, explanation: event.target.value 
                     <td>{item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : '—'}</td>
                     <td>
                       <div className="question-card-actions">
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleOpenForm(item)}>Sửa</button>
+                        <button className="btn-outline btn-small" type="button" onClick={() => handleOpenEditModal(item)}>Sửa</button>
                         <button className="btn-outline btn-small" type="button" onClick={() => handleDelete(item._id)}>Xóa</button>
                       </div>
                     </td>

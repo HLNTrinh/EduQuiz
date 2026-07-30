@@ -6,7 +6,7 @@ const QuizAssignment = require('../models/QuizAssignment');
 // Tạo đề thi
 exports.createQuiz = async (req, res) => {
   try {
-    const { title, description, questions, duration, maxAttempts, startDate, endDate, showAnswerAfter, totalPoints, passingScore, subject, class: classId } = req.body;
+    const { title, description, questions, duration, maxAttempts, assignedClass, startDate, endDate, showAnswerAfter, totalPoints, passingScore, subject, class: classId } = req.body;
 
     const normalizedQuestions = (questions || []).map((question, index) => ({
       questionId: question.questionId || question._id,
@@ -23,12 +23,17 @@ exports.createQuiz = async (req, res) => {
       return res.status(400).json({ message: 'Một số câu hỏi không tồn tại' });
     }
 
+    if (!assignedClass) {
+      return res.status(400).json({ message: 'Vui lòng chọn lớp được giao' });
+    }
+
     const quiz = new Quiz({
       title,
       description,
       questions: normalizedQuestions,
       duration: Number(duration || 45),
       maxAttempts: Number(maxAttempts || 1),
+      assignedClass,
       startDate: startDate ? new Date(startDate) : new Date(),
       endDate: endDate ? new Date(endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       showAnswerAfter: Boolean(showAnswerAfter),
@@ -120,7 +125,7 @@ exports.updateQuiz = async (req, res) => {
       return res.status(403).json({ message: 'Bạn không có quyền chỉnh sửa đề thi này' });
     }
 
-    const { title, description, questions, duration, maxAttempts, startDate, endDate, showAnswerAfter, totalPoints, passingScore, subject, class: classId } = req.body;
+    const { title, description, questions, duration, maxAttempts, assignedClass, startDate, endDate, showAnswerAfter, totalPoints, passingScore, subject, class: classId } = req.body;
 
     Object.assign(quiz, {
       title,
@@ -128,6 +133,7 @@ exports.updateQuiz = async (req, res) => {
       questions,
       duration,
       maxAttempts,
+      assignedClass: assignedClass || quiz.assignedClass,
       startDate,
       endDate,
       showAnswerAfter,

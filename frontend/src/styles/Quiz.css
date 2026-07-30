@@ -114,8 +114,8 @@
 }
 
 .option.incorrect {
-  border-color: #f97316;
-  background: #fff7ed;
+  border-color: #ef4444;
+  background: #fef2f2;
 }
 
 .question-feedback {

@@ -44,6 +44,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+
+    settings: {
+      language: { type: String, default: 'vi' },
+      emailNotif: { type: Boolean, default: true },
+      pushNotif: { type: Boolean, default: false },
+    },
   },
   {
     timestamps: true,

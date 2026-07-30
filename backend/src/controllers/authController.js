@@ -151,10 +151,42 @@ const changePassword = async (req, res) => {
   }
 };
 
+/* =========================
+   Update Settings
+========================= */
+const updateSettings = async (req, res) => {
+  try {
+    const { language, emailNotif, pushNotif } = req.body;
+
+    const settings = {};
+    if (language !== undefined) settings['settings.language'] = language;
+    if (emailNotif !== undefined) settings['settings.emailNotif'] = emailNotif;
+    if (pushNotif !== undefined) settings['settings.pushNotif'] = pushNotif;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: settings },
+      { new: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+    }
+
+    res.json({
+      message: 'Cập nhật cài đặt thành công',
+      user: updatedUser
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
 module.exports = { 
   register, 
   login, 
   getMe, 
   updateProfile, 
-  changePassword 
+  changePassword, 
+  updateSettings 
 };

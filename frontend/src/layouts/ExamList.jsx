@@ -1,10 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { quizService } from "../services/services";
 import "../styles/ExamList.css";
 const tabs = ['Tất cả', 'Toán học', 'Ngữ văn', 'Tiếng Anh', 'Vật lý', 'Hóa học', 'Sinh học']
 
 export default function ExamList() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('Tất cả')
   const [modalExam, setModalExam] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -87,12 +89,8 @@ export default function ExamList() {
         <div className="dash-header-actions">
           <button className="icon-btn"><BellIcon /></button>
           <button className="icon-btn"><HelpIcon /></button>
-          <div className="user-chip">
-            <img src="https://i.pravatar.cc/64?img=13" alt="" />
-            <div className="user-chip-text">
-              <span className="name">Nguyễn Minh Quân</span>
-              <span className="role">Học sinh lớp 12A1</span>
-            </div>
+<div className="user-chip">
+            <img src={user?.avatar || "https://i.pravatar.cc/64?img=13"} alt="" />
           </div>
         </div>
       </header>

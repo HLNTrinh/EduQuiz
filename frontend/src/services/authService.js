@@ -58,6 +58,8 @@ export const classService = {
     const response = await api.get(`/classes/teacher/${teacherId}`);
     return response?.data ?? response ?? [];
   },
+  // Giáo viên lấy danh sách kết quả học sinh
+  getTeacherAttempts: (params) => api.get('/quiz-attempts/teacher', { params }),
 };
 
 export const quizAttemptService = {
@@ -66,8 +68,4 @@ export const quizAttemptService = {
   submitQuiz: (attemptId) => api.post(`/quiz-attempts/${attemptId}/submit`),
   getAttemptResult: (attemptId) => api.get(`/quiz-attempts/${attemptId}/result`),
   getStudentAttempts: (params) => api.get('/quiz-attempts', { params }),
-
-    // Giáo viên lấy danh sách kết quả học sinh
-  getTeacherAttempts: (params) => api.get('/quiz-attempts/teacher', { params }),
-
 };

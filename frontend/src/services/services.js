@@ -6,6 +6,7 @@ export const authService = {
   getMe:    ()     => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/profile', data),
   changePassword: (data) => api.put('/auth/change-password', data),
+  updateSettings: (data) => api.put('/auth/settings', data),
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');

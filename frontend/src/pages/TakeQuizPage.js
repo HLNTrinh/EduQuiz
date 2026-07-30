@@ -118,20 +118,12 @@ export const TakeQuizPage = () => {
             </button>
           ))}
         </div>
-        {answers[question._id] !== undefined && (
+        {answers[question._id] !== undefined && question.explanation && (
           <div className="question-feedback">
-            <div className="feedback-row">
-              <span className="feedback-label">Đáp án đúng:</span>
-              <span className="feedback-value">
-                {String.fromCharCode(65 + question.options.findIndex((opt) => opt.isCorrect))}) {question.options.find((opt) => opt.isCorrect)?.text}
-              </span>
+            <div className="feedback-row feedback-explanation">
+              <span className="feedback-label">Giải thích:</span>
+              <span className="feedback-value">{question.explanation}</span>
             </div>
-            {question.explanation && (
-              <div className="feedback-row feedback-explanation">
-                <span className="feedback-label">Giải thích:</span>
-                <span className="feedback-value">{question.explanation}</span>
-              </div>
-            )}
           </div>
         )}
       </div>

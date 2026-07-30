@@ -18,7 +18,6 @@ const ROLE_BADGE = {
 export default function Profile() {
   const { user, updateUser } = useAuth();
 
-  // State dữ liệu người dùng
   const [profileData, setProfileData] = useState({
     name: '',
     avatar: '',
@@ -28,7 +27,6 @@ export default function Profile() {
     joinDate: '',
   });
 
-  // State cho chỉnh sửa thông tin
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -55,11 +53,10 @@ export default function Profile() {
     return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
   };
 
-  // Fetch thông tin profile từ API
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user?.id) return;
-
+      const userId = user?._id || user?.id;
+      if (!userId) return;
       setLoading(true);
       try {
         const data = await authService.getMe();
@@ -74,9 +71,13 @@ export default function Profile() {
         });
         setEditName(userData.name || '');
         setEditPhone(userData.phone || '');
+        if (userData.settings) {
+          setLanguage(userData.settings.language || 'vi');
+          setEmailNotif(userData.settings.emailNotif !== undefined ? userData.settings.emailNotif : true);
+          setPushNotif(userData.settings.pushNotif !== undefined ? userData.settings.pushNotif : false);
+        }
       } catch (error) {
-        console.error("Lỗi tải profile:", error);
-        // Fallback: dùng dữ liệu từ context
+        console.error('Lỗi tải profile:', error);
         setProfileData({
           name: user?.name || '',
           avatar: user?.avatar || 'https://i.pravatar.cc/200?img=33',
@@ -91,25 +92,15 @@ export default function Profile() {
         setLoading(false);
       }
     };
-
     fetchProfile();
-  }, [user?.id]);
+  }, [user?._id, user?.id]);
 
-  // Cập nhật thông tin cá nhân
   const handleUpdateProfile = async () => {
     setSaving(true);
     try {
-      const data = await authService.updateProfile({
-        name: editName,
-        phone: editPhone,
-      });
+      const data = await authService.updateProfile({ name: editName, phone: editPhone });
       const updated = data?.user || data;
-      setProfileData((prev) => ({
-        ...prev,
-        name: updated.name || editName,
-        phone: updated.phone || editPhone,
-      }));
-      // Đồng bộ context
+      setProfileData((prev) => ({ ...prev, name: updated.name || editName, phone: updated.phone || editPhone }));
       updateUser({ name: updated.name || editName, phone: updated.phone || editPhone });
       setIsEditing(false);
       alert('Cập nhật thông tin thành công!');
@@ -120,14 +111,34 @@ export default function Profile() {
     }
   };
 
-  const handleSaveSettings = () => {
-    alert("Đã lưu cài đặt thành công!");
+  const handleAvatarUpload = () => {
+    const url = prompt('Nhập URL ảnh đại diện mới:');
+    if (url && url.trim()) {
+      const newAvatar = url.trim();
+      setProfileData((prev) => ({ ...prev, avatar: newAvatar }));
+      updateUser({ avatar: newAvatar });
+      authService.updateProfile({ avatar: newAvatar }).catch((err) => console.error('Lỗi cập nhật avatar:', err));
+    }
   };
 
-  // Đổi mật khẩu
+  const handleSaveSettings = async () => {
+    try {
+      const data = await authService.updateSettings({ language, emailNotif, pushNotif });
+      const updated = data?.user || data;
+      if (updated?.settings) {
+        setLanguage(updated.settings.language);
+        setEmailNotif(updated.settings.emailNotif);
+        setPushNotif(updated.settings.pushNotif);
+      }
+      alert('Đã lưu cài đặt thành công!');
+    } catch (error) {
+      alert(error.message || 'Lỗi khi lưu cài đặt');
+    }
+  };
+
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      alert("Mật khẩu xác nhận không khớp!");
+      alert('Mật khẩu xác nhận không khớp!');
       return;
     }
     if (newPassword.length < 6) {
@@ -136,10 +147,7 @@ export default function Profile() {
     }
     setChangingPw(true);
     try {
-      await authService.changePassword({
-        currentPassword,
-        newPassword,
-      });
+      await authService.changePassword({ currentPassword, newPassword });
       alert('Đổi mật khẩu thành công!');
       setCurrentPassword('');
       setNewPassword('');
@@ -153,7 +161,7 @@ export default function Profile() {
 
   if (loading) return <div className="loading-screen">Đang tải hồ sơ...</div>;
 
-  return (
+return (
     <div className="profile-main">
       <header className="profile-topbar">
         <h1>Hồ sơ cá nhân</h1>
@@ -164,19 +172,20 @@ export default function Profile() {
             <img src={profileData.avatar} alt="avatar" />
             <div className="user-chip-text">
               <span className="name">{profileData.name}</span>
-              <span className="role">Quản trị viên</span>
+              <span className="role">{profileData.role}</span>
             </div>
           </div>
         </div>
       </header>
 
       <section className="profile-grid">
-        {/* Thông tin cơ bản */}
         <div className="card profile-info-card">
           <div className="profile-info-top">
             <div className="avatar-wrap">
               <img src={profileData.avatar} alt="Avatar" />
-              <button className="avatar-edit"><CameraIcon /></button>
+              <button className="avatar-edit" onClick={handleAvatarUpload} title="Thay đổi ảnh đại diện">
+                <CameraIcon />
+              </button>
             </div>
             <div className="profile-name-block">
               <h2>{profileData.name}</h2>
@@ -184,10 +193,10 @@ export default function Profile() {
                 <span className="role-badge">{ROLE_BADGE[user?.role] || 'HỌC SINH'}</span>
                 <span className="status-dot" /> Hoạt động
               </div>
+              <button className="btn-primary" onClick={() => { setIsEditing(true); setEditName(profileData.name); setEditPhone(profileData.phone); }}>
+                <EditIcon /> Cập nhật thông tin
+              </button>
             </div>
-            <button className="btn-primary" onClick={() => { setIsEditing(true); setEditName(profileData.name); setEditPhone(profileData.phone); }}>
-              <EditIcon /> Cập nhật thông tin
-            </button>
           </div>
 
           <div className="info-fields">
@@ -210,63 +219,13 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Modal chỉnh sửa thông tin */}
-        {isEditing && (
-          <div className="modal-overlay" onClick={() => setIsEditing(false)}>
-            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-head">
-                <div>
-                  <h2>Cập nhật thông tin</h2>
-                  <p>Chỉnh sửa họ tên và số điện thoại của bạn.</p>
-                </div>
-                <button className="modal-close" onClick={() => setIsEditing(false)}>✕</button>
-              </div>
-
-              <div style={{ padding: '20px 0' }}>
-                <label className="field-label">Họ và tên</label>
-                <input
-                  type="text"
-                  className="select-field"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  placeholder="Nhập họ và tên"
-                  style={{ marginBottom: 16 }}
-                />
-
-                <label className="field-label">Số điện thoại</label>
-                <input
-                  type="text"
-                  className="select-field"
-                  value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                  placeholder="Nhập số điện thoại"
-                />
-              </div>
-
-              <div className="modal-actions">
-                <button className="btn-outline" onClick={() => setIsEditing(false)}>Hủy</button>
-                <button className="btn-primary" onClick={handleUpdateProfile} disabled={saving}>
-                  {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Cài đặt hệ thống */}
         <div className="card settings-card">
           <h3><SlidersIcon /> Cài đặt hệ thống</h3>
-
           <label className="field-label">Ngôn ngữ hiển thị</label>
-          <select 
-            className="select-field" 
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
+          <select className="select-field" value={language} onChange={(e) => setLanguage(e.target.value)}>
             <option value="vi">Tiếng Việt (Việt Nam)</option>
             <option value="en">English (US)</option>
           </select>
-
           <div className="field-label" style={{ marginTop: 22 }}>Thông báo ứng dụng</div>
           <div className="toggle-row">
             <span><MailIcon /> Thông báo qua Email</span>
@@ -276,71 +235,69 @@ export default function Profile() {
             <span><BellOutlineIcon /> Thông báo đẩy (Push)</span>
             <Toggle checked={pushNotif} onChange={() => setPushNotif(v => !v)} />
           </div>
-
-          <button className="btn-primary full" style={{ marginTop: 24 }} onClick={handleSaveSettings}>
-            Lưu cấu hình
-          </button>
+          <button className="btn-primary full" style={{ marginTop: 24 }} onClick={handleSaveSettings}>Lưu cấu hình</button>
         </div>
       </section>
 
-      {/* Bảo mật */}
       <section className="card security-card">
         <div className="security-left">
           <h3><ShieldIcon /> Bảo mật tài khoản</h3>
           <p>Đảm bảo tài khoản của bạn luôn an toàn bằng cách sử dụng mật khẩu mạnh và thay đổi định kỳ mỗi 3 tháng.</p>
-          <div className="tip-box">
-            ℹ️ Mật khẩu nên chứa ít nhất 8 ký tự, bao gồm cả chữ hoa, chữ thường và chữ số.
-          </div>
+          <div className="tip-box">ℹ️ Mật khẩu nên chứa ít nhất 8 ký tự, bao gồm cả chữ hoa, chữ thường và chữ số.</div>
         </div>
-
         <div className="security-right">
           <label className="field-label">Mật khẩu hiện tại</label>
-          <PasswordInput 
-            visible={showCurrent} 
-            onToggle={() => setShowCurrent(v => !v)}
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-          />
-
+          <PasswordInput visible={showCurrent} onToggle={() => setShowCurrent(v => !v)} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
           <div className="pw-row">
             <div>
               <label className="field-label">Mật khẩu mới</label>
-              <PasswordInput 
-                visible={showNew} 
-                onToggle={() => setShowNew(v => !v)}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              <PasswordInput visible={showNew} onToggle={() => setShowNew(v => !v)} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
             </div>
             <div>
               <label className="field-label">Xác nhận mật khẩu mới</label>
-              <PasswordInput 
-                visible={showConfirm} 
-                onToggle={() => setShowConfirm(v => !v)}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+              <PasswordInput visible={showConfirm} onToggle={() => setShowConfirm(v => !v)} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
             </div>
           </div>
-
-          <button className="btn-dark" onClick={handleChangePassword}>
-            Đổi mật khẩu
+          <button className="btn-dark" onClick={handleChangePassword} disabled={changingPw}>
+            {changingPw ? 'Đang đổi...' : 'Đổi mật khẩu'}
           </button>
         </div>
       </section>
 
-      <footer className="profile-footer">
-        © 2024 EduQuiz. Hỗ trợ kỹ thuật: support@eduquiz.vn
-      </footer>
+      {isEditing && (
+        <div className="modal-overlay" onClick={() => setIsEditing(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <div>
+                <h2>Cập nhật thông tin</h2>
+                <p>Chỉnh sửa họ tên và số điện thoại của bạn.</p>
+              </div>
+              <button className="modal-close" onClick={() => setIsEditing(false)}>✕</button>
+            </div>
+            <div style={{ padding: '20px 0' }}>
+              <label className="field-label">Họ và tên</label>
+              <input type="text" className="select-field" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Nhập họ và tên" style={{ marginBottom: 16 }} />
+              <label className="field-label">Số điện thoại</label>
+              <input type="text" className="select-field" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="Nhập số điện thoại" />
+            </div>
+            <div className="modal-actions">
+              <button className="btn-outline" onClick={() => setIsEditing(false)}>Hủy</button>
+              <button className="btn-primary" onClick={handleUpdateProfile} disabled={saving}>
+                {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer className="profile-footer">© 2024 EduQuiz. Hỗ trợ kỹ thuật: support@eduquiz.vn</footer>
     </div>
   );
 }
 
-// ==================== SUB COMPONENTS ====================
-
 function Toggle({ checked, onChange }) {
   return (
-    <button className={`toggle ${checked ? 'on' : ''}`} onClick={onChange}>
+    <button className={`toggle ${checked ? 'on' : ''}`} onClick={onChange} type="button">
       <span className="toggle-knob" />
     </button>
   );
@@ -349,114 +306,45 @@ function Toggle({ checked, onChange }) {
 function PasswordInput({ visible, onToggle, value, onChange }) {
   return (
     <div className="pw-input">
-      <input 
-        type={visible ? 'text' : 'password'} 
-        value={value}
-        onChange={onChange}
-        placeholder="Nhập mật khẩu"
-      />
-      <button onClick={onToggle} type="button">
-        <EyeIcon />
-      </button>
+      <input type={visible ? 'text' : 'password'} value={value} onChange={onChange} placeholder="Nhập mật khẩu" />
+      <button onClick={onToggle} type="button"><EyeIcon /></button>
     </div>
   );
 }
 
-// SVG Icons
 function BellIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-      <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
+  return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>);
 }
 function BellOutlineIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-      <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
+  return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>);
 }
 function HelpIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .8-1 1.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <circle cx="12" cy="17" r="0.9" fill="currentColor" />
-    </svg>
-  );
+  return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .8-1 1.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /><circle cx="12" cy="17" r="0.9" fill="currentColor" /></svg>);
 }
 function CameraIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M3 7h3l2-3h8l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  );
+  return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="1.6" /><path d="M3 7h3l2-3h8l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>);
 }
 function EditIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 3 21l.5-4.5L17 3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  );
+  return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 3 21l.5-4.5L17 3Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>);
 }
 function MailIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.6" />
-      <path d="m2 8 10 6 10-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="m2 8 10 6 10-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 }
 function PhoneIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M22 16.9v3a1.7 1.7 0 0 1-1.8 1.7A16.7 16.7 0 0 1 2.4 3.8 1.7 1.7 0 0 1 4.1 2h3a1.4 1.4 0 0 1 1.4 1.2c.1 1 .4 2 .7 2.9a1.4 1.4 0 0 1-.3 1.5L7.3 9.3a11 11 0 0 0 5.4 5.4l1.7-1.6a1.4 1.4 0 0 1 1.5-.3c1 .3 1.9.6 2.9.7a1.4 1.4 0 0 1 1.2 1.4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    </svg>
-  );
+  return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a1.7 1.7 0 0 1-1.8 1.7A16.7 16.7 0 0 1 2.4 3.8 1.7 1.7 0 0 1 4.1 2h3a1.4 1.4 0 0 1 1.4 1.2c.1 1 .4 2 .7 2.9a1.4 1.4 0 0 1-.3 1.5L7.3 9.3a11 11 0 0 0 5.4 5.4l1.7-1.6a1.4 1.4 0 0 1 1.5-.3c1 .3 1.9.6 2.9.7a1.4 1.4 0 0 1 1.2 1.4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>);
 }
 function BriefcaseIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
+  return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>);
 }
 function CalendarIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <rect x="3.5" y="5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
+  return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>);
 }
 function SlidersIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="6" r="2" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="12" cy="18" r="2" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="18" cy="12" r="2" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="6" cy="12" r="2" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  );
+  return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="6" r="2" stroke="currentColor" strokeWidth="1.6" /><circle cx="12" cy="18" r="2" stroke="currentColor" strokeWidth="1.6" /><circle cx="18" cy="12" r="2" stroke="currentColor" strokeWidth="1.6" /><circle cx="6" cy="12" r="2" stroke="currentColor" strokeWidth="1.6" /></svg>);
 }
 function ShieldIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2L3 7v5c0 5.3 3.8 10.3 9 11 5.2-.7 9-5.7 9-11V7l-9-5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-      <path d="m9 12 2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v5c0 5.3 3.8 10.3 9 11 5.2-.7 9-5.7 9-11V7l-9-5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="m9 12 2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 }
 function EyeIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  );
+  return (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" stroke="currentColor" strokeWidth="1.6" /><circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.6" /></svg>);
 }

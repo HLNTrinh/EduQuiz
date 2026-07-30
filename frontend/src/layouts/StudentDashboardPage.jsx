@@ -142,10 +142,6 @@ export default function StudentDashboardPage() {
           </button>
 
           <div className="user-chip">
-            <img
-              src={user?.avatar || "https://i.pravatar.cc/64?img=12"}
-              alt="avatar"
-            />
             <span>{user?.name || "Học sinh"}</span>
           </div>
         </div>

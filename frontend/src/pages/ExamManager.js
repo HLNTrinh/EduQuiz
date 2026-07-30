@@ -15,6 +15,7 @@ const buildInitialForm = () => ({
   description: '',
   duration: '45',
   maxAttempts: '1',
+  assignedClass: '',
   startDate: toLocalDatetimeInput(new Date()),
   endDate: toLocalDatetimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
   showAnswerAfter: false,
@@ -28,6 +29,9 @@ export const ExamManager = () => {
   const [questions, setQuestions] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
+  //Thêm state cho danh sách lớp
+  const [classes, setClasses] = useState([]);
+  
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
@@ -42,19 +46,31 @@ export const ExamManager = () => {
   });
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [subjects, setSubjects] = useState([]);
-  const [classes, setClasses] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
 
   const loadData = async () => {
+    if (!user?._id) {
+      return;
+    }
+
     try {
       setLoading(true);
-      const [questionResponse, quizResponse] = await Promise.all([
+      // Lấy danh sách câu hỏi, đề thi và lớp của giáo viên
+      const [questionResponse, quizResponse, classResponse] = await Promise.all([
         questionService.getQuestions().catch(() => []),
         quizService.getQuizzes().catch(() => []),
+        classService.getTeacherClasses(user._id).catch(() => null),
       ]);
+      // Cập nhật state với dữ liệu nhận được
       setQuestions(Array.isArray(questionResponse) ? questionResponse : []);
       setQuizzes(Array.isArray(quizResponse) ? quizResponse : []);
+      const teacherClasses = Array.isArray(classResponse)
+        ? classResponse
+        : Array.isArray(classResponse?.data)
+          ? classResponse.data
+          : [];
+      setClasses(teacherClasses);
     } catch (error) {
       setMessage('Không thể tải dữ liệu đề thi và câu hỏi.');
     } finally {
@@ -209,6 +225,7 @@ setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._i
         })),
         duration: Number(formData.duration || 45),
         maxAttempts: Number(formData.maxAttempts || 1),
+        assignedClass: formData.assignedClass,
         startDate: new Date(formData.startDate).toISOString(),
         endDate: new Date(formData.endDate).toISOString(),
         showAnswerAfter: Boolean(formData.showAnswerAfter),
@@ -521,6 +538,30 @@ startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInpu
                 onChange={(event) => setFormData({ ...formData, passingScore: event.target.value })}
               />
             </div>
+            
+            {/*them combox cho giáo vien chọn lớp*/}
+            <div className="exam-form-card">
+                <label className="field-label">
+                    Lớp được giao đề
+                </label>
+
+                <select className="form-input" value={formData.assignedClass} 
+                        onChange={(e) => setFormData({...formData, assignedClass: e.target.value})}>
+                    <option value="">
+                        Chọn lớp học
+                    </option>
+
+                    {classes.map((item) => (
+                        <option
+                            key={item._id}
+                            value={item._id}
+                        >
+                            {item.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
             <div className="exam-form-card">
               <label className="field-label">Bắt đầu</label>
               <input

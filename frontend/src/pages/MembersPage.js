@@ -176,7 +176,7 @@ useEffect(() => {
           <div>
             <p className="overview-badge">Danh sách lớp phụ trách</p>
             <h2>Lớp học đang quản lý</h2>
-            <p>Hiện tại bạn đang phụ trách {classes.length} lớp với tổng số {classes.reduce((sum, item) => sum + item.students, 0)} học sinh.</p>
+            <p>Hiện tại bạn đang phụ trách {classes.length} lớp với tổng số {classes.reduce((sum, item) => sum + item.students.length, 0)} học sinh.</p>
           </div>
           <div className="hero-stat">
             <div className="stat-card stat-card--primary" style={{ padding: '20px 24px', borderRadius: '20px', background: 'rgba(255,255,255,0.15)' }}>
@@ -185,7 +185,7 @@ useEffect(() => {
             </div>
             <div className="stat-card" style={{ padding: '20px 24px', borderRadius: '20px', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
               <p className="stat-card-label" style={{ color: 'rgba(255,255,255,0.88)' }}>Học sinh hiện tại</p>
-              <p className="stat-card-value" style={{ color: 'white' }}>{classes.reduce((sum, item) => sum + item.students, 0)}</p>
+              <p className="stat-card-value" style={{ color: 'white' }}>{classes.reduce((sum, item) => sum + item.students.length, 0)}</p>
             </div>
           </div>
         </section>
@@ -201,7 +201,7 @@ useEffect(() => {
 
           <div className="members-card-grid">
             {classes.map((item) => (
-              <div className="members-card" key={item.id}>
+              <div className="members-card" key={item._id}>
                 <div className="class-card-header">
                   <div>
                     <p className="class-card-title">{item.name}</p>
@@ -211,7 +211,7 @@ useEffect(() => {
     Xem học sinh
 </button>
                 </div>
-                <p className="class-card-meta">{item.studentCount} học sinh</p>
+                <p className="class-card-meta">{item.students?.length || 0} học sinh</p>
                 <div className="summary-score-row" style={{ background: 'rgba(47, 111, 235, 0.08)', padding: '16px', borderRadius: '20px' }}>
                   <div>
                     <p className="summary-score-value" style={{ color: '#1f4ec5' }}>{item.progress}%</p>
@@ -252,7 +252,7 @@ useEffect(() => {
             </thead>
             <tbody>
               {filteredStudents.map((student) => (
-                <tr key={student.id}>
+                <tr key={student._id}>
                   <td>{student._id}</td>
                   <td>{student.name}</td>
                   <td>{student.email}</td>

@@ -59,6 +59,13 @@ const quizSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    // Lớp được giao đề thi
+    assignedClass: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Class',
+      required: true,
+    },
+    // Trạng thái đề thi
     isPublished: {
       type: Boolean,
       default: false,
