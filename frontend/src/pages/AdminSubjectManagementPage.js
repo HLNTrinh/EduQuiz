@@ -49,7 +49,6 @@ export default function AdminSubjectManagementPage() {
     code: '',
     name: '',
     department: 'Khoa học tự nhiên',
-    examsCount: 0,
     status: 'active'
   });
 
@@ -129,7 +128,7 @@ export default function AdminSubjectManagementPage() {
     const { name, value } = e.target;
     setFormValues(prev => ({
       ...prev,
-      [name]: name === 'examsCount' ? parseInt(value) || 0 : value
+      [name]: value
     }));
   };
 
@@ -140,7 +139,6 @@ export default function AdminSubjectManagementPage() {
       code: '',
       name: '',
       department: 'Khoa học tự nhiên',
-      examsCount: 0,
       status: 'active'
     });
     setShowAddEditModal(true);
@@ -153,7 +151,6 @@ export default function AdminSubjectManagementPage() {
       code: subject.code,
       name: subject.name,
       department: subject.department,
-      examsCount: subject.examsCount || 0,
       status: subject.status
     });
     setShowAddEditModal(true);
@@ -183,7 +180,6 @@ export default function AdminSubjectManagementPage() {
           code: formValues.code,
           name: formValues.name,
           department: formValues.department,
-          examsCount: formValues.examsCount,
           status: formValues.status,
         });
         showToast(`Đã thêm môn học "${formValues.name}" thành công!`, 'success');
@@ -192,7 +188,6 @@ export default function AdminSubjectManagementPage() {
           code: formValues.code,
           name: formValues.name,
           department: formValues.department,
-          examsCount: formValues.examsCount,
           status: formValues.status,
         });
         showToast(`Cập nhật môn học "${formValues.name}" thành công!`, 'success');
@@ -353,7 +348,7 @@ export default function AdminSubjectManagementPage() {
                       <td>
                         <div className="exams-count-badge">
                           <span className="exams-count-num">
-                            {(subject.examsCount || 0) < 10 ? `0${subject.examsCount || 0}` : subject.examsCount}
+                            {(subject.quizCount || 0) < 10 ? `0${subject.quizCount || 0}` : subject.quizCount}
                           </span>
                           <span className="exams-set-label">Bộ đề</span>
                         </div>
@@ -486,11 +481,6 @@ export default function AdminSubjectManagementPage() {
                    </div>
                   <div className="form-row">
                     <div className="form-group">
-                      <label htmlFor="examsCount">Số lượng bộ đề</label>
-                      <input type="number" id="examsCount" name="examsCount" min="0"
-                        value={formValues.examsCount} onChange={handleInputChange} />
-                    </div>
-                    <div className="form-group">
                       <label htmlFor="status">Trạng thái hoạt động</label>
                       <select id="status" name="status" value={formValues.status} onChange={handleInputChange}>
                         <option value="active">Đang hoạt động</option>
@@ -535,7 +525,7 @@ export default function AdminSubjectManagementPage() {
                 </div>
                 <div className="view-detail-item">
                   <span className="view-detail-label">Số lượng đề thi</span>
-                  <span className="view-detail-value">{currentSubject.examsCount || 0} bộ đề</span>
+                  <span className="view-detail-value">{currentSubject.quizCount || 0} bộ đề</span>
                 </div>
                 <div className="view-detail-item">
                   <span className="view-detail-label">Trạng thái</span>
