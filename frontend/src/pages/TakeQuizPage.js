@@ -141,7 +141,7 @@ export const TakeQuizPage = () => {
           <button
             onClick={() => setCurrentQuestion(Math.min(quiz.questions.length - 1, currentQuestion + 1))}
           >
-            Câu sau →
+            Câu sauuuuu →
           </button>
         )}
       </div>
