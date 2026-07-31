@@ -20,6 +20,7 @@ import { TeacherDashboardPage } from "./pages/TeacherDashboardPage";
 import { ExamManager } from "./pages/ExamManager";
 import { QuestionManager } from "./pages/QuestionManager";
 import { MembersPage } from "./pages/MembersPage";
+import { TeacherResultPage } from "./pages/TeacherResultPage";
 import { ResultPage } from "./pages/ResultPage";
 import { TakeQuizPage } from "./pages/TakeQuizPage";
 
@@ -78,7 +79,7 @@ function AppRoutes() {
               <Route path="/teacher/exams" element={<ExamManager />} />
               <Route path="/teacher/questions" element={<QuestionManager />} />
               <Route path="/teacher/members" element={<MembersPage />} />
-              <Route path="/teacher/results" element={<ResultPage />} />
+              <Route path="/teacher/results" element={<TeacherResultPage />} />
               <Route path="/teacher/profile" element={<Profile />} />
             </>
           )}
