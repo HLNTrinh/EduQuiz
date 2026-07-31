@@ -26,7 +26,7 @@ export const QuestionManager = () => {
   const [difficulty, setDifficulty] = useState('Tất cả');
   const [sortOrder, setSortOrder] = useState('Mới nhất');
   const [showForm, setShowForm] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);//nút sửa nội dung
+  const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -113,34 +113,33 @@ if (sortOrder === 'Mới nhất') {
   }, [questions, searchQuery, selectedSubject, difficulty, sortOrder]);
 
   const handleOpenForm = (question = null) => {
+    setShowEditModal(false);
+
     if (question) {
       setFormData({
         ...question,
         options: question.options?.map((option) => ({ ...option })) || emptyForm.options,
       });
     } else {
-
       setFormData({
         ...emptyForm,
-        category:
-          subjects.length > 1
-            ? subjects[1]
-            : "",
+        category: subjects.length > 1 ? subjects[1] : '',
       });
     }
     setMessage('');
     setShowForm(true);
   };
-  //mở hộp thoại sửa câu hỏi
+
   const handleOpenEditModal = (question) => {
+    setShowForm(false);
     setFormData({
       ...question,
-      options:
-        question.options?.map((option) => ({
-          ...option,
-        })) || emptyForm.options,
+      options: question.options?.map((option) => ({
+        ...option,
+      })) || emptyForm.options,
     });
 
+    setMessage('');
     setShowEditModal(true);
   };
   const handleOptionChange = (index, field, value) => {
@@ -170,14 +169,16 @@ if (sortOrder === 'Mới nhất') {
         }
         return [savedQuestion, ...prev];
       });
-      /*Sửa khi lưu câu hỏi thành công*/
-      setShowForm(false);
+
+      if (formData._id) {
+        setShowEditModal(false);
+      } else {
+        setShowForm(false);
+      }
+
       setFormData({
         ...emptyForm,
-        category:
-          subjects.length > 1
-            ? subjects[1]
-            : "",
+        category: subjects.length > 1 ? subjects[1] : '',
       });
       setMessage(formData._id ? 'Đã cập nhật câu hỏi thành công.' : 'Đã thêm câu hỏi mới thành công.');
     } catch (error) {
@@ -346,6 +347,93 @@ onChange={(event) => setFormData({ ...formData, explanation: event.target.value 
               </div>
             </form>
           </section>
+        ) : null}
+
+        {showEditModal ? (
+          <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+            <div className="modal-content" onClick={(event) => event.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Chỉnh sửa câu hỏi</h3>
+                <button className="modal-close-btn" type="button" onClick={() => setShowEditModal(false)}>×</button>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <label className="field-label">Nội dung câu hỏi</label>
+                <textarea
+                  className="form-input"
+                  rows="4"
+                  value={formData.content}
+                  onChange={(event) => setFormData({ ...formData, content: event.target.value })}
+                  required
+                />
+
+                <label className="field-label">Môn học</label>
+                <select
+                  className="form-input"
+                  value={formData.category}
+                  onChange={(event) => setFormData({ ...formData, category: event.target.value })}
+                >
+                  <option value="">-- Chọn môn học --</option>
+                  {subjectList.map((sub) => (
+                    <option key={sub._id} value={sub._id}>{sub.name}</option>
+                  ))}
+                </select>
+
+                <div className="modal-row">
+                  <div className="modal-field">
+                    <label className="field-label">Độ khó</label>
+                    <select
+                      className="form-input"
+                      value={formData.difficulty}
+                      onChange={(event) => setFormData({ ...formData, difficulty: event.target.value })}
+                    >
+                      <option value="easy">Dễ</option>
+                      <option value="medium">Trung bình</option>
+                      <option value="hard">Khó</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label className="field-label">Đáp án</label>
+                {formData.options.map((option, index) => (
+                  <div key={index} className="question-answer-row">
+                    <input
+                      className="form-input"
+                      type="text"
+                      placeholder={`Đáp án ${index + 1}`}
+                      value={option.text}
+                      onChange={(event) => handleOptionChange(index, 'text', event.target.value)}
+                      required
+                    />
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="correctOption"
+                        checked={Boolean(option.isCorrect)}
+                        onChange={() => {
+                          const nextOptions = formData.options.map((item, idx) => ({ ...item, isCorrect: idx === index }));
+                          setFormData({ ...formData, options: nextOptions });
+                        }}
+                      />
+                      Đúng
+                    </label>
+                  </div>
+                ))}
+
+                <label className="field-label">Giải thích</label>
+                <textarea
+                  className="form-input"
+                  rows="2"
+                  value={formData.explanation}
+                  onChange={(event) => setFormData({ ...formData, explanation: event.target.value })}
+                />
+
+                <div className="modal-actions">
+                  <button className="btn-outline" type="button" onClick={() => { setShowEditModal(false); setFormData(emptyForm); }}>Hủy</button>
+                  <button className="btn-start" type="submit">Cập nhật</button>
+                </div>
+              </form>
+            </div>
+          </div>
         ) : null}
 
         <section className="question-bank-toolbar question-bank-header">
