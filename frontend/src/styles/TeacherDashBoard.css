@@ -146,7 +146,7 @@ SIDEBAR
 
     border-radius: 10px;
     text-decoration:none;
-    font-size: 15px;
+    font-size: 22px !important;
     font-weight: 600;
     /*color:#667085;*/
     margin: 0;
@@ -183,7 +183,7 @@ SIDEBAR
 
     justify-content:center;
 
-    font-size:17px;
+    font-size:20px;
 }
 
 .sidebar-bottom{
@@ -246,7 +246,7 @@ HEADER
 
     display:block;
 
-    font-size:13px;
+    font-size:16px;
 
     color:#9aa4b5;
 }
@@ -409,14 +409,14 @@ STAT
 
     color:#8b95a7;
 
-    font-size:13px;
-
+    font-size:15px;
+    font-weight:600; /*card thống kê mới*/
     margin-bottom:8px;
 }
 
 .stat-card-value{
 
-    font-size:34px;
+    font-size:40px;
 
     font-weight:700;
 
@@ -427,7 +427,7 @@ STAT
 
     color:#22c55e;
 
-    font-size:13px;
+    font-size:14px;
 
     font-weight:600;
 }
@@ -442,7 +442,7 @@ STAT
 
     border-radius:50px;
 
-    font-size:11px;
+    font-size:13px;
 
     font-weight:700;
 }
@@ -451,7 +451,7 @@ STAT
 
     color:#9aa4b5;
 
-    font-size:13px;
+    font-size:14px;
 }
 
 /*==================================================
@@ -494,7 +494,7 @@ CENTER
 
 .panel-title{
 
-    font-size:23px;
+    font-size:26px;
 
     font-weight:700;
 }
@@ -503,7 +503,7 @@ CENTER
 
     color:#97a1b4;
 
-    font-size:13px;
+    font-size:15px;
 }
 
 .btn-outline{
@@ -519,6 +519,9 @@ CENTER
     padding:10px 16px;
 
     cursor:pointer;
+    /*mới thêm 2 cái*/
+    font-size:15px;
+    font-weight:600;
 }
 
 .summary-score-row{
@@ -534,7 +537,7 @@ CENTER
 
 .summary-score-value{
 
-    font-size:48px;
+    font-size:56px;
 
     font-weight:700;
 }
@@ -542,14 +545,14 @@ CENTER
 .summary-score-note{
 
     color:#9aa4b5;
-
+    font-size:15px;/*mới thêm kq tb*/
     margin-top:6px;
 }
 
 .summary-score-pill{
 
     background:#dcfce7;
-
+    font-size:15px;/*mới thêm*/
     color:#15803d;
 
     padding:10px 16px;
@@ -562,7 +565,7 @@ CENTER
     display:grid;
 
     grid-template-columns:repeat(4,1fr);
-
+    
     gap:16px;
 }
 
@@ -585,14 +588,14 @@ CENTER
 
 .summary-chart-value{
 
-    font-size:28px;
+    font-size:32px;
 
     font-weight:700;
 }
 
 .summary-chart-label{
 
-    margin-top:10px;
+    margin-top:15px;
 
     color:#8b95a7;
 }
@@ -631,7 +634,7 @@ ACTIVITY
 }
 
 .activity-item-title{
-
+    font-size:17px;/*mới thêm*/
     font-weight:600;
 }
 
@@ -641,7 +644,7 @@ ACTIVITY
 
     color:#586274;
 
-    font-size:14px;
+    font-size:16px;
 }
 
 .activity-item-meta{
@@ -650,7 +653,7 @@ ACTIVITY
 
     color:#9aa4b5;
 
-    font-size:12px;
+    font-size:14px;
 }
 
 /*==================================================
@@ -701,7 +704,7 @@ CLASS
 
 .class-card-title{
 
-    font-size:36px;
+    font-size:40px;
 
     font-weight:700;
 }
@@ -710,13 +713,13 @@ CLASS
 
     margin-top:14px;
 
-    font-size:17px;
+    font-size:19px;
 }
 
 .class-card-meta{
 
     padding:18px 28px;
-
+    font-size:16px;/*mới thêm*/
     color:#8b95a7;
 }
 
@@ -758,7 +761,7 @@ CLASS
 
     border:3px solid #fff;
 
-    font-size:12px;
+    font-size:13px;
 }
 
 .btn-start{
@@ -768,7 +771,10 @@ CLASS
     background:#2563eb;
 
     color:#fff;
-
+    
+    font-size:15px;/*mới thêm*/
+    font-weight:600;/*mới thêm*/
+    
     padding:10px 20px;
 
     border-radius:12px;
