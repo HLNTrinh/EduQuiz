@@ -248,21 +248,24 @@ exports.getStudentAttempts = async (req, res) => {
 // Lấy kết quả của học sinh cho giáo viên
 exports.getTeacherAttempts = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, quizId: filterQuizId } = req.query;
     const userId = req.user.id || req.user.userId;
 
     // Chỉ khai báo 1 lần
     const quizzes = await Quiz.find({ createdBy: userId }).select('_id');
     const quizIds = quizzes.map((quiz) => quiz._id);
 
-    const attempts = await QuizAttempt.find({ quizId: { $in: quizIds } })
+    // Nếu có filterQuizId thì chỉ lấy attempts của quiz đó
+    const matchQuizIds = filterQuizId ? [filterQuizId] : quizIds;
+
+    const attempts = await QuizAttempt.find({ quizId: { $in: matchQuizIds } })
       .populate('quizId', 'title')
       .populate('studentId', 'name email')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
 
-    const total = await QuizAttempt.countDocuments({ quizId: { $in: quizIds } });
+    const total = await QuizAttempt.countDocuments({ quizId: { $in: matchQuizIds } });
 
     res.json({
       data: attempts,

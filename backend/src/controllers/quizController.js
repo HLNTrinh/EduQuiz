@@ -77,6 +77,8 @@ exports.getQuizzes = async (req, res) => {
     const quizzes = await Quiz.find(filter)
       .populate('createdBy', 'name email')
       .populate('questions.questionId')
+      .populate('assignedClass', 'name')
+      .populate('subject', 'name')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
