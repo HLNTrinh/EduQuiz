@@ -64,8 +64,8 @@ exports.getQuizzes = async (req, res) => {
       const classIds = studentClasses.map((c) => c._id);
       
       if (classIds.length > 0) {
-        // Lấy các quiz published và có class nằm trong danh sách class của student
-        filter = { isPublished: true, class: { $in: classIds } };
+        // Lấy các quiz published và có assignedClass nằm trong danh sách class của student
+        filter = { isPublished: true, assignedClass: { $in: classIds } };
       } else {
         filter = { _id: { $in: [] }, isPublished: true };
       }
@@ -184,8 +184,8 @@ exports.publishQuiz = async (req, res) => {
     quiz.isPublished = true;
     await quiz.save();
 // Nếu đề thi có chọn lớp → tạo QuizAssignment cho tất cả học sinh trong lớp đó
-    if (quiz.class) {
-      const classDoc = await Class.findById(quiz.class).populate('students', '_id');
+    if (quiz.assignedClass) {
+      const classDoc = await Class.findById(quiz.assignedClass).populate('students', '_id');
       
       if (classDoc && classDoc.students && classDoc.students.length > 0) {
         const studentIds = classDoc.students.map((s) => s._id);

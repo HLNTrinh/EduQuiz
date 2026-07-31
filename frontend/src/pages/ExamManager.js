@@ -47,7 +47,6 @@ export const ExamManager = () => {
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState('');
-  const [selectedClass, setSelectedClass] = useState('');
 
   const loadData = async () => {
     if (!user?._id) {
@@ -232,7 +231,6 @@ setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._i
         totalPoints,
         passingScore: Number(formData.passingScore || 50),
         subject: selectedSubject || undefined,
-        class: selectedClass || undefined,
       };
 
       const response = formData._id
@@ -248,7 +246,6 @@ setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._i
       setSelectedQuestions([]);
       setFormData(buildInitialForm());
       setSelectedSubject('');
-      setSelectedClass('');
       setMessage(response?.message || 'Tạo đề thi thành công.');
       return createdQuiz;
     } catch (error) {
@@ -270,13 +267,13 @@ setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._i
         description: q.description || '',
         duration: q.duration?.toString() || '45',
         maxAttempts: q.maxAttempts?.toString() || '1',
+        assignedClass: q.assignedClass || '',
 startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInput(new Date()),
         endDate: q.endDate ? toLocalDatetimeInput(q.endDate) : toLocalDatetimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
         showAnswerAfter: Boolean(q.showAnswerAfter),
         passingScore: q.passingScore?.toString() || '50',
       });
       setSelectedSubject(q.subject || '');
-      setSelectedClass(q.class || '');
 
       // map questions to full objects from questions list
       const selected = (q.questions || []).map((it) => {
@@ -511,19 +508,6 @@ startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInpu
                 <option value="">-- Chọn môn học --</option>
                 {subjects.map((sub) => (
 <option key={sub._id} value={sub._id}>{sub.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="exam-form-card">
-              <label className="field-label">Lớp</label>
-              <select
-                className="form-input"
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-              >
-                <option value="">-- Chọn lớp --</option>
-                {classes.map((cls) => (
-                  <option key={cls._id} value={cls._id}>{cls.name}</option>
                 ))}
               </select>
             </div>
