@@ -70,6 +70,14 @@ export const TakeQuizPage = () => {
   const getOptionClass = (question, index) => {
     const selectedIndex = answers[question._id];
     if (selectedIndex === undefined) return 'option';
+    
+    // Nếu không cho hiển thị đáp án: chỉ highlight đáp án đã chọn
+    if (!quiz.showAnswerAfter) {
+      if (index === selectedIndex) return 'option selected';
+      return 'option';
+    }
+    
+    // Nếu cho hiển thị đáp án: hiển thị đúng/sai
     if (index === question.options.findIndex((opt) => opt.isCorrect)) {
       return 'option correct';
     }
@@ -141,7 +149,7 @@ export const TakeQuizPage = () => {
           <button
             onClick={() => setCurrentQuestion(Math.min(quiz.questions.length - 1, currentQuestion + 1))}
           >
-            Câu sauuuuu →
+            Câu sau →
           </button>
         )}
       </div>

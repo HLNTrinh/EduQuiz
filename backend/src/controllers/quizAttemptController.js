@@ -43,21 +43,25 @@ exports.startQuizAttempt = async (req, res) => {
 
     await attempt.save();
 
-    // KHÔNG trả isCorrect / explanation lúc bắt đầu làm bài
+    // Trả showAnswerAfter để frontend biết có hiển thị đáp án hay không
     const quizData = {
       _id: quiz._id,
       title: quiz.title,
       description: quiz.description,
       duration: quiz.duration,
+      showAnswerAfter: quiz.showAnswerAfter,
       questions: validQuestions.map((q) => ({
         _id: q.questionId._id,
         content: q.questionId.content,
         options: q.questionId.options.map((opt) => ({
           text: opt.text,
-          // không gửi isCorrect
+          // Chỉ gửi isCorrect nếu showAnswerAfter = true
+          ...(quiz.showAnswerAfter ? { isCorrect: opt.isCorrect } : {}),
         })),
         category: q.questionId.category,
         difficulty: q.questionId.difficulty,
+        // Chỉ gửi explanation nếu showAnswerAfter = true
+        ...(quiz.showAnswerAfter ? { explanation: q.questionId.explanation } : {}),
         order: q.order,
       })),
     };
