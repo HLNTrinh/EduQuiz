@@ -132,6 +132,35 @@ export const TeacherResultPage = () => {
     return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
+  // Hàm xuất file CSV
+  const exportToCSV = () => {
+    if (groupedStudents.length === 0) return;
+
+    const headers = ['Mã học sinh', 'Họ tên', 'Email', 'Lớp', 'Điểm số', 'Số lần làm', 'Thời gian làm', 'Ngày nộp'];
+    
+    const rows = groupedStudents.map((s) => [
+      s.studentId?._id?.toString().slice(0, 8).toUpperCase(),
+      s.studentId?.name || '',
+      s.studentId?.email || '',
+      selectedQuiz?.assignedClass?.name || '',
+      s.highestScore,
+      s.attemptCount,
+      s.bestAttempt?.timeTaken || 0,
+      formatDate(s.bestAttempt?.endTime),
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ket_qua_${selectedQuiz?.title || 'de_thi'}_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // Nhóm attempts theo học sinh, lấy điểm cao nhất và đếm số lần làm
   const groupedStudents = React.useMemo(() => {
     const map = new Map();
@@ -446,8 +475,20 @@ export const TeacherResultPage = () => {
                     <h2 className="panel-title">📋 Kết quả học sinh</h2>
                     <p className="panel-subtitle">Chi tiết kết quả làm bài của từng học sinh.</p>
                   </div>
-                  <div style={{ fontSize: '10px', color: '#97a3b5', fontWeight: 600 }}>
-                    {groupedStudents.length} học sinh
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', color: '#97a3b5', fontWeight: 600 }}>
+                      {groupedStudents.length} học sinh
+                    </span>
+                    {groupedStudents.length > 0 && (
+                      <button
+                        className="btn-outline btn-small"
+                        type="button"
+                        onClick={exportToCSV}
+                        style={{ fontSize: '9px', padding: '3px 8px' }}
+                      >
+                        📥 Xuất CSV
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="table-wrap">
