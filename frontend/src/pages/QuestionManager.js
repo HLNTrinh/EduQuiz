@@ -118,7 +118,11 @@ if (sortOrder === 'Mới nhất') {
     if (question) {
       setFormData({
         ...question,
-        options: question.options?.map((option) => ({ ...option })) || emptyForm.options,
+        explanation: question.explanation || '',
+        options: question.options?.map((option) => ({
+          text: option.text || '',
+          isCorrect: Boolean(option.isCorrect),
+        })) || emptyForm.options,
       });
     } else {
       setFormData({
@@ -134,8 +138,10 @@ if (sortOrder === 'Mới nhất') {
     setShowForm(false);
     setFormData({
       ...question,
+      explanation: question.explanation || '',
       options: question.options?.map((option) => ({
-        ...option,
+        text: option.text || '',
+        isCorrect: Boolean(option.isCorrect),
       })) || emptyForm.options,
     });
 
@@ -150,13 +156,33 @@ if (sortOrder === 'Mới nhất') {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const content = (formData.content || '').trim();
+    const options = (formData.options || []).map((option) => ({ text: (option.text || '').trim(), isCorrect: Boolean(option.isCorrect) }));
+    const correctCount = options.filter((option) => option.isCorrect).length;
+
+    if (!content) {
+      setMessage('Vui lòng nhập nội dung câu hỏi.');
+      return;
+    }
+
+    if (options.length !== 4 || options.some((option) => !option.text)) {
+      setMessage('Vui lòng nhập đủ 4 đáp án.' );
+      return;
+    }
+
+    if (correctCount !== 1) {
+      setMessage('Vui lòng chọn đúng một đáp án.');
+      return;
+    }
+
     try {
       const payload = {
-        content: formData.content.trim(),
-        options: formData.options.map((option) => ({ text: option.text.trim(), isCorrect: Boolean(option.isCorrect) })),
+        content,
+        options,
         category: formData.category,
         difficulty: formData.difficulty,
-        explanation: formData.explanation.trim(),
+        explanation: (formData.explanation || '').trim(),
       };
 
       const response = formData._id
