@@ -83,3 +83,11 @@ export const quizAttemptService = {
   getStudentAttempts:(params)       => api.get('/quiz-attempts', { params }),
   getTeacherAttempts:(params)       => api.get('/quiz-attempts/teacher', { params }),
 };
+
+export const notificationService = {
+  getStudentNotifications: async (params) => {
+    const response = await api.get('/notifications/student', { params });
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
+};

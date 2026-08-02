@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { quizService, quizAttemptService, classService } from "../services/services";
+import NotificationBell from "../components/NotificationBell";
 
 import AvatarInitials from "../components/AvatarInitials";
 import "../styles/Dashboard.css";
@@ -219,11 +220,8 @@ const [quizzes, setQuizzes] = useState([]);
           </p>
         </div>
 
-        <div className="dash-header-actions">
-          <button className="bell-btn" aria-label="Thông báo">
-            🔔
-            <span className="bell-dot" />
-          </button>
+<div className="dash-header-actions">
+          <NotificationBell />
 
           <div className="user-chip">
             <AvatarInitials name={user?.name} size={36} />
