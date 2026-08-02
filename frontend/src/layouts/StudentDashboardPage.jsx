@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { quizService, quizAttemptService } from "../services/services";
+import { quizService, quizAttemptService, classService } from "../services/services";
 
 import AvatarInitials from "../components/AvatarInitials";
 import "../styles/Dashboard.css";
@@ -25,8 +25,9 @@ export default function StudentDashboardPage() {
   const { user } = useAuth();
   const [currentHour, setCurrentHour] = useState(new Date().getHours());
   const [activeStat, setActiveStat] = useState(null);
-  const [quizzes, setQuizzes] = useState([]);
+const [quizzes, setQuizzes] = useState([]);
   const [attempts, setAttempts] = useState([]);
+  const [studentClasses, setStudentClasses] = useState([]);
 
   // Tối ưu greeting bằng useMemo
   const greeting = useMemo(() => {
@@ -62,13 +63,14 @@ export default function StudentDashboardPage() {
     return () => clearInterval(interval);
   }, [currentHour]);
 
-  // Lấy danh sách bài thi được giao cho lớp của học sinh + lịch sử làm bài
+// Lấy danh sách bài thi được giao cho lớp của học sinh + lịch sử làm bài
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [quizRes, attemptRes] = await Promise.all([
+        const [quizRes, attemptRes, classRes] = await Promise.all([
           quizService.getQuizzes({ page: 1, limit: 50 }),
           quizAttemptService.getStudentAttempts({ page: 1, limit: 50 }),
+          classService.getStudentClasses(),
         ]);
         const quizList = Array.isArray(quizRes)
           ? quizRes
@@ -77,6 +79,8 @@ export default function StudentDashboardPage() {
           attemptRes?.data ?? attemptRes?.data?.data ?? [];
         setQuizzes(Array.isArray(quizList) ? quizList : []);
         setAttempts(Array.isArray(attemptList) ? attemptList : []);
+        const classList = Array.isArray(classRes) ? classRes : [];
+        setStudentClasses(classList);
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
       }
@@ -340,8 +344,8 @@ export default function StudentDashboardPage() {
             </div>
 
             <div className="profile-card-body">
-              <h3>{user?.name || "Học sinh"}</h3>
-              <p>Lớp 12A1 • Trường THPT Chuyên</p>
+<h3>{user?.name || "Học sinh"}</h3>
+              <p>{studentClasses.length > 0 ? studentClasses.map(c => c.name).join(', ') : 'Chưa có lớp'}</p>
 
               <div className="profile-stats">
                 <div>

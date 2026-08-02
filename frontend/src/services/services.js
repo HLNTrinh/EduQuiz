@@ -68,6 +68,11 @@ export const classService = {
     const body = response ?? {};
     return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
   },
+  getStudentClasses: async () => {
+    const response = await api.get('/classes/student');
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
 };
 
 export const quizAttemptService = {
