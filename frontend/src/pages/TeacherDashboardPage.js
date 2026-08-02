@@ -82,6 +82,35 @@ export const TeacherDashboardPage = () => {
       avgDuration: averageDuration,
     };
   }, [quizzes]);
+  // Function to format time ago
+
+  const formatTimeAgo = (date) => {
+    if (!date) return 'vừa xong';
+    const diffMs = Date.now() - new Date(date).getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    if (diffMinutes < 1) return 'vừa xong';
+    if (diffMinutes < 60) return `${diffMinutes} phút trước`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} ngày trước`;
+  };
+
+  const recentActivities = useMemo(() => {
+    if (!teacherAttempts || teacherAttempts.length === 0) {
+      return [];
+    }
+
+    return teacherAttempts
+      .slice()
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 3)
+      .map((attempt) => ({
+        name: attempt.studentId?.name || 'Học sinh',
+        action: `nộp bài ${attempt.quizId?.title || 'một đề thi'}`,
+        meta: `${formatTimeAgo(attempt.createdAt)} · Điểm: ${attempt.score ?? 0}`,
+      }));
+  }, [teacherAttempts]);
 
   const calculateTeacherSummary = (attempts) => {
     if (!attempts || attempts.length === 0) {
@@ -173,13 +202,8 @@ export const TeacherDashboardPage = () => {
 
   if (loading) return <div className="loading">Đang tải...</div>;
 
-  const recentActivities = [
-    { name: 'Lê Minh Tâm', action: 'nộp bài Kiểm tra Đại số 10', meta: '2 phút trước · Điểm: 8.5' },
-    { name: 'Bạn đã thêm 12 câu hỏi mới', action: 'vào ngân hàng Vật Lý', meta: '15 phút trước' },
-    { name: 'Nguyễn Thùy Linh', action: 'làm bài Kiểm tra Lịch sử', meta: '45 phút trước · Điểm: 7.2' },
-  ];
-
-  const chartColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444'];
+  //const chartColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444'];
+  const chartColors = ['#2563eb'];
   const chartItems = classSummaries.length > 0
     ? classSummaries
     : Array.from({ length: 4 }, (_, index) => ({ label: 'Chưa có dữ liệu', value: 0 }));
@@ -188,7 +212,7 @@ export const TeacherDashboardPage = () => {
     title: classItem.name || 'Lớp chưa đặt tên',
     subject: classItem.subject?.name || 'Chưa có môn',
     students: classItem.studentCount || classItem.students?.length || 0,
-    room: classItem.room || 'Chưa có phòng',
+    /*room: classItem.room || 'Chưa có phòng',*/
     color: 'blue',
     teacherName: classItem.teacher?.name || user?.name || 'Giáo viên',
   }));
@@ -322,7 +346,7 @@ export const TeacherDashboardPage = () => {
             </p>
 
             <p className="stat-card-value">
-              {Math.max(stats.total * 15, 0).toLocaleString('vi-VN')}
+              {(summaryStats.completedQuizzes || 0).toLocaleString('vi-VN')}
             </p>
           </div>
 
@@ -357,10 +381,11 @@ export const TeacherDashboardPage = () => {
               <div className="summary-bar-container">
                 {chartItems.map((item, index) => {
                   const maxValue = Math.max(...chartItems.map((i) => Number(i.value || 0)), 1);
-                  const heightPercent = maxValue > 0 ? (Number(item.value || 0) / maxValue) * 100 : 0;
+                  const heightPercent =
+                    maxValue > 0 ? (Number(item.value || 0) / maxValue) * 100 : 0;
+
                   return (
                     <div className="summary-bar-column" key={index}>
-                      <span className="summary-bar-value">{item.value}</span>
                       <div className="summary-bar-track">
                         <div
                           className="summary-bar-fill"
@@ -368,9 +393,16 @@ export const TeacherDashboardPage = () => {
                             height: `${Math.max(heightPercent, 10)}%`,
                             background: chartColors[index % chartColors.length],
                           }}
-                        />
+                        >
+                          <span className="summary-bar-value">
+                            {item.value}
+                          </span>
+                        </div>
                       </div>
-                      <span className="summary-bar-caption">{item.label}</span>
+
+                      <span className="summary-bar-caption">
+                        {item.label}
+                      </span>
                     </div>
                   );
                 })}
@@ -418,7 +450,7 @@ export const TeacherDashboardPage = () => {
                   <div className="avatar-small">LM</div>
                   <div className="avatar-small">PL</div>
                 </div>
-                <button className="btn-start">Vào lớp</button>
+                <button className="btn-start" onClick={() => navigate("/teacher/members")}>Vào lớp </button>
               </div>
             </div>
           ))}
