@@ -5,7 +5,7 @@ import { quizService, quizAttemptService, classService } from "../services/servi
 import NotificationBell from "../components/student/NotificationBell";
 import UserMenu from "../components/student/UserMenu";
 import "../styles/Dashboard.css";
-
+import AvatarInitials from "../common/AvatarInitials";
 const chartMonths = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"];
 const chartValues = [55, 62, 58, 74, 68, 80];
 
