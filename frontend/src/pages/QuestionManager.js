@@ -239,7 +239,9 @@ if (sortOrder === 'Mới nhất') {
           </div>
         </header>
 
+
         {message ? <div className="notice" style={{ marginBottom: '16px' }}>{message}</div> : null}
+
 
         {showForm ? (
           <section className="question-form-panel">

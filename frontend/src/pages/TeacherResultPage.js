@@ -426,7 +426,7 @@ export const TeacherResultPage = () => {
                       {groupedStudents.length > 0 ? (
                         groupedStudents.map((student) => (
                           <tr key={student.studentId?._id}>
-                            <td style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '9px', color: '#53637b' }}>
+                            <td style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '12px', color: '#53637b' }}>
                               {student.studentId?._id ? student.studentId._id.toString().slice(0, 8).toUpperCase() : 'N/A'}
                             </td>
                             <td style={{ fontWeight: 600 }}>{student.studentId?.name || 'N/A'}</td>

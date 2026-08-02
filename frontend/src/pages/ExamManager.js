@@ -490,7 +490,7 @@ const query = searchQuery.toLowerCase();
                 <p className="panel-subtitle">Chọn câu hỏi phù hợp để thêm vào đề thi.</p>
               </div>
               <div className="panel-actions">
-<div className="panel-badge">{questions.length.toLocaleString()} câu</div>
+                <div className="panel-badge">{questions.length.toLocaleString()} câu</div>
                 <input
                   className="search-input"
                   type="text"
@@ -498,10 +498,10 @@ const query = searchQuery.toLowerCase();
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <button className="btn-outline btn-small" type="button" onClick={() => openQuestionEditor(null)}>Thêm câu hỏi</button>
+                {/*<button className="btn-outline btn-small" type="button" onClick={() => openQuestionEditor(null)}>Thêm câu hỏi</button>*/}
               </div>
             </div>
-
+            
             {showQuestionForm && (
               <div className="question-editor-panel">
                 <div className="panel-header">
