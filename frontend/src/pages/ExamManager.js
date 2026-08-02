@@ -580,7 +580,8 @@ const query = searchQuery.toLowerCase();
                 filteredQuestions.map((item) => (
                   <div key={item._id} className="question-item">
                     <div>
-                      <p className="question-label">{item.category || 'Câu hỏi'}</p>
+                      {/* <p className="question-label">{item.category || 'Câu hỏi'}</p> */}
+                        <p className="question-label">Câu hỏi</p>
                       <p className="question-title">{item.content}</p>
                       <div className="question-meta">
                         {/* <span>{item.category}</span> */}
