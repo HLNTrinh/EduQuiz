@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { quizService, subjectService, quizAttemptService } from "../services/services";
 import NotificationBell from "../components/student/NotificationBell";
-import AvatarInitials from "../components/student/AvatarInitials";
+import UserMenu from "../components/student/UserMenu";
 import "../styles/ExamList.css";
 
 export default function ExamList() {
@@ -140,9 +140,7 @@ export default function ExamList() {
 <div className="dash-header-actions">
           <NotificationBell />
           <button className="icon-btn"><HelpIcon /></button>
-          <div className="user-chip">
-            <AvatarInitials name={user?.name} size={36} />
-          </div>
+          <UserMenu size={36} />
         </div>
       </header>
 

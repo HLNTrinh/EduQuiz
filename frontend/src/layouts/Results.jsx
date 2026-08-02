@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { quizAttemptService } from '../services/services';
 import NotificationBell from '../components/student/NotificationBell';
-import AvatarInitials from '../components/student/AvatarInitials';
+import UserMenu from '../components/student/UserMenu';
 import '../styles/Results.css';
 
 const SUBJECT_MAP = {
@@ -98,12 +98,10 @@ return (
             <SearchIcon />
             <input placeholder="Tìm kiếm..." />
           </div>
-          <div className="dash-header-actions">
+<div className="dash-header-actions">
             <NotificationBell />
             <button className="icon-btn"><HelpIcon /></button>
-            <div className="user-chip">
-              <AvatarInitials name={user?.name} size={36} />
-            </div>
+            <UserMenu size={36} />
           </div>
         </header>
 

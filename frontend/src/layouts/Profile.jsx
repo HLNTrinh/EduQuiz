@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/services';
 import NotificationBell from '../components/student/NotificationBell';
+import UserMenu from '../components/student/UserMenu';
 import AvatarInitials from '../components/student/AvatarInitials';
 import '../styles/Profile.css';
 

@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { quizService, quizAttemptService, classService } from "../services/services";
 import NotificationBell from "../components/student/NotificationBell";
-
-import AvatarInitials from "../components/student/AvatarInitials";
+import UserMenu from "../components/student/UserMenu";
 import "../styles/Dashboard.css";
 
 const chartMonths = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"];
@@ -222,10 +221,7 @@ const [quizzes, setQuizzes] = useState([]);
 
 <div className="dash-header-actions">
           <NotificationBell />
-
-          <div className="user-chip">
-            <AvatarInitials name={user?.name} size={36} />
-          </div>
+          <UserMenu size={36} />
         </div>
       </header>
 

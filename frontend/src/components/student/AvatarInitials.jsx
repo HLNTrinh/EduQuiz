@@ -9,7 +9,7 @@ import React from 'react';
  */
 export default function AvatarInitials({ name = '', size = 40, className = '' }) {
   const getInitials = (fullName) => {
-    if (!fullName || typeof fullName !== 'string') return '?';
+if (!fullName || typeof fullName !== 'string') return '';
     const parts = fullName.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
