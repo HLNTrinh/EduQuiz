@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/services';
+import AvatarInitials from '../components/AvatarInitials';
 import '../styles/Profile.css';
 
 const ROLE_LABELS = {
@@ -168,8 +169,8 @@ return (
         <div className="dash-header-actions">
           <button className="icon-btn"><BellIcon /></button>
           <button className="icon-btn"><HelpIcon /></button>
-          <div className="user-chip">
-            <img src={profileData.avatar} alt="avatar" />
+<div className="user-chip">
+            <AvatarInitials name={profileData.name} size={40} />
             <div className="user-chip-text">
               <span className="name">{profileData.name}</span>
               <span className="role">{profileData.role}</span>
