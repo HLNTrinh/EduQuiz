@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 import { TbLayoutDashboard } from "react-icons/tb";
@@ -11,6 +12,7 @@ import "./TeacherSidebar.css"; // nếu CSS của sidebar ở đây
 
 export default function TeacherSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
 
   return (
@@ -90,62 +92,82 @@ export default function TeacherSidebar() {
 
       <nav className="sidebar-nav">
         <a
-          className="sidebar-link"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/dashboard" ? "sidebar-link--active" : ""
+          }`}
           href="#"
           onClick={(e) => {
             e.preventDefault();
             navigate("/teacher/dashboard");
           }}
         >
-        <span className="sidebar-icon"> 
-          <TbLayoutDashboard size={22} /></span>Tổng quan
+          <span className="sidebar-icon">
+            <TbLayoutDashboard size={22} />
+          </span>
+          Tổng quan
         </a>
 
         <a
-          className="sidebar-link"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/exams" ? "sidebar-link--active" : ""
+          }`}
           href="#"
           onClick={(e) => {
             e.preventDefault();
             navigate("/teacher/exams");
           }}
         >
-          <span className="sidebar-icon"><LuBookOpenText size={22} /></span>
+          <span className="sidebar-icon">
+            <LuBookOpenText size={22} />
+          </span>
           Đề thi
         </a>
 
         <a
-          className="sidebar-link"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/questions" ? "sidebar-link--active" : ""
+          }`}
           href="#"
           onClick={(e) => {
             e.preventDefault();
             navigate("/teacher/questions");
           }}
         >
-          <span className="sidebar-icon"> <FcLibrary size={22} /></span>
+          <span className="sidebar-icon">
+            <FcLibrary size={22} />
+          </span>
           Ngân hàng câu hỏi
         </a>
 
         <a
-          className="sidebar-link"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/results" ? "sidebar-link--active" : ""
+          }`}
           href="#"
           onClick={(e) => {
             e.preventDefault();
             navigate("/teacher/results");
           }}
         >
-          <span className="sidebar-icon"><LuChartNoAxesCombined size={22} /></span>
+          <span className="sidebar-icon">
+            <LuChartNoAxesCombined size={22} />
+          </span>
           Kết quả
         </a>
 
         <a
-          className="sidebar-link"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/members" ? "sidebar-link--active" : ""
+          }`}
           href="#"
           onClick={(e) => {
             e.preventDefault();
             navigate("/teacher/members");
           }}
         >
-          <span className="sidebar-icon"><FaUsers size={22} /></span>
+          <span className="sidebar-icon">
+            <FaUsers size={22} />
+          </span>
           Thành viên
         </a>
       </nav>

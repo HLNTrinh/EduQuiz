@@ -34,37 +34,14 @@
 .dash-shell button {
   cursor: pointer;
 }
-/*
-.dash-shell .sidebar {
-  width: 210px;
-  flex: 0 0 210px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 22px 14px 18px;
-  background: #eef4ff;
-  border-right: 1px solid var(--exam-line);
-}
-*/
+
 .dash-shell .sidebar-brand {
   display: flex;
   align-items: center;
   gap: 9px;
   padding: 1px 10px 28px;
 }
-/*
-.dash-shell .sidebar-logo {
-  width: 29px;
-  height: 29px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  color: #fff;
-  background: linear-gradient(145deg, #4e94ff, #0a55cd);
-  font-size: 16px;
-  box-shadow: 0 4px 10px rgba(13, 91, 215, 0.22);
-}
-*/
+
 .dash-shell .sidebar-brand-name,
 .dash-shell .sidebar-brand-sub {
   margin: 0;
@@ -84,64 +61,13 @@
   font-weight: 700;
   letter-spacing: 0.7px;
 }
-/*
-.dash-shell .sidebar-nav,
-.dash-shell .sidebar-bottom {
-  display: grid;
-  gap: 5px;
-}
 
-.dash-shell .sidebar-bottom {
-  margin-top: auto;
-}
-
-.dash-shell .sidebar-link {
-  min-height: 38px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 0 12px;
-  border-radius: 6px;
-  color: #62718b;
-  font-size: 11px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 160ms ease, background 160ms ease;
-}
-
-.dash-shell .sidebar-link:hover,
-.dash-shell .sidebar-link--active {
-  color: var(--exam-blue);
-  background: #edf4ff;
-}
-
-.dash-shell .sidebar-link--danger {
-  color: #e15f68;
-}
-
-.dash-shell .sidebar-icon {
-  width: 16px;
-  display: inline-flex;
-  justify-content: center;
-  font-size: 13px;
-}
-*/
 .dash-shell .dash-main {
   min-width: 0;
   flex: 1;
   padding: 22px 30px 44px;
   overflow: hidden;
 }
-/*
-.dash-shell .dash-header--overview {
-  min-height: 66px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 18px;
-}
-*/
 /* =========================================================
    HEADER TẠO ĐỀ THI
    ========================================================= */
@@ -300,16 +226,17 @@
 .btn-start:hover .button-icon {
     transform: scale(1.15);
 }
+/*
 .dash-shell .overview-badge {
   margin: 0 0 6px;
   color: #8090aa;
   font-size: 10px;
 }
-
+*/
 .dash-shell .dash-greeting {
   margin: 0;
   color: #162642;
-  font-size: 25px;
+  font-size: 34px;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
@@ -317,7 +244,8 @@
 .dash-shell .dash-subtitle {
   margin: 5px 0 0;
   color: #8895a9;
-  font-size: 11px;
+  font-size: 15px;
+  line-height:1.6;
 }
 
 .dash-shell .overview-actions,
@@ -332,7 +260,7 @@
 .dash-shell .overview-actions {
   padding-top: 28px;
 }
-
+/*Nút*/
 .dash-shell .btn-outline,
 .dash-shell .btn-start {
   min-height: 30px;
@@ -341,7 +269,7 @@
   border-radius: 6px;
   background: #fff;
   color: #53647f;
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 700;
   transition: border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
@@ -371,7 +299,7 @@
 .dash-shell .btn-small {
   min-height: 26px;
   padding: 0 9px;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .dash-shell .notice {
@@ -424,7 +352,7 @@
   display: block;
   margin: 0 0 6px;
   color: #8794aa;
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.55px;
   text-transform: uppercase;
@@ -440,7 +368,7 @@
   outline: none;
   color: #34445f;
   background: #fbfcfe;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 .dash-shell textarea.form-input {
@@ -522,7 +450,7 @@
 .dash-shell .summary-text {
   margin-top: 2px !important;
   color: #929db0;
-  font-size: 9px;
+  font-size: 14px;
 }
 
 .dash-shell .summary-pill,
@@ -534,7 +462,7 @@
   min-height: 20px;
   padding: 0 7px;
   border-radius: 4px;
-  font-size: 8px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -578,14 +506,14 @@
 .dash-shell .panel-title {
   margin: 0;
   color: #253653;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 22px ;
+  font-weight: 600;
 }
 
 .dash-shell .panel-subtitle {
   margin: 4px 0 0;
   color: #9aa6b9;
-  font-size: 9px;
+  font-size: 15px ;
 }
 
 .dash-shell .panel-actions {
@@ -669,7 +597,7 @@
   border-radius: 3px;
   color: #3979d5;
   background: #eaf3ff;
-  font-size: 7px;
+  font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -677,7 +605,7 @@
 .dash-shell .question-title {
   margin: 0;
   color: #35445f;
-  font-size: 10px;
+  font-size: 15px;
   line-height: 1.45;
 }
 
@@ -687,7 +615,7 @@
   gap: 10px;
   margin: 6px 0 0;
   color: #a1adbe;
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .dash-shell .exam-summary-card {
@@ -733,15 +661,15 @@
   width: 100%;
   border-collapse: collapse;
   color: #53627b;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 .dash-shell .results-table th {
   padding: 9px 8px;
   border-bottom: 1px solid var(--exam-line);
   color: #9aa6b9;
-  font-size: 8px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 500;
   text-align: left;
   text-transform: uppercase;
 }

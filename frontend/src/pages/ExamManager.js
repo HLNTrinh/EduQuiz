@@ -184,7 +184,7 @@ const query = searchQuery.toLowerCase();
       });
 
       if (editingQuestionId) {
-setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._id ? { ...item, ...savedQuestion } : item)));
+        setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._id ? { ...item, ...savedQuestion } : item)));
         setMessage('Đã cập nhật câu hỏi thành công.');
       } else {
         setSelectedQuestions((prev) => [...prev, { ...savedQuestion, score: 10 }]);
@@ -269,7 +269,7 @@ setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._i
         duration: q.duration?.toString() || '45',
         maxAttempts: q.maxAttempts?.toString() || '1',
         assignedClass: q.assignedClass || '',
-startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInput(new Date()),
+        startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInput(new Date()),
         endDate: q.endDate ? toLocalDatetimeInput(q.endDate) : toLocalDatetimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
         showAnswerAfter: Boolean(q.showAnswerAfter),
         passingScore: q.passingScore?.toString() || '50',
@@ -321,7 +321,7 @@ startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInpu
       <main className="dash-main">
         <header className="dash-header dash-header--overview">
           <div>
-            <p className="overview-badge">Tạo đề thi mới</p>
+            {/* <p className="overview-badge">Tạo đề thi mới</p> */}
             <h1 className="dash-greeting">Tạo đề thi</h1>
             <p className="dash-subtitle">Thiết lập đề kiểm tra, chọn câu hỏi và xuất bản cho học sinh.</p>
           </div>
@@ -678,7 +678,7 @@ startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInpu
                     <td>{item.questions?.length || 0}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
-<button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}>Sửa</button>
+                        <button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}>Sửa</button>
                         {!item.isPublished && (
                           <button className="btn-outline btn-small" type="button" onClick={() => handlePublishQuiz(item._id || item.id)}>Công bố</button>
                         )}
