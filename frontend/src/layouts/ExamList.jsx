@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { quizService } from "../services/services";
+import { quizService, subjectService } from "../services/services";
+import AvatarInitials from "../components/AvatarInitials";
 import "../styles/ExamList.css";
-const tabs = ['Tất cả', 'Toán học', 'Ngữ văn', 'Tiếng Anh', 'Vật lý', 'Hóa học', 'Sinh học']
 
 export default function ExamList() {
   const { user } = useAuth();
@@ -11,6 +11,8 @@ export default function ExamList() {
   const [modalExam, setModalExam] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [quizzes, setQuizzes] = useState([])
+  // Danh sách môn học do Admin quản lý
+  const [subjects, setSubjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -32,32 +34,57 @@ export default function ExamList() {
       }
     }
 
+    // Lấy danh sách môn học từ Admin để dựng tab động
+    const fetchSubjects = async () => {
+      try {
+        const list = await subjectService.getSubjects()
+        setSubjects(Array.isArray(list) ? list : [])
+      } catch (err) {
+        console.error('Failed to load subjects:', err)
+      }
+    }
+
     fetchQuizzes()
+    fetchSubjects()
   }, [])
 
-  // Map category from English to Vietnamese to match tabs
-  const subjectMap = {
-    'Math': 'Toán học',
-    'Physics': 'Vật lý',
-    'Chemistry': 'Hóa học',
-    'Biology': 'Sinh học',
-    'History': 'Lịch sử',
-    'Geography': 'Địa lý',
-    'English': 'Tiếng Anh',
-    'Literature': 'Ngữ văn',
-    'Other': 'Bài thi',
+  // Tab động dựa trên danh sách môn học do Admin quản lý
+  const tabs = useMemo(() => ['Tất cả', ...subjects.map((s) => s.name)], [subjects])
+
+  // Helper: lấy tên môn học của một đề thi
+  const getSubjectName = (quiz) => {
+    // 1) Nếu quiz.subject đã được populate (object có _id, name)
+    if (quiz.subject && typeof quiz.subject === 'object' && quiz.subject.name) {
+      return quiz.subject.name
+    }
+    // 2) Nếu quiz.subject là ObjectId (string) → tìm trong danh sách môn học của Admin
+    if (quiz.subject) {
+      const found = subjects.find(
+        (s) => String(s._id) === String(quiz.subject)
+      )
+      if (found) return found.name
+    }
+    // 3) Fallback: lấy categoryName / category từ câu hỏi đầu tiên
+    const firstQuestion = quiz.questions?.[0]
+    const qCat = firstQuestion?.questionId || firstQuestion
+    if (qCat?.categoryName) return qCat.categoryName
+    if (qCat?.category) {
+      const found = subjects.find(
+        (s) => String(s._id) === String(qCat.category)
+      )
+      if (found) return found.name
+    }
+    return 'Bài thi'
   }
 
   const filteredExams = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
     return quizzes
       .map((quiz) => {
-        // Get category from populated questionId object
-        const firstQuestion = quiz.questions?.[0]
-        const rawCategory = firstQuestion?.questionId?.category || firstQuestion?.category || 'Other'
+        const subjectName = getSubjectName(quiz)
         return {
           ...quiz,
-          subject: subjectMap[rawCategory] || 'Bài thi',
+          subject: subjectName,
           meta: quiz.description || 'Bài thi trực tuyến',
           questionCount: quiz.questions?.length || 0,
           time: `${quiz.duration || 0} phút`,
@@ -73,7 +100,7 @@ export default function ExamList() {
           e.subject?.toLowerCase().includes(q)
         return matchesTab && matchesSearch
       })
-  }, [activeTab, searchQuery, quizzes])
+  }, [activeTab, searchQuery, quizzes, subjects])
 
   return (
     <main className="exam-main">
@@ -89,8 +116,8 @@ export default function ExamList() {
         <div className="dash-header-actions">
           <button className="icon-btn"><BellIcon /></button>
           <button className="icon-btn"><HelpIcon /></button>
-<div className="user-chip">
-            <img src={user?.avatar || "https://i.pravatar.cc/64?img=13"} alt="" />
+          <div className="user-chip">
+            <AvatarInitials name={user?.name} size={36} />
           </div>
         </div>
       </header>
