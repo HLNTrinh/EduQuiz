@@ -170,14 +170,7 @@ return (
         <h1>Hồ sơ cá nhân</h1>
 <div className="dash-header-actions">
           <NotificationBell />
-          <button className="icon-btn"><HelpIcon /></button>
-<div className="user-chip">
-            <AvatarInitials name={profileData.name} size={40} />
-            <div className="user-chip-text">
-              <span className="name">{profileData.name}</span>
-              <span className="role">{profileData.role}</span>
-            </div>
-          </div>
+          <UserMenu size={36} />
         </div>
       </header>
 

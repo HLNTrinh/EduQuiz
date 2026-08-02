@@ -139,7 +139,6 @@ export default function ExamList() {
         </div>
 <div className="dash-header-actions">
           <NotificationBell />
-          <button className="icon-btn"><HelpIcon /></button>
           <UserMenu size={36} />
         </div>
       </header>
