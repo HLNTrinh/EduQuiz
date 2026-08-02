@@ -182,8 +182,8 @@ return (
       <section className="profile-grid">
         <div className="card profile-info-card">
           <div className="profile-info-top">
-            <div className="avatar-wrap">
-              <img src={profileData.avatar} alt="Avatar" />
+<div className="avatar-wrap">
+              <AvatarInitials name={profileData.name} size={96} />
               <button className="avatar-edit" onClick={handleAvatarUpload} title="Thay đổi ảnh đại diện">
                 <CameraIcon />
               </button>
