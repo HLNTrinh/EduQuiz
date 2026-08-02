@@ -70,6 +70,21 @@ export const TakeQuizPage = () => {
 const getOptionClass = (question, index) => {
     const selectedIndex = answers[question._id];
     if (selectedIndex === index) return 'option selected';
+    if (selectedIndex === undefined) return 'option';
+    
+    // Nếu không cho hiển thị đáp án: chỉ highlight đáp án đã chọn
+    if (!quiz.showAnswerAfter) {
+      if (index === selectedIndex) return 'option selected';
+      return 'option';
+    }
+    
+    // Nếu cho hiển thị đáp án: hiển thị đúng/sai
+    if (index === question.options.findIndex((opt) => opt.isCorrect)) {
+      return 'option correct';
+    }
+    if (index === selectedIndex && !question.options[index].isCorrect) {
+      return 'option incorrect';
+    }
     return 'option';
   };
 
@@ -112,6 +127,14 @@ const getOptionClass = (question, index) => {
             </button>
           ))}
         </div>
+        {answers[question._id] !== undefined && question.explanation && (
+          <div className="question-feedback">
+            <div className="feedback-row feedback-explanation">
+              <span className="feedback-label">Giải thích:</span>
+              <span className="feedback-value">{question.explanation}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="quiz-navigation">

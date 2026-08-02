@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { questionService } from '../services/authService';
+import { questionService, subjectService } from '../services/authService';import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/QuestionsBank.css';
 import { RxCross2 } from "react-icons/rx";
 
@@ -26,14 +26,28 @@ export const QuestionManager = () => {
   const [difficulty, setDifficulty] = useState('Tất cả');
   const [sortOrder, setSortOrder] = useState('Mới nhất');
   const [showForm, setShowForm] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);//nút sửa nội dung
+  const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [subjectList, setSubjectList] = useState([]);
+  const [subjects, setSubjects] = useState([]);
 
-  const [subjects, setSubjects] = useState(["Tất cả"]);
-/*Gọi API lấy danh sách câu hỏi -> Lưu vào state questions*/
+  const tabs = useMemo(() => {
+    return ['Tất cả', ...subjectList.map((s) => s._id)];
+  }, [subjectList]);
+
+  const loadSubjects = async () => {
+    try {
+      const res = await subjectService.getSubjects();
+      const list = Array.isArray(res) ? res : [];
+      setSubjectList(list);
+    } catch (error) {
+      // silent
+    }
+  };
+
   const loadQuestions = async () => {
     try {
       setLoading(true);
@@ -66,9 +80,15 @@ export const QuestionManager = () => {
   };
 
   useEffect(() => {
+    loadSubjects();
     loadQuestions();
     loadCategories();
   }, []);
+
+  const getSubjectName = (id) => {
+    const found = subjectList.find((s) => s._id === id);
+    return found ? found.name : id || 'Khác';
+  };
 
   const filteredQuestions = useMemo(() => {
     return questions
@@ -85,7 +105,7 @@ export const QuestionManager = () => {
       .sort((a, b) => {
         const aTime = new Date(a.createdAt || 0).getTime();
         const bTime = new Date(b.createdAt || 0).getTime();
-        if (sortOrder === 'Mới nhất') {
+if (sortOrder === 'Mới nhất') {
           return bTime - aTime;
         }
         return aTime - bTime;
@@ -93,34 +113,39 @@ export const QuestionManager = () => {
   }, [questions, searchQuery, selectedSubject, difficulty, sortOrder]);
 
   const handleOpenForm = (question = null) => {
+    setShowEditModal(false);
+
     if (question) {
       setFormData({
         ...question,
-        options: question.options?.map((option) => ({ ...option })) || emptyForm.options,
+        explanation: question.explanation || '',
+        options: question.options?.map((option) => ({
+          text: option.text || '',
+          isCorrect: Boolean(option.isCorrect),
+        })) || emptyForm.options,
       });
     } else {
-
       setFormData({
         ...emptyForm,
-        category:
-          subjects.length > 1
-            ? subjects[1]
-            : "",
+        category: subjects.length > 1 ? subjects[1] : '',
       });
     }
     setMessage('');
     setShowForm(true);
   };
-  //mở hộp thoại sửa câu hỏi
+
   const handleOpenEditModal = (question) => {
+    setShowForm(false);
     setFormData({
       ...question,
-      options:
-        question.options?.map((option) => ({
-          ...option,
-        })) || emptyForm.options,
+      explanation: question.explanation || '',
+      options: question.options?.map((option) => ({
+        text: option.text || '',
+        isCorrect: Boolean(option.isCorrect),
+      })) || emptyForm.options,
     });
 
+    setMessage('');
     setShowEditModal(true);
   };
   const handleOptionChange = (index, field, value) => {
@@ -131,13 +156,33 @@ export const QuestionManager = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const content = (formData.content || '').trim();
+    const options = (formData.options || []).map((option) => ({ text: (option.text || '').trim(), isCorrect: Boolean(option.isCorrect) }));
+    const correctCount = options.filter((option) => option.isCorrect).length;
+
+    if (!content) {
+      setMessage('Vui lòng nhập nội dung câu hỏi.');
+      return;
+    }
+
+    if (options.length !== 4 || options.some((option) => !option.text)) {
+      setMessage('Vui lòng nhập đủ 4 đáp án.' );
+      return;
+    }
+
+    if (correctCount !== 1) {
+      setMessage('Vui lòng chọn đúng một đáp án.');
+      return;
+    }
+
     try {
       const payload = {
-        content: formData.content.trim(),
-        options: formData.options.map((option) => ({ text: option.text.trim(), isCorrect: Boolean(option.isCorrect) })),
+        content,
+        options,
         category: formData.category,
         difficulty: formData.difficulty,
-        explanation: formData.explanation.trim(),
+        explanation: (formData.explanation || '').trim(),
       };
 
       const response = formData._id
@@ -150,14 +195,16 @@ export const QuestionManager = () => {
         }
         return [savedQuestion, ...prev];
       });
-      /*Sửa khi lưu câu hỏi thành công*/
-      setShowForm(false);
+
+      if (formData._id) {
+        setShowEditModal(false);
+      } else {
+        setShowForm(false);
+      }
+
       setFormData({
         ...emptyForm,
-        category:
-          subjects.length > 1
-            ? subjects[1]
-            : "",
+        category: subjects.length > 1 ? subjects[1] : '',
       });
       setMessage(formData._id ? 'Đã cập nhật câu hỏi thành công.' : 'Đã thêm câu hỏi mới thành công.');
     } catch (error) {
@@ -178,108 +225,7 @@ export const QuestionManager = () => {
 
   return (
     <div className="dash-shell">
-      <aside className="sidebar">
-      {/* LOGO SIDEBAR */}
-      <div className="sidebar-logo">
-
-        <svg
-          width="170"
-          height="48"
-          viewBox="0 0 220 60"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Icon */}
-          <rect
-            x="0"
-            y="5"
-            width="50"
-            height="50"
-            rx="14"
-            fill="url(#paint0_linear)"
-          />
-
-          <path
-            d="M25 18L36 24L25 30L14 24L25 18Z"
-            fill="white"
-          />
-
-          <path
-            d="M18 28.5V33C18 35.5 21 37 25 37C29 37 32 35.5 32 33V28.5"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-
-          <path
-            d="M33 25.5V32"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-
-          {/* Tên EduQuiz */}
-          <text
-            x="65"
-            y="37"
-            fontFamily="Inter, sans-serif"
-            fontSize="26"
-            fontWeight="800"
-            fill="#0F172A"
-          >
-            Edu
-            <tspan fill="#2563EB">Quiz</tspan>
-          </text>
-
-          {/* Gradient */}
-          <defs>
-            <linearGradient
-              id="paint0_linear"
-              x1="0"
-              y1="5"
-              x2="50"
-              y2="55"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#3B82F6" />
-              <stop offset="1" stopColor="#1D4ED8" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-          <span className="sidebar-subtitle">
-            EduQuiz-Hệ thống tri thức
-          </span>  
-        </div>      
-
-        <nav className="sidebar-nav">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/dashboard'); }}>
-            <span className="sidebar-icon">▦</span> Tổng quan
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/exams'); }}>
-            <span className="sidebar-icon">📄</span> Đề thi
-          </a>
-          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
-            <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
-          </a>
-
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
-            <span className="sidebar-icon">📊</span> Kết quả
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/members'); }}>
-            <span className="sidebar-icon">👥</span> Thành viên
-          </a>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/settings'); }}>
-            <span className="sidebar-icon">⚙️</span> Cài đặt
-          </a>
-          <a className="sidebar-link sidebar-link--danger" href="#" onClick={(e) => { e.preventDefault(); logout(); }}>
-            <span className="sidebar-icon">↪</span> Đăng xuất
-          </a>
-        </div>
-      </aside>
+      <TeacherSidebar />
 
       <main className="dash-main">
         <header className="dash-header dash-header--overview">
@@ -314,27 +260,45 @@ export const QuestionManager = () => {
                 required
               />
 
-              <label className="field-label">Môn học</label>
-              <select
-                className="form-input"
-                value={formData.category}
-                onChange={(event) => setFormData({ ...formData, category: event.target.value })}
-              >
-                {subjects.filter((subject) => subject !== 'Tất cả').map((subject) => (
-                  <option key={subject} value={subject}>{subject}</option>
-                ))}
-              </select>
+              <div className="question-form-row">
 
-              <label className="field-label">Độ khó</label>
-              <select
-                className="form-input"
-                value={formData.difficulty}
-                onChange={(event) => setFormData({ ...formData, difficulty: event.target.value })}
-              >
-                <option value="easy">Dễ</option>
-                <option value="medium">Trung bình</option>
-                <option value="hard">Khó</option>
-              </select>
+                <div className="question-form-group">
+                  <label className="field-label">Môn học</label>
+
+                  <select
+                    className="form-input"
+                    value={formData.category}
+                    onChange={(event) =>
+                      setFormData({ ...formData, category: event.target.value })
+                    }
+                  >
+                    <option value="">-- Chọn môn học --</option>
+
+                    {subjectList.map((sub) => (
+                      <option key={sub._id} value={sub._id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="question-form-group">
+                  <label className="field-label">Độ khó</label>
+
+                  <select
+                    className="form-input"
+                    value={formData.difficulty}
+                    onChange={(event) =>
+                      setFormData({ ...formData, difficulty: event.target.value })
+                    }
+                  >
+                    <option value="easy">Dễ</option>
+                    <option value="medium">Trung bình</option>
+                    <option value="hard">Khó</option>
+                  </select>
+                </div>
+
+              </div>
 
               <label className="field-label">Đáp án</label>
               {formData.options.map((option, index) => (
@@ -378,6 +342,112 @@ export const QuestionManager = () => {
           </section>
         ) : null}
 
+        {showEditModal ? (
+          <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+            <div className="modal-content" onClick={(event) => event.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Chỉnh sửa câu hỏi</h3>
+                <button className="modal-close-btn" type="button" onClick={() => setShowEditModal(false)}>×</button>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <label className="field-label">Nội dung câu hỏi</label>
+                <textarea
+                  className="form-input"
+                  rows="4"
+                  value={formData.content}
+                  onChange={(event) => setFormData({ ...formData, content: event.target.value })}
+                  required
+                />
+
+                <div className="modal-row">
+
+                  <div className="modal-field">
+                    <label className="field-label">Môn học</label>
+
+                    <select
+                      className="form-input"
+                      value={formData.category}
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          category: event.target.value,
+                        })
+                      }
+                    >
+                      <option value="">-- Chọn môn học --</option>
+
+                      {subjectList.map((sub) => (
+                        <option key={sub._id} value={sub._id}>
+                          {sub.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="modal-field">
+                    <label className="field-label">Độ khó</label>
+
+                    <select
+                      className="form-input"
+                      value={formData.difficulty}
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          difficulty: event.target.value,
+                        })
+                      }
+                    >
+                      <option value="easy">Dễ</option>
+                      <option value="medium">Trung bình</option>
+                      <option value="hard">Khó</option>
+                    </select>
+                  </div>
+
+                </div>
+
+                <label className="field-label">Đáp án</label>
+                {formData.options.map((option, index) => (
+                  <div key={index} className="question-answer-row">
+                    <input
+                      className="form-input"
+                      type="text"
+                      placeholder={`Đáp án ${index + 1}`}
+                      value={option.text}
+                      onChange={(event) => handleOptionChange(index, 'text', event.target.value)}
+                      required
+                    />
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="correctOption"
+                        checked={Boolean(option.isCorrect)}
+                        onChange={() => {
+                          const nextOptions = formData.options.map((item, idx) => ({ ...item, isCorrect: idx === index }));
+                          setFormData({ ...formData, options: nextOptions });
+                        }}
+                      />
+                      Đúng
+                    </label>
+                  </div>
+                ))}
+
+                <label className="field-label">Giải thích</label>
+                <textarea
+                  className="form-input"
+                  rows="2"
+                  value={formData.explanation}
+                  onChange={(event) => setFormData({ ...formData, explanation: event.target.value })}
+                />
+
+                <div className="modal-actions">
+                  <button className="btn-outline" type="button" onClick={() => { setShowEditModal(false); setFormData(emptyForm); }}>Hủy</button>
+                  <button className="btn-start" type="submit">Cập nhật</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
+
         <section className="question-bank-toolbar question-bank-header">
           <div className="question-bank-search">
             <input
@@ -408,13 +478,19 @@ export const QuestionManager = () => {
 
         <section className="question-bank-toolbar question-filter-panel">
           <div className="question-filter-row">
-            {subjects.map((subject) => (
+            <button
+              className={`filter-pill ${selectedSubject === 'Tất cả' ? 'active' : ''}`}
+              onClick={() => setSelectedSubject('Tất cả')}
+            >
+              Tất cả
+            </button>
+            {subjectList.map((sub) => (
               <button
-                key={subject}
-                className={`filter-pill ${selectedSubject === subject ? 'active' : ''}`}
-                onClick={() => setSelectedSubject(subject)}
+                key={sub._id}
+                className={`filter-pill ${selectedSubject === sub._id ? 'active' : ''}`}
+                onClick={() => setSelectedSubject(sub._id)}
               >
-                {subject}
+                {sub.name}
               </button>
             ))}
           </div>
@@ -435,17 +511,16 @@ export const QuestionManager = () => {
                   <th>Độ khó</th>
                   <th>Ngày tạo</th>
                   <th>Thao tác</th>
-                </tr>
+</tr>
               </thead>
               <tbody>
                 {filteredQuestions.map((item) => (
                   <tr key={item._id || item.id}>
                     <td className="question-bank-row-title">
                       <div>{item.content}</div>
-                      
                     </td>
                     <td>
-                      <span className="category-badge">{item.category}</span>
+                      <span className="category-badge">{getSubjectName(item.category)}</span>
                     </td>
                     <td>
                       <span className={`difficulty-pill difficulty-pill--${item.difficulty === 'easy' ? 'easy' : item.difficulty === 'hard' ? 'hard' : 'medium'}`}>
@@ -465,177 +540,6 @@ export const QuestionManager = () => {
             </table>
           )}
         </div>
-        {/*Sửa câu hỏi*/}
-        {showEditModal && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-
-              <div className="modal-header">
-                <h3>Chỉnh sửa câu hỏi</h3>
-
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  <RxCross2 size={20} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit}>
-
-                <label>Nội dung câu hỏi</label>
-
-                <textarea
-                  className="form-input"
-                  rows="4"
-                  value={formData.content}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      content: e.target.value,
-                    })
-                  }
-                />
-
-                <div className="modal-row">
-
-                    <div className="modal-field">
-                        <label>Môn học</label>
-
-                        <select
-                            className="form-input"
-                            value={formData.category}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    category: e.target.value,
-                                })
-                            }
-                        >
-                            {subjects
-                                .filter((subject) => subject !== "Tất cả")
-                                .map((subject) => (
-                                    <option
-                                        key={subject}
-                                        value={subject}
-                                    >
-                                        {subject}
-                                    </option>
-                                ))}
-                        </select>
-                    </div>
-
-
-                    <div className="modal-field">
-                        <label>Độ khó</label>
-
-                        <select
-                            className="form-input"
-                            value={formData.difficulty}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    difficulty: e.target.value,
-                                })
-                            }
-                        >
-                            <option value="easy">Dễ</option>
-                            <option value="medium">Trung bình</option>
-                            <option value="hard">Khó</option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <label>Đáp án</label>
-
-                {formData.options.map((option, index) => (
-
-                  <div
-                    key={index}
-                    className="question-answer-row"
-                  >
-
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={option.text}
-                      onChange={(e) =>
-                        handleOptionChange(
-                          index,
-                          "text",
-                          e.target.value
-                        )
-                      }
-                    />
-
-                    <input
-                      type="radio"
-                      name="correctOption"
-                      checked={option.isCorrect}
-                      onChange={() => {
-
-                        const nextOptions =
-                          formData.options.map(
-                            (item, idx) => ({
-                              ...item,
-                              isCorrect:
-                                idx === index,
-                            })
-                          );
-
-                        setFormData({
-                          ...formData,
-                          options: nextOptions,
-                        });
-
-                      }}
-                    />
-
-                  </div>
-
-                ))}
-
-                <label>Giải thích</label>
-
-                <textarea
-                  className="form-input"
-                  value={formData.explanation}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      explanation: e.target.value,
-                    })
-                  }
-                />
-
-                <div className="modal-actions">
-
-                  <button
-                    type="button"
-                    className="btn-outline"
-                    onClick={() =>
-                      setShowEditModal(false)
-                    }
-                  >
-                    Hủy
-                  </button>
-
-                  <button
-                    type="submit"
-                    className="btn-start"
-                  >
-                    Cập nhật
-                  </button>
-
-                </div>
-
-              </form>
-
-            </div>
-          </div>
-        )}
-
       </main>
     </div>
   );

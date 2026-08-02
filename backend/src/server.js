@@ -88,6 +88,8 @@ app.use('/api/quiz-attempts', require('./routes/quizAttemptRoutes'));
 //mới thêm
 app.use("/api/classes", require("./routes/classRoutes"));
 
+// subjects
+app.use("/api/subjects", require("./routes/subjectRoutes"));
 
 /* =========================
    Admin Routes
@@ -106,7 +108,7 @@ app.use((req, res) => {
 ========================= */
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(err.status || 500).json({
+res.status(err.status || 500).json({
     success: false,
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined,

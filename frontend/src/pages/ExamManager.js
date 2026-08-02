@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { questionService, quizService, classService } from '../services/authService';
+import { questionService, quizService, subjectService, classService } from '../services/authService';
+import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/Exam.css';
 
 const toLocalDatetimeInput = (date) => {
@@ -41,10 +42,12 @@ export const ExamManager = () => {
     content: '',
     options: ['', '', '', ''],
     correctIndex: 0,
-    category: 'Other',
+    category: '',
     difficulty: 'medium',
   });
   const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [subjects, setSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState('');
 
   const loadData = async () => {
     if (!user?._id) {
@@ -75,14 +78,26 @@ export const ExamManager = () => {
     }
   };
 
-  useEffect(() => {
-    if (user?._id) {
-      loadData();
+  const loadSubjectsAndClasses = async () => {
+    try {
+      const [subjectRes, classRes] = await Promise.all([
+        subjectService.getSubjects().catch(() => []),
+        user?._id ? classService.getTeacherClasses(user._id).catch(() => []) : Promise.resolve([]),
+      ]);
+      setSubjects(Array.isArray(subjectRes) ? subjectRes : []);
+      setClasses(Array.isArray(classRes) ? classRes : []);
+    } catch (error) {
+      // silent
     }
-  }, [user]);
+  };
+
+  useEffect(() => {
+    loadData();
+    loadSubjectsAndClasses();
+  }, []);
 
   const filteredQuestions = useMemo(() => {
-    const query = searchQuery.toLowerCase();
+const query = searchQuery.toLowerCase();
     return questions.filter((item) => {
       const text = `${item.content || ''} ${item.category || ''} ${item.difficulty || ''}`.toLowerCase();
       return text.includes(query);
@@ -106,7 +121,7 @@ export const ExamManager = () => {
       content: '',
       options: ['', '', '', ''],
       correctIndex: 0,
-      category: 'Other',
+      category: '',
       difficulty: 'medium',
     });
     setShowQuestionForm(false);
@@ -120,7 +135,7 @@ export const ExamManager = () => {
         content: question.content || '',
         options: (question.options || []).map((o) => o.text || '') || ['', '', '', ''],
         correctIndex: (question.options || []).findIndex((o) => o.isCorrect) >= 0 ? (question.options || []).findIndex((o) => o.isCorrect) : 0,
-        category: question.category || 'Other',
+        category: question.category || '',
         difficulty: question.difficulty || 'medium',
       });
     } else {
@@ -129,7 +144,7 @@ export const ExamManager = () => {
         content: '',
         options: ['', '', '', ''],
         correctIndex: 0,
-        category: 'Other',
+        category: '',
         difficulty: 'medium',
       });
     }
@@ -169,7 +184,7 @@ export const ExamManager = () => {
       });
 
       if (editingQuestionId) {
-        setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._id ? { ...item, ...savedQuestion } : item)));
+setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._id ? { ...item, ...savedQuestion } : item)));
         setMessage('Đã cập nhật câu hỏi thành công.');
       } else {
         setSelectedQuestions((prev) => [...prev, { ...savedQuestion, score: 10 }]);
@@ -216,6 +231,7 @@ export const ExamManager = () => {
         showAnswerAfter: Boolean(formData.showAnswerAfter),
         totalPoints,
         passingScore: Number(formData.passingScore || 50),
+        subject: selectedSubject || undefined,
       };
 
       const response = formData._id
@@ -230,6 +246,7 @@ export const ExamManager = () => {
       });
       setSelectedQuestions([]);
       setFormData(buildInitialForm());
+      setSelectedSubject('');
       setMessage(response?.message || 'Tạo đề thi thành công.');
       return createdQuiz;
     } catch (error) {
@@ -252,11 +269,12 @@ export const ExamManager = () => {
         duration: q.duration?.toString() || '45',
         maxAttempts: q.maxAttempts?.toString() || '1',
         assignedClass: q.assignedClass || '',
-        startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInput(new Date()),
+startDate: q.startDate ? toLocalDatetimeInput(q.startDate) : toLocalDatetimeInput(new Date()),
         endDate: q.endDate ? toLocalDatetimeInput(q.endDate) : toLocalDatetimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
         showAnswerAfter: Boolean(q.showAnswerAfter),
         passingScore: q.passingScore?.toString() || '50',
       });
+      setSelectedSubject(q.subject || '');
 
       // map questions to full objects from questions list
       const selected = (q.questions || []).map((it) => {
@@ -297,108 +315,8 @@ export const ExamManager = () => {
 
   return (
     <div className="dash-shell">
-      <aside className="sidebar">
-      {/* LOGO SIDEBAR */}
-      <div className="sidebar-logo">
-
-        <svg
-          width="170"
-          height="48"
-          viewBox="0 0 220 60"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Icon */}
-          <rect
-            x="0"
-            y="5"
-            width="50"
-            height="50"
-            rx="14"
-            fill="url(#paint0_linear)"
-          />
-
-          <path
-            d="M25 18L36 24L25 30L14 24L25 18Z"
-            fill="white"
-          />
-
-          <path
-            d="M18 28.5V33C18 35.5 21 37 25 37C29 37 32 35.5 32 33V28.5"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-
-          <path
-            d="M33 25.5V32"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-
-          {/* Tên EduQuiz */}
-          <text
-            x="65"
-            y="37"
-            fontFamily="Inter, sans-serif"
-            fontSize="26"
-            fontWeight="800"
-            fill="#0F172A"
-          >
-            Edu
-            <tspan fill="#2563EB">Quiz</tspan>
-          </text>
-
-          {/* Gradient */}
-          <defs>
-            <linearGradient
-              id="paint0_linear"
-              x1="0"
-              y1="5"
-              x2="50"
-              y2="55"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#3B82F6" />
-              <stop offset="1" stopColor="#1D4ED8" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        <span className="sidebar-subtitle">
-          EduQuiz-Hệ thống tri thức
-        </span>
-      </div>
-
-        <nav className="sidebar-nav">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/dashboard'); }}>
-            <span className="sidebar-icon">▦</span> Tổng quan
-          </a>
-          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
-            <span className="sidebar-icon">📄</span> Đề thi
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/questions'); }}>
-            <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
-          </a>
-
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
-            <span className="sidebar-icon">📊</span> Kết quả
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/members'); }}>
-            <span className="sidebar-icon">👥</span> Thành viên
-          </a>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/settings'); }}>
-            <span className="sidebar-icon">⚙️</span> Cài đặt
-          </a>
-          <a className="sidebar-link sidebar-link--danger" href="#" onClick={(e) => { e.preventDefault(); logout(); }}>
-            <span className="sidebar-icon">↪</span> Đăng xuất
-          </a>
-        </div>
-      </aside>
+      {/* Thanh menu bên trái */}
+      <TeacherSidebar />
 
       <main className="dash-main">
         <header className="dash-header dash-header--overview">
@@ -420,8 +338,7 @@ export const ExamManager = () => {
             }}>Xuất bản & Giao bài</button>
           </div>
         </header>
-
-        {message ? <div className="notice">{message}</div> : null}
+{message ? <div className="notice">{message}</div> : null}
 
         <form id="exam-form" onSubmit={handleSubmit}>
           <section className="exam-form-grid">
@@ -481,6 +398,19 @@ export const ExamManager = () => {
                 value={formData.maxAttempts}
                 onChange={(event) => setFormData({ ...formData, maxAttempts: event.target.value })}
               />
+            </div>
+            <div className="exam-form-card">
+              <label className="field-label">Môn học</label>
+              <select
+                className="form-input"
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              >
+                <option value="">-- Chọn môn học --</option>
+                {subjects.map((sub) => (
+<option key={sub._id} value={sub._id}>{sub.name}</option>
+                ))}
+              </select>
             </div>
             <div className="exam-form-card">
               <label className="field-label">Điểm đạt</label>
@@ -560,7 +490,7 @@ export const ExamManager = () => {
                 <p className="panel-subtitle">Chọn câu hỏi phù hợp để thêm vào đề thi.</p>
               </div>
               <div className="panel-actions">
-                <div className="panel-badge">{questions.length.toLocaleString()} câu</div>
+<div className="panel-badge">{questions.length.toLocaleString()} câu</div>
                 <input
                   className="search-input"
                   type="text"
@@ -618,14 +548,10 @@ export const ExamManager = () => {
                     value={newQuestion.category}
                     onChange={(e) => setNewQuestion({ ...newQuestion, category: e.target.value })}
                   >
-                    <option>Toán</option>
-                    <option>Vật lý</option>
-                    <option>Hóa học</option>
-                    <option>Sinh học</option>
-                    <option>Lịch sử</option>
-                    <option>Địa lý</option>
-                    <option>Tiếng anh</option>
-                    <option>Khác</option>
+                    <option value="">-- Chọn môn học --</option>
+                    {subjects.map((sub) => (
+                      <option key={sub._id} value={sub._id}>{sub.name}</option>
+))}
                   </select>
                   <select
                     className="form-input"
@@ -657,7 +583,8 @@ export const ExamManager = () => {
                       <p className="question-label">{item.category || 'Câu hỏi'}</p>
                       <p className="question-title">{item.content}</p>
                       <div className="question-meta">
-                        <span>{item.category}</span>
+                        {/* <span>{item.category}</span> */}
+                        <span>{item.categoryName}</span>
                         <span>{item.difficulty === 'easy' ? 'Dễ' : item.difficulty === 'hard' ? 'Khó' : 'Trung bình'}</span>
                       </div>
                     </div>
@@ -685,7 +612,7 @@ export const ExamManager = () => {
                   <div className="stat-pill stat-pill--blue">{totalPoints.toFixed(1)} điểm</div>
                 </div>
                 <div className="panel-actions-buttons">
-                  <button
+<button
                     className="btn-outline btn-small"
                     type="button"
                     onClick={() => setSelectedQuestions((prev) => {
@@ -751,7 +678,7 @@ export const ExamManager = () => {
                     <td>{item.questions?.length || 0}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}>Sửa</button>
+<button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}>Sửa</button>
                         {!item.isPublished && (
                           <button className="btn-outline btn-small" type="button" onClick={() => handlePublishQuiz(item._id || item.id)}>Công bố</button>
                         )}

@@ -46,20 +46,26 @@ export const quizService = {
   publishQuiz: (id) => api.post(`/quizzes/${id}/publish`),
 };
 
+export const subjectService = {
+  getSubjects: async () => {
+    const response = await api.get('/subjects');
+    return response?.data ?? response ?? [];
+  },
+};
+
+export const classService = {
+  getTeacherClasses: async (teacherId) => {
+    const response = await api.get(`/classes/teacher/${teacherId}`);
+    return response?.data ?? response ?? [];
+  },
+  // Giáo viên lấy danh sách kết quả học sinh
+  getTeacherAttempts: (params) => api.get('/quiz-attempts/teacher', { params }),
+};
+
 export const quizAttemptService = {
   startQuizAttempt: (quizId) => api.post(`/quiz-attempts/start/${quizId}`),
   saveAnswer: (attemptId, data) => api.post(`/quiz-attempts/${attemptId}/answer`, data),
   submitQuiz: (attemptId) => api.post(`/quiz-attempts/${attemptId}/submit`),
   getAttemptResult: (attemptId) => api.get(`/quiz-attempts/${attemptId}/result`),
   getStudentAttempts: (params) => api.get('/quiz-attempts', { params }),
-}
-// // Lấy danh sách lớp của giáo viên
-export const classService = {
-  getTeacherClasses: async (teacherId) => {
-    const response = await api.get(`/classes/teacher/${teacherId}`);
-    return response?.data ?? response;
-  },
-    // Giáo viên lấy danh sách kết quả học sinh
-  getTeacherAttempts: (params) => api.get('/quiz-attempts/teacher', { params }),
-
 };

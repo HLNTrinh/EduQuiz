@@ -45,158 +45,6 @@ body{
 }
 
 
-/*====================================================
-SIDEBAR
-====================================================*/
-
-.sidebar{
-    position: fixed;      /* cố định menu */
-
-    width:238px;
-    min-width:238px;
-
-    background:#fff;
-
-    border-right:1px solid var(--border);
-
-    display:flex;
-    flex-direction:column;
-
-    /*position:sticky;*/
-    top:0;
-    left: 0;
-
-    height:100vh;
-
-    z-index:1000;
-}
-
-/*--------------------------------*/
-/*
-.sidebar-logo{
-
-    padding:22px 20px;
-    margin-bottom:20px;   /* tăng khoảng cách với menu */
-   /* border-bottom:1px solid var(--border);
-}*/
-/*
-.sidebar-subtitle{
-
-    display:block;
-
-    margin-top:-2px;
-
-    font-size:11px;
-
-    color:#8a94a7;
-
-    margin-left:64px;
-}*/
-.sidebar-logo svg {
-    width: 170px;
-    height: 48px;
-    margin-bottom: -10px;
-    display:block;
-    margin-left: -10px;
-    margin-top: -8px;   /* tăng giá trị âm để logo lên cao hơn */
-    background: #ffffff;
-    
-   /* border-bottom: 1px solid #d9dee7;*/
-    
-}
-
-.sidebar-subtitle {
-    display: block;
-
-    margin-top: -5px;
-    margin-left: 50px;
-
-    color: #7d8797;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 0.25px;
-    white-space: nowrap;
-}
-/*--------------------------------*/
-
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    padding:12px;/*mới thêm*/
-    gap: 4px;              /* gần nhau hơn */
-
-    padding-top: 16px;
-
-    flex: 0 !important;    /* QUAN TRỌNG */
-    justify-content: flex-start;
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
-
-    gap: 10px;
-
-    width: 100%;
-    height: 42px;
-
-    padding: 0 16px;
-
-    border-radius: 10px;
-    text-decoration:none;
-    font-size: 15px;
-    font-weight: 600;
-    /*color:#667085;*/
-    margin: 0;
-        transition:
-        transform 0.25s ease,
-        background 0.25s ease,
-        color 0.25s ease,
-        box-shadow 0.25s ease;
-}
-
-.sidebar-link:hover{
-
-    background:#eef4ff;
-
-    color:var(--primary);
-
-    transform:translateX(4px);
-}
-
-.sidebar-link--active{
-
-    background:#edf3ff;
-
-    color:var(--primary);
-
-    font-weight:600;
-}
-
-.sidebar-icon{
-
-    width:24px;
-
-    display:flex;
-
-    justify-content:center;
-
-    font-size:17px;
-}
-
-.sidebar-bottom{
-
-    margin-top:auto;
-
-    padding:12px;
-}
-
-.sidebar-link--danger{
-
-    color:#ef4444;
-}
 
 
 /*==================================================
@@ -246,7 +94,7 @@ HEADER
 
     display:block;
 
-    font-size:13px;
+    font-size:16px;
 
     color:#9aa4b5;
 }
@@ -409,14 +257,14 @@ STAT
 
     color:#8b95a7;
 
-    font-size:13px;
-
+    font-size:15px;
+    font-weight:600; /*card thống kê mới*/
     margin-bottom:8px;
 }
 
 .stat-card-value{
 
-    font-size:34px;
+    font-size:40px;
 
     font-weight:700;
 
@@ -427,7 +275,7 @@ STAT
 
     color:#22c55e;
 
-    font-size:13px;
+    font-size:14px;
 
     font-weight:600;
 }
@@ -442,7 +290,7 @@ STAT
 
     border-radius:50px;
 
-    font-size:11px;
+    font-size:13px;
 
     font-weight:700;
 }
@@ -451,7 +299,7 @@ STAT
 
     color:#9aa4b5;
 
-    font-size:13px;
+    font-size:14px;
 }
 
 /*==================================================
@@ -494,7 +342,7 @@ CENTER
 
 .panel-title{
 
-    font-size:23px;
+    font-size:26px;
 
     font-weight:700;
 }
@@ -503,7 +351,7 @@ CENTER
 
     color:#97a1b4;
 
-    font-size:13px;
+    font-size:15px;
 }
 
 .btn-outline{
@@ -519,6 +367,9 @@ CENTER
     padding:10px 16px;
 
     cursor:pointer;
+    /*mới thêm 2 cái*/
+    font-size:15px;
+    font-weight:600;
 }
 
 .summary-score-row{
@@ -534,7 +385,7 @@ CENTER
 
 .summary-score-value{
 
-    font-size:48px;
+    font-size:56px;
 
     font-weight:700;
 }
@@ -542,14 +393,14 @@ CENTER
 .summary-score-note{
 
     color:#9aa4b5;
-
+    font-size:15px;/*mới thêm kq tb*/
     margin-top:6px;
 }
 
 .summary-score-pill{
 
     background:#dcfce7;
-
+    font-size:15px;/*mới thêm*/
     color:#15803d;
 
     padding:10px 16px;
@@ -562,7 +413,7 @@ CENTER
     display:grid;
 
     grid-template-columns:repeat(4,1fr);
-
+    
     gap:16px;
 }
 
@@ -585,16 +436,125 @@ CENTER
 
 .summary-chart-value{
 
-    font-size:28px;
+    font-size:32px;
 
     font-weight:700;
 }
 
 .summary-chart-label{
 
-    margin-top:10px;
+    margin-top:15px;
 
     color:#8b95a7;
+}/*biểu đồ*/
+
+.summary-chart-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px 0;
+}
+/*
+.summary-bar-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  height: 220px;
+  padding-top: 12px;
+}
+
+.summary-bar-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  min-width: 80px;
+}
+*/
+.summary-bar-container{
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    gap:40px;
+
+    height:260px;
+}
+.summary-bar-column{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+
+    width:90px;
+}
+/*
+.summary-bar-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}*/
+.summary-bar-value{
+    margin-bottom:12px;
+
+    font-size:20px;
+    font-weight:700;
+}
+
+.summary-bar-track{
+    width:50px;          /* chiều rộng cột */
+    height:180px;        /* chiều cao tối đa */
+
+    background:#edf2f7;
+
+    border-radius:12px;
+
+    display:flex;
+    align-items:flex-end;
+
+    overflow:hidden;
+}
+.summary-bar-fill{
+    width:100%;
+    width:100%;
+    border-top-left-radius:0;
+    border-top-right-radius:0;
+
+    transition:height .4s ease;
+}
+/*Label*/
+/*
+.summary-bar-caption {
+  font-size: 13px;
+  color: #475569;
+  text-align: center;
+  max-width: 100%;
+  line-height: 1.4;
+}
+*/
+.summary-bar-caption{
+    margin-top:12px;
+
+    text-align:center;
+
+    font-size:15px;
+    color:#64748b;
+
+    font-weight:600;
+}
+
+.summary-bar-tooltip {
+  position: absolute;
+  top: -28px;
+  background: #1f2937;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /*==================================================
@@ -631,7 +591,7 @@ ACTIVITY
 }
 
 .activity-item-title{
-
+    font-size:17px;/*mới thêm*/
     font-weight:600;
 }
 
@@ -641,7 +601,7 @@ ACTIVITY
 
     color:#586274;
 
-    font-size:14px;
+    font-size:16px;
 }
 
 .activity-item-meta{
@@ -650,7 +610,7 @@ ACTIVITY
 
     color:#9aa4b5;
 
-    font-size:12px;
+    font-size:14px;
 }
 
 /*==================================================
@@ -701,7 +661,7 @@ CLASS
 
 .class-card-title{
 
-    font-size:36px;
+    font-size:40px;
 
     font-weight:700;
 }
@@ -710,13 +670,13 @@ CLASS
 
     margin-top:14px;
 
-    font-size:17px;
+    font-size:19px;
 }
 
 .class-card-meta{
 
     padding:18px 28px;
-
+    font-size:16px;/*mới thêm*/
     color:#8b95a7;
 }
 
@@ -758,7 +718,7 @@ CLASS
 
     border:3px solid #fff;
 
-    font-size:12px;
+    font-size:13px;
 }
 
 .btn-start{
@@ -768,7 +728,10 @@ CLASS
     background:#2563eb;
 
     color:#fff;
-
+    
+    font-size:15px;/*mới thêm*/
+    font-weight:600;/*mới thêm*/
+    
     padding:10px 20px;
 
     border-radius:12px;

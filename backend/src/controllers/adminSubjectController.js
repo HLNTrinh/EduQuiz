@@ -1,4 +1,5 @@
 const Subject = require('../models/Subject');
+const Quiz = require('../models/Quiz');
 
 /* =========================
    GET /api/admin/subjects
@@ -27,7 +28,25 @@ const getSubjects = async (req, res) => {
       Subject.countDocuments(filter),
     ]);
 
-    res.json({ success: true, subjects, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
+    // Lấy số lượng đề thi thực tế cho từng môn từ Quiz model
+    const subjectIds = subjects.map(s => s._id);
+    const quizCounts = await Quiz.aggregate([
+      { $match: { subject: { $in: subjectIds } } },
+      { $group: { _id: '$subject', count: { $sum: 1 } } },
+    ]);
+
+    // Map quiz counts vào subjects
+    const countMap = {};
+    quizCounts.forEach(item => {
+      countMap[item._id.toString()] = item.count;
+    });
+
+    const subjectsWithQuizCount = subjects.map(s => ({
+      ...s,
+      quizCount: countMap[s._id.toString()] || 0,
+    }));
+
+    res.json({ success: true, subjects: subjectsWithQuizCount, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
@@ -40,7 +59,11 @@ const getSubjectById = async (req, res) => {
   try {
     const subject = await Subject.findById(req.params.id).lean();
     if (!subject) return res.status(404).json({ success: false, message: 'Không tìm thấy môn học' });
-    res.json({ success: true, subject });
+
+    // Đếm số lượng đề thi thực tế từ Quiz model
+    const quizCount = await Quiz.countDocuments({ subject: subject._id });
+
+    res.json({ success: true, subject: { ...subject, quizCount } });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
@@ -51,7 +74,7 @@ const getSubjectById = async (req, res) => {
 ========================= */
 const createSubject = async (req, res) => {
   try {
-    const { code, name, department, status, examsCount } = req.body;
+    const { code, name, department, status } = req.body;
 
     const existing = await Subject.findOne({ code: code.toUpperCase() });
     if (existing) return res.status(400).json({ success: false, message: 'Mã môn học đã tồn tại' });
@@ -61,7 +84,6 @@ const createSubject = async (req, res) => {
       name,
       department,
       status: status || 'active',
-      examsCount: examsCount || 0,
     });
 
     res.status(201).json({ success: true, message: 'Thêm môn học thành công', subject });
@@ -75,14 +97,13 @@ const createSubject = async (req, res) => {
 ========================= */
 const updateSubject = async (req, res) => {
   try {
-    const { code, name, department, status, examsCount } = req.body;
+    const { code, name, department, status } = req.body;
 
     const updateData = {};
     if (code) updateData.code = code.toUpperCase();
     if (name) updateData.name = name;
     if (department) updateData.department = department;
     if (status) updateData.status = status;
-    if (examsCount !== undefined) updateData.examsCount = examsCount;
 
     const subject = await Subject.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
