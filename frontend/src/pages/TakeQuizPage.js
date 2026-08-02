@@ -67,8 +67,9 @@ export const TakeQuizPage = () => {
     }
   };
 
-  const getOptionClass = (question, index) => {
+const getOptionClass = (question, index) => {
     const selectedIndex = answers[question._id];
+    if (selectedIndex === index) return 'option selected';
     if (selectedIndex === undefined) return 'option';
     
     // Nếu không cho hiển thị đáp án: chỉ highlight đáp án đã chọn
