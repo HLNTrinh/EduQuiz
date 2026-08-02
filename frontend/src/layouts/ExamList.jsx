@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { quizService, subjectService } from "../services/services";
+import { quizService, subjectService, quizAttemptService } from "../services/services";
 import AvatarInitials from "../components/AvatarInitials";
 import "../styles/ExamList.css";
 
@@ -13,6 +13,8 @@ export default function ExamList() {
   const [quizzes, setQuizzes] = useState([])
   // Danh sách môn học do Admin quản lý
   const [subjects, setSubjects] = useState([])
+  // Map: quizId → số lần đã làm
+  const [attemptCountMap, setAttemptCountMap] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -44,8 +46,29 @@ export default function ExamList() {
       }
     }
 
+    // Lấy lịch sử làm bài để biết số lần đã làm mỗi đề
+    const fetchAttempts = async () => {
+      try {
+        const res = await quizAttemptService.getStudentAttempts({ page: 1, limit: 200 })
+        const attempts = res?.data ?? res?.data?.data ?? []
+        if (Array.isArray(attempts)) {
+          const map = {}
+          attempts.forEach((a) => {
+            const qId = a.quizId?._id || a.quizId
+            if (qId) {
+              map[qId] = (map[qId] || 0) + 1
+            }
+          })
+          setAttemptCountMap(map)
+        }
+      } catch (err) {
+        console.error('Failed to load attempts:', err)
+      }
+    }
+
     fetchQuizzes()
     fetchSubjects()
+    fetchAttempts()
   }, [])
 
   // Tab động dựa trên danh sách môn học do Admin quản lý
@@ -155,12 +178,21 @@ export default function ExamList() {
                 {e.meta && <span><CalendarIcon /> {e.meta}</span>}
                 {e.questionCount !== undefined && <span><QIcon /> {e.questionCount} câu hỏi</span>}
               </div>
-              <button
-                className="btn-primary full"
-                onClick={() => navigate(`/quiz/${e.quizId}`)}
-              >
-                Vào làm bài
-              </button>
+{(() => {
+                const doneCount = attemptCountMap[e.quizId] || 0;
+                const maxAttempts = e.maxAttempts || 999;
+                const isExhausted = doneCount >= maxAttempts;
+                return (
+                  <button
+                    className={`btn-primary full${isExhausted ? ' disabled' : ''}`}
+                    disabled={isExhausted}
+                    onClick={() => !isExhausted && navigate(`/quiz/${e.quizId}`)}
+                    title={isExhausted ? `Bạn đã hết lượt làm bài (${doneCount}/${maxAttempts})` : 'Vào làm bài'}
+                  >
+                    {isExhausted ? `Đã hết lượt (${doneCount}/${maxAttempts})` : 'Vào làm bài'}
+                  </button>
+                );
+              })()}
             </div>
           ))}
 
