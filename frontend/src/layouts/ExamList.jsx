@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { quizService, subjectService, quizAttemptService } from "../services/services";
-import AvatarInitials from "../components/AvatarInitials";
+import NotificationBell from "../components/student/NotificationBell";
+import AvatarInitials from "../components/student/AvatarInitials";
 import "../styles/ExamList.css";
 
 export default function ExamList() {
@@ -136,8 +137,8 @@ export default function ExamList() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="dash-header-actions">
-          <button className="icon-btn"><BellIcon /></button>
+<div className="dash-header-actions">
+          <NotificationBell />
           <button className="icon-btn"><HelpIcon /></button>
           <div className="user-chip">
             <AvatarInitials name={user?.name} size={36} />

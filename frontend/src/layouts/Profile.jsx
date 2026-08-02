@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/services';
-import AvatarInitials from '../components/AvatarInitials';
+import NotificationBell from '../components/student/NotificationBell';
+import AvatarInitials from '../components/student/AvatarInitials';
 import '../styles/Profile.css';
 
 const ROLE_LABELS = {
@@ -166,8 +167,8 @@ return (
     <div className="profile-main">
       <header className="profile-topbar">
         <h1>Hồ sơ cá nhân</h1>
-        <div className="dash-header-actions">
-          <button className="icon-btn"><BellIcon /></button>
+<div className="dash-header-actions">
+          <NotificationBell />
           <button className="icon-btn"><HelpIcon /></button>
 <div className="user-chip">
             <AvatarInitials name={profileData.name} size={40} />

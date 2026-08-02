@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { quizService, quizAttemptService, classService } from "../services/services";
-import NotificationBell from "../components/NotificationBell";
+import NotificationBell from "../components/student/NotificationBell";
 
-import AvatarInitials from "../components/AvatarInitials";
+import AvatarInitials from "../components/student/AvatarInitials";
 import "../styles/Dashboard.css";
 
 const chartMonths = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"];

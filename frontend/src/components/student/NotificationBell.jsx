@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { notificationService } from '../services/services';
+import { notificationService } from '../../services/services';
 
 const NOTIF_ICONS = {
   new_quiz: '📝',

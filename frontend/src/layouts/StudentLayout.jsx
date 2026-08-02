@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/student/Sidebar";
 import "../styles/Dashboard.css";
 
 export default function StudentLayout() {
