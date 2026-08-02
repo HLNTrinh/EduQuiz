@@ -2,25 +2,67 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { FiBell, FiHelpCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { quizService } from '../services/services';
+import { quizService, quizAttemptService } from '../services/services';
+import { classService } from '../services/authService';
+import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/TeacherDashBoard.css';
 
 export const TeacherDashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [teacherAttempts, setTeacherAttempts] = useState([]);
+  const [summaryStats, setSummaryStats] = useState({
+    averageScore: 0,
+    passRate: 0,
+    totalAttempts: 0,
+    completedQuizzes: 0,
+  });
+  const [classSummaries, setClassSummaries] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchQuizzes();
-  }, []);
-  const fetchQuizzes = async () => {
+    if (user?._id) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
     try {
-      const data = await quizService.getQuizzes();
-      setQuizzes(Array.isArray(data) ? data : []);
+      setLoading(true);
+      const [quizzesResponse, classesResponse, attemptsResponse] = await Promise.all([
+        quizService.getQuizzes({ page: 1, limit: 50 }),
+        classService.getTeacherClasses(user._id),
+        quizAttemptService.getTeacherAttempts({ page: 1, limit: 1000 }),
+      ]);
+
+      const quizList = Array.isArray(quizzesResponse)
+        ? quizzesResponse
+        : quizzesResponse?.data ?? [];
+
+      const classesList = Array.isArray(classesResponse)
+        ? classesResponse
+        : classesResponse?.data ?? [];
+
+      const attempts = Array.isArray(attemptsResponse)
+        ? attemptsResponse
+        : attemptsResponse?.data ?? [];
+
+      setQuizzes(quizList);
+      setClasses(classesList);
+      setTeacherAttempts(attempts);
+
+      const summary = calculateTeacherSummary(attempts);
+      setSummaryStats(summary);
+      setClassSummaries(calculateClassSummaries(attempts, quizList, classesList));
     } catch (error) {
-      console.error('Failed to fetch quizzes:', error);
+      console.error('Failed to fetch teacher dashboard data:', error);
       setQuizzes([]);
+      setClasses([]);
+      setTeacherAttempts([]);
+      setSummaryStats({ averageScore: 0, passRate: 0, totalAttempts: 0, completedQuizzes: 0 });
+      setClassSummaries([]);
     } finally {
       setLoading(false);
     }
@@ -41,6 +83,94 @@ export const TeacherDashboardPage = () => {
     };
   }, [quizzes]);
 
+  const calculateTeacherSummary = (attempts) => {
+    if (!attempts || attempts.length === 0) {
+      return { averageScore: 0, passRate: 0, totalAttempts: 0, completedQuizzes: 0 };
+    }
+
+    const studentMap = new Map();
+    attempts.forEach((attempt) => {
+      const studentId = attempt.studentId?._id?.toString();
+      if (!studentId) return;
+      const score = Number(attempt.score || 0);
+      const existing = studentMap.get(studentId);
+      if (!existing || score > existing.score) {
+        studentMap.set(studentId, {
+          score,
+          isPassed: attempt.isPassed || false,
+        });
+      }
+    });
+
+    const results = Array.from(studentMap.values());
+    const averageScore = results.length
+      ? Number((results.reduce((sum, item) => sum + item.score, 0) / results.length).toFixed(1))
+      : 0;
+    const passRate = results.length
+      ? Math.round((results.filter((item) => item.isPassed).length * 100) / results.length)
+      : 0;
+
+    return {
+      averageScore,
+      passRate,
+      totalAttempts: attempts.length,
+      completedQuizzes: results.length,
+    };
+  };
+
+  const calculateClassSummaries = (attempts, quizzes, classes) => {
+    if (!attempts || attempts.length === 0 || !classes || classes.length === 0) return [];
+
+    const quizClassMap = new Map();
+    quizzes.forEach((quiz) => {
+      if (!quiz?._id) return;
+      const classId = quiz.assignedClass?._id?.toString();
+      if (classId) {
+        quizClassMap.set(quiz._id.toString(), classId);
+      }
+    });
+
+    const classNameMap = new Map();
+    classes.forEach((classItem) => {
+      const id = classItem._id?.toString();
+      if (id) classNameMap.set(id, classItem.name || 'Lớp học');
+    });
+
+    const classStudentMap = new Map();
+    attempts.forEach((attempt) => {
+      const quiz = attempt.quizId;
+      const quizId = quiz?._id?.toString();
+      const classId = quizClassMap.get(quizId);
+      if (!classId) return;
+
+      const studentId = attempt.studentId?._id?.toString();
+      if (!studentId) return;
+
+      const score = Number(attempt.score || 0);
+      const studentMap = classStudentMap.get(classId) || new Map();
+      const existing = studentMap.get(studentId);
+      if (!existing || score > existing.score) {
+        studentMap.set(studentId, { score });
+      }
+      classStudentMap.set(classId, studentMap);
+    });
+
+    const summaries = Array.from(classStudentMap.entries()).map(([classId, studentMap]) => {
+      const studentScores = Array.from(studentMap.values()).map((item) => item.score);
+      const averageScore = studentScores.length
+        ? Number((studentScores.reduce((sum, score) => sum + score, 0) / studentScores.length).toFixed(1))
+        : 0;
+      return {
+        label: classNameMap.get(classId) || 'Lớp học',
+        value: averageScore,
+      };
+    });
+
+    return summaries
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6);
+  };
+
   if (loading) return <div className="loading">Đang tải...</div>;
 
   const recentActivities = [
@@ -49,117 +179,24 @@ export const TeacherDashboardPage = () => {
     { name: 'Nguyễn Thùy Linh', action: 'làm bài Kiểm tra Lịch sử', meta: '45 phút trước · Điểm: 7.2' },
   ];
 
-  const classCards = [
-    { title: '10A1', subject: 'Toán học nâng cao', students: 45, room: 'Phòng B201', color: 'blue' },
-    { title: '12C4', subject: 'Toán Giải Tích', students: 38, room: 'Online', color: 'peach' },
-    { title: '11B2', subject: 'Hình học không gian', students: 42, room: 'Phòng A105', color: 'green' },
-  ];
+  const chartColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444'];
+  const chartItems = classSummaries.length > 0
+    ? classSummaries
+    : Array.from({ length: 4 }, (_, index) => ({ label: 'Chưa có dữ liệu', value: 0 }));
+
+  const classCards = classes.map((classItem) => ({
+    title: classItem.name || 'Lớp chưa đặt tên',
+    subject: classItem.subject?.name || 'Chưa có môn',
+    students: classItem.studentCount || classItem.students?.length || 0,
+    room: classItem.room || 'Chưa có phòng',
+    color: 'blue',
+    teacherName: classItem.teacher?.name || user?.name || 'Giáo viên',
+  }));
 
   return (
     <div className="dash-shell">
       {/* Thanh menu bên trái */}
-     <aside className="sidebar">
-      {/* LOGO SIDEBAR */}
-      <div className="sidebar-logo">
-
-        <svg
-          width="190"
-          height="62"
-          viewBox="0 0 220 60"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Icon */}
-          <rect
-            x="0"
-            y="5"
-            width="50"
-            height="50"
-            rx="14"
-            fill="url(#paint0_linear)"
-          />
-
-          <path
-            d="M25 18L36 24L25 30L14 24L25 18Z"
-            fill="white"
-          />
-
-          <path
-            d="M18 28.5V33C18 35.5 21 37 25 37C29 37 32 35.5 32 33V28.5"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-
-          <path
-            d="M33 25.5V32"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-
-          {/* Tên EduQuiz */}
-          <text
-            x="65"
-            y="37"
-            fontFamily="Inter, sans-serif"
-            fontSize="26"
-            fontWeight="800"
-            fill="#0F172A"
-          >
-            Edu
-            <tspan fill="#2563EB">Quiz</tspan>
-          </text>
-
-          {/* Gradient */}
-          <defs>
-            <linearGradient
-              id="paint0_linear"
-              x1="0"
-              y1="5"
-              x2="50"
-              y2="55"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#3B82F6" />
-              <stop offset="1" stopColor="#1D4ED8" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        <span className="sidebar-subtitle">
-          EduQuiz-Hệ thống tri thức
-        </span>
-
-      </div>
-
-        <nav className="sidebar-nav">
-          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
-            <span className="sidebar-icon">▦</span> Tổng quan
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/exams'); }}>
-            <span className="sidebar-icon">📄</span> Đề thi
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/questions'); }}>
-            <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
-            <span className="sidebar-icon">📊</span> Kết quả
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/members'); }}>
-            <span className="sidebar-icon">👥</span> Thành viên
-          </a>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/settings'); }}>
-            <span className="sidebar-icon">⚙️</span> Cài đặt
-          </a>
-          <a className="sidebar-link sidebar-link--danger" href="#" onClick={(e) => { e.preventDefault(); logout(); }}>
-            <span className="sidebar-icon">↪</span> Đăng xuất
-          </a>
-        </div>
-      </aside> 
+      <TeacherSidebar />
 
       {/* Nội dung chính bên phải */}
       <main className="dash-main">
@@ -173,7 +210,7 @@ export const TeacherDashboardPage = () => {
             </span>
 
             <span className="navbar-username">
-              Trần Anh Thư
+              {user?.name || 'Giáo viên'}
             </span>
           </div>
 
@@ -290,33 +327,6 @@ export const TeacherDashboardPage = () => {
           </div>
 
         </section>        
-        
-       {/*  <section className="stat-grid">
-          <div className="stat-card">
-            <div className="stat-card-icon stat-card--primary">📌</div>
-            <p className="stat-card-label">TỔNG CÂU HỎI</p>
-            <p className="stat-card-value">{stats.questions.toLocaleString('vi-VN')}</p>
-            <p className="stat-card-note">Số câu hỏi trong ngân hàng</p>
-          </div>
-          <div className="stat-card">
-            <div className="stat-card-icon stat-card-icon--success">🧾</div>
-            <p className="stat-card-label">TỔNG ĐỀ THI</p>
-            <p className="stat-card-value">{stats.total}</p>
-            <p className="stat-card-note">Đã tạo trong hệ thống</p>
-          </div>
-          <div className="stat-card">
-            <div className="stat-card-icon stat-card-icon--warning">🚀</div>
-            <p className="stat-card-label">ĐANG HOẠT ĐỘNG</p>
-            <p className="stat-card-value">{stats.published.toString().padStart(2, '0')}</p>
-            <p className="stat-card-note">Sẵn sàng cho học sinh</p>
-          </div>
-          <div className="stat-card">
-            <div className="stat-card-icon">👥</div>
-            <p className="stat-card-label">LƯỢT LÀM BÀI</p>
-            <p className="stat-card-value-sm">{Math.max(stats.total * 15, 0)}</p>
-            <p className="stat-card-note">Ước tính học sinh tham gia</p>
-          </div>
-        </section>*/}
 
         {/* Phần chia cột giữa: Kết quả trung bình & Hồ sơ / Hoạt động gần đây */}
         <section className="overview-grid">
@@ -331,28 +341,39 @@ export const TeacherDashboardPage = () => {
 
             <div className="summary-score-row">
               <div>
-                <p className="summary-score-value">7.8</p>
-                <p className="summary-score-note">Điểm trung bình chung toàn trường</p>
+                <p className="summary-score-value">
+                  {summaryStats.averageScore || 0}
+                </p>
+                <p className="summary-score-note">
+                  Điểm trung bình chung theo học sinh
+                </p>
               </div>
-              <div className="summary-score-pill">+0.4 so với kỳ trước</div>
+              <div className="summary-score-pill">
+                {summaryStats.passRate}% học sinh đạt
+              </div>
             </div>
 
-            <div className="summary-chart-row">
-              <div className="summary-chart-item">
-                <p className="summary-chart-value">7.9</p>
-                <p className="summary-chart-label">Khối 10</p>
-              </div>
-              <div className="summary-chart-item">
-                <p className="summary-chart-value">7.4</p>
-                <p className="summary-chart-label">Khối 11</p>
-              </div>
-              <div className="summary-chart-item">
-                <p className="summary-chart-value">8.1</p>
-                <p className="summary-chart-label">Khối 12</p>
-              </div>
-              <div className="summary-chart-item">
-                <p className="summary-chart-value">7.6</p>
-                <p className="summary-chart-label">Đề chuyên</p>
+            <div className="summary-chart-bar">
+              <div className="summary-bar-container">
+                {chartItems.map((item, index) => {
+                  const maxValue = Math.max(...chartItems.map((i) => Number(i.value || 0)), 1);
+                  const heightPercent = maxValue > 0 ? (Number(item.value || 0) / maxValue) * 100 : 0;
+                  return (
+                    <div className="summary-bar-column" key={index}>
+                      <span className="summary-bar-value">{item.value}</span>
+                      <div className="summary-bar-track">
+                        <div
+                          className="summary-bar-fill"
+                          style={{
+                            height: `${Math.max(heightPercent, 10)}%`,
+                            background: chartColors[index % chartColors.length],
+                          }}
+                        />
+                      </div>
+                      <span className="summary-bar-caption">{item.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

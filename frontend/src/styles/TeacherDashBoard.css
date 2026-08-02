@@ -45,158 +45,6 @@ body{
 }
 
 
-/*====================================================
-SIDEBAR
-====================================================*/
-
-.sidebar{
-    position: fixed;      /* cố định menu */
-
-    width:238px;
-    min-width:238px;
-
-    background:#fff;
-
-    border-right:1px solid var(--border);
-
-    display:flex;
-    flex-direction:column;
-
-    /*position:sticky;*/
-    top:0;
-    left: 0;
-
-    height:100vh;
-
-    z-index:1000;
-}
-
-/*--------------------------------*/
-/*
-.sidebar-logo{
-
-    padding:22px 20px;
-    margin-bottom:20px;   /* tăng khoảng cách với menu */
-   /* border-bottom:1px solid var(--border);
-}*/
-/*
-.sidebar-subtitle{
-
-    display:block;
-
-    margin-top:-2px;
-
-    font-size:11px;
-
-    color:#8a94a7;
-
-    margin-left:64px;
-}*/
-.sidebar-logo svg {
-    width: 170px;
-    height: 48px;
-    margin-bottom: -10px;
-    display:block;
-    margin-left: -10px;
-    margin-top: -8px;   /* tăng giá trị âm để logo lên cao hơn */
-    background: #ffffff;
-    
-   /* border-bottom: 1px solid #d9dee7;*/
-    
-}
-
-.sidebar-subtitle {
-    display: block;
-
-    margin-top: -5px;
-    margin-left: 50px;
-
-    color: #7d8797;
-
-    font-size: 10px;
-    font-weight: 700;
-
-    letter-spacing: 0.25px;
-    white-space: nowrap;
-}
-/*--------------------------------*/
-
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    padding:12px;/*mới thêm*/
-    gap: 4px;              /* gần nhau hơn */
-
-    padding-top: 16px;
-
-    flex: 0 !important;    /* QUAN TRỌNG */
-    justify-content: flex-start;
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
-
-    gap: 10px;
-
-    width: 100%;
-    height: 42px;
-
-    padding: 0 16px;
-
-    border-radius: 10px;
-    text-decoration:none;
-    font-size: 22px !important;
-    font-weight: 600;
-    /*color:#667085;*/
-    margin: 0;
-        transition:
-        transform 0.25s ease,
-        background 0.25s ease,
-        color 0.25s ease,
-        box-shadow 0.25s ease;
-}
-
-.sidebar-link:hover{
-
-    background:#eef4ff;
-
-    color:var(--primary);
-
-    transform:translateX(4px);
-}
-
-.sidebar-link--active{
-
-    background:#edf3ff;
-
-    color:var(--primary);
-
-    font-weight:600;
-}
-
-.sidebar-icon{
-
-    width:24px;
-
-    display:flex;
-
-    justify-content:center;
-
-    font-size:20px;
-}
-
-.sidebar-bottom{
-
-    margin-top:auto;
-
-    padding:12px;
-}
-
-.sidebar-link--danger{
-
-    color:#ef4444;
-}
 
 
 /*==================================================
@@ -598,6 +446,115 @@ CENTER
     margin-top:15px;
 
     color:#8b95a7;
+}/*biểu đồ*/
+
+.summary-chart-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px 0;
+}
+/*
+.summary-bar-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  height: 220px;
+  padding-top: 12px;
+}
+
+.summary-bar-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  min-width: 80px;
+}
+*/
+.summary-bar-container{
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    gap:40px;
+
+    height:260px;
+}
+.summary-bar-column{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+
+    width:90px;
+}
+/*
+.summary-bar-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}*/
+.summary-bar-value{
+    margin-bottom:12px;
+
+    font-size:20px;
+    font-weight:700;
+}
+
+.summary-bar-track{
+    width:50px;          /* chiều rộng cột */
+    height:180px;        /* chiều cao tối đa */
+
+    background:#edf2f7;
+
+    border-radius:12px;
+
+    display:flex;
+    align-items:flex-end;
+
+    overflow:hidden;
+}
+.summary-bar-fill{
+    width:100%;
+    width:100%;
+    border-top-left-radius:0;
+    border-top-right-radius:0;
+
+    transition:height .4s ease;
+}
+/*Label*/
+/*
+.summary-bar-caption {
+  font-size: 13px;
+  color: #475569;
+  text-align: center;
+  max-width: 100%;
+  line-height: 1.4;
+}
+*/
+.summary-bar-caption{
+    margin-top:12px;
+
+    text-align:center;
+
+    font-size:15px;
+    color:#64748b;
+
+    font-weight:600;
+}
+
+.summary-bar-tooltip {
+  position: absolute;
+  top: -28px;
+  background: #1f2937;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /*==================================================

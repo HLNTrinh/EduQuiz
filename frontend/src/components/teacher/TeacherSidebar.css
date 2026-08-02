@@ -1,0 +1,150 @@
+:root{
+
+    --bg:#f6f8fc;
+    --card:#ffffff;
+
+    --primary:#2563eb;
+    --primary-light:#eef4ff;
+
+    --text:#111827;
+    --muted:#8b95a7;
+
+    --border:#edf1f7;
+
+    --shadow:
+        0 8px 25px rgba(20,40,90,.05);
+
+    --radius:18px;
+}
+
+/*====================================================
+SIDEBAR
+====================================================*/
+
+.sidebar{
+    position: fixed;      /* cố định menu */
+
+    width:238px;
+    min-width:238px;
+
+    background:#fff;
+
+    border-right:1px solid var(--border);
+
+    display:flex;
+    flex-direction:column;
+
+    /*position:sticky;*/
+    top:0;
+    left: 0;
+
+    height:100vh;
+
+    z-index:1000;
+}
+
+.sidebar-logo svg {
+    width: 170px;
+    height: 48px;
+    margin-bottom: -10px;
+    display:block;
+    margin-left: -10px;
+    margin-top: -8px;   /* tăng giá trị âm để logo lên cao hơn */
+    background: #ffffff;
+    
+   /* border-bottom: 1px solid #d9dee7;*/
+    
+}
+
+.sidebar-subtitle {
+    display: block;
+
+    margin-top: -5px;
+    margin-left: 50px;
+
+    color: #7d8797;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 0.25px;
+    white-space: nowrap;
+}
+/*--------------------------------*/
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding:12px;/*mới thêm*/
+    gap: 4px;              /* gần nhau hơn */
+
+    padding-top: 16px;
+
+    flex: 0 !important;    /* QUAN TRỌNG */
+    justify-content: flex-start;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    width: 100%;
+    height: 42px;
+
+    padding: 0 16px;
+
+    border-radius: 10px;
+    text-decoration:none;
+    font-size: 16px !important;
+    font-weight: 600;
+    /*color:#667085;*/
+    margin: 0;
+        transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.sidebar-link:hover{
+
+    background:#eef4ff;
+
+    color:var(--primary);
+
+    transform:translateX(4px);
+}
+
+.sidebar-link--active{
+
+    background:#edf3ff;
+
+    color:var(--primary);
+
+    font-weight:600;
+}
+
+.sidebar-icon{
+
+    width:24px;
+
+    display:flex;
+
+    justify-content:center;
+
+    font-size:25px;
+}
+
+.sidebar-bottom{
+
+    margin-top:auto;
+
+    padding:12px;
+}
+
+.sidebar-link--danger{
+
+    color:#ef4444;
+}

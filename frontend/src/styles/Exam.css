@@ -34,7 +34,7 @@
 .dash-shell button {
   cursor: pointer;
 }
-
+/*
 .dash-shell .sidebar {
   width: 210px;
   flex: 0 0 210px;
@@ -45,14 +45,14 @@
   background: #eef4ff;
   border-right: 1px solid var(--exam-line);
 }
-
+*/
 .dash-shell .sidebar-brand {
   display: flex;
   align-items: center;
   gap: 9px;
   padding: 1px 10px 28px;
 }
-
+/*
 .dash-shell .sidebar-logo {
   width: 29px;
   height: 29px;
@@ -64,7 +64,7 @@
   font-size: 16px;
   box-shadow: 0 4px 10px rgba(13, 91, 215, 0.22);
 }
-
+*/
 .dash-shell .sidebar-brand-name,
 .dash-shell .sidebar-brand-sub {
   margin: 0;
@@ -84,7 +84,7 @@
   font-weight: 700;
   letter-spacing: 0.7px;
 }
-
+/*
 .dash-shell .sidebar-nav,
 .dash-shell .sidebar-bottom {
   display: grid;
@@ -125,7 +125,7 @@
   justify-content: center;
   font-size: 13px;
 }
-
+*/
 .dash-shell .dash-main {
   min-width: 0;
   flex: 1;

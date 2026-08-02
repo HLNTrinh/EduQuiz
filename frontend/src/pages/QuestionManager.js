@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { questionService, subjectService } from '../services/authService';
+import { questionService, subjectService } from '../services/authService';import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/QuestionsBank.css';
 import { RxCross2 } from "react-icons/rx";
 
@@ -225,57 +225,7 @@ if (sortOrder === 'Mới nhất') {
 
   return (
     <div className="dash-shell">
-      <aside className="sidebar">
-      <div className="sidebar-logo">
-        <svg
-          width="170"
-          height="48"
-          viewBox="0 0 220 60"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect x="0" y="5" width="50" height="50" rx="14" fill="url(#paint0_linear)" />
-          <path d="M25 18L36 24L25 30L14 24L25 18Z" fill="white" />
-          <path d="M18 28.5V33C18 35.5 21 37 25 37C29 37 32 35.5 32 33V28.5" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-          <path d="M33 25.5V32" stroke="white" strokeWidth="2" strokeLinecap="round" />
-<text x="65" y="37" fontFamily="Inter, sans-serif" fontSize="26" fontWeight="800" fill="#0F172A">
-            Edu<tspan fill="#2563EB">Quiz</tspan>
-          </text>
-          <defs>
-            <linearGradient id="paint0_linear" x1="0" y1="5" x2="50" y2="55" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#3B82F6" />
-              <stop offset="1" stopColor="#1D4ED8" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <span className="sidebar-subtitle">EduQuiz-Hệ thống tri thức</span>
-      </div>
-        <nav className="sidebar-nav">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/dashboard'); }}>
-            <span className="sidebar-icon">▦</span> Tổng quan
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/exams'); }}>
-            <span className="sidebar-icon">📄</span> Đề thi
-          </a>
-          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
-            <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
-            <span className="sidebar-icon">📊</span> Kết quả
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/members'); }}>
-            <span className="sidebar-icon">👥</span> Thành viên
-          </a>
-        </nav>
-        <div className="sidebar-bottom">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/settings'); }}>
-            <span className="sidebar-icon">⚙️</span> Cài đặt
-          </a>
-          <a className="sidebar-link sidebar-link--danger" href="#" onClick={(e) => { e.preventDefault(); logout(); }}>
-            <span className="sidebar-icon">↪</span> Đăng xuất
-          </a>
-        </div>
-      </aside>
+      <TeacherSidebar />
 
       <main className="dash-main">
         <header className="dash-header dash-header--overview">
@@ -296,7 +246,7 @@ if (sortOrder === 'Mới nhất') {
             <div className="question-form-header">
               <div>
                 <h3>{formData._id ? 'Chỉnh sửa câu hỏi' : 'Thêm câu hỏi mới'}</h3>
-<p className="panel-subtitle">Nhập câu hỏi trực tiếp lên giao diện, không cần bật hộp thoại.</p>
+                <p className="panel-subtitle">Nhập câu hỏi trực tiếp lên giao diện, không cần bật hộp thoại.</p>
               </div>
               <button className="btn-outline btn-small" type="button" onClick={() => setShowForm(false)}>Ẩn form</button>
             </div>
@@ -310,28 +260,45 @@ if (sortOrder === 'Mới nhất') {
                 required
               />
 
-              <label className="field-label">Môn học</label>
-              <select
-                className="form-input"
-                value={formData.category}
-                onChange={(event) => setFormData({ ...formData, category: event.target.value })}
-              >
-                <option value="">-- Chọn môn học --</option>
-                {subjectList.map((sub) => (
-                  <option key={sub._id} value={sub._id}>{sub.name}</option>
-                ))}
-              </select>
+              <div className="question-form-row">
 
-              <label className="field-label">Độ khó</label>
-              <select
-                className="form-input"
-                value={formData.difficulty}
-                onChange={(event) => setFormData({ ...formData, difficulty: event.target.value })}
-              >
-                <option value="easy">Dễ</option>
-                <option value="medium">Trung bình</option>
-                <option value="hard">Khó</option>
-              </select>
+                <div className="question-form-group">
+                  <label className="field-label">Môn học</label>
+
+                  <select
+                    className="form-input"
+                    value={formData.category}
+                    onChange={(event) =>
+                      setFormData({ ...formData, category: event.target.value })
+                    }
+                  >
+                    <option value="">-- Chọn môn học --</option>
+
+                    {subjectList.map((sub) => (
+                      <option key={sub._id} value={sub._id}>
+                        {sub.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="question-form-group">
+                  <label className="field-label">Độ khó</label>
+
+                  <select
+                    className="form-input"
+                    value={formData.difficulty}
+                    onChange={(event) =>
+                      setFormData({ ...formData, difficulty: event.target.value })
+                    }
+                  >
+                    <option value="easy">Dễ</option>
+                    <option value="medium">Trung bình</option>
+                    <option value="hard">Khó</option>
+                  </select>
+                </div>
+
+              </div>
 
               <label className="field-label">Đáp án</label>
               {formData.options.map((option, index) => (
@@ -364,7 +331,7 @@ if (sortOrder === 'Mới nhất') {
                 className="form-input"
                 rows="2"
                 value={formData.explanation}
-onChange={(event) => setFormData({ ...formData, explanation: event.target.value })}
+                onChange={(event) => setFormData({ ...formData, explanation: event.target.value })}
               />
 
               <div className="question-form-actions">
@@ -392,31 +359,50 @@ onChange={(event) => setFormData({ ...formData, explanation: event.target.value 
                   required
                 />
 
-                <label className="field-label">Môn học</label>
-                <select
-                  className="form-input"
-                  value={formData.category}
-                  onChange={(event) => setFormData({ ...formData, category: event.target.value })}
-                >
-                  <option value="">-- Chọn môn học --</option>
-                  {subjectList.map((sub) => (
-                    <option key={sub._id} value={sub._id}>{sub.name}</option>
-                  ))}
-                </select>
-
                 <div className="modal-row">
+
+                  <div className="modal-field">
+                    <label className="field-label">Môn học</label>
+
+                    <select
+                      className="form-input"
+                      value={formData.category}
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          category: event.target.value,
+                        })
+                      }
+                    >
+                      <option value="">-- Chọn môn học --</option>
+
+                      {subjectList.map((sub) => (
+                        <option key={sub._id} value={sub._id}>
+                          {sub.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="modal-field">
                     <label className="field-label">Độ khó</label>
+
                     <select
                       className="form-input"
                       value={formData.difficulty}
-                      onChange={(event) => setFormData({ ...formData, difficulty: event.target.value })}
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          difficulty: event.target.value,
+                        })
+                      }
                     >
                       <option value="easy">Dễ</option>
                       <option value="medium">Trung bình</option>
                       <option value="hard">Khó</option>
                     </select>
                   </div>
+
                 </div>
 
                 <label className="field-label">Đáp án</label>

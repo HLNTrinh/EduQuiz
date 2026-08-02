@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/Members.css';
 
 export const MembersPage = () => {
@@ -33,17 +34,6 @@ useEffect(() => {
     .catch(console.error);
 }, [user]);
 
-/*xóa
-  const filteredStudents = useMemo(() => {
-    const query = search.toLowerCase().trim();
-    return students.filter((student) =>
-      student.id.toLowerCase().includes(query) ||
-      student.name.toLowerCase().includes(query) ||
-      student.email.toLowerCase().includes(query) ||
-      student.status.toLowerCase().includes(query)
-    );
-  }, [search]);
-  */
     const filteredStudents = useMemo(() => {
     const query = search.toLowerCase();
 
@@ -56,114 +46,14 @@ useEffect(() => {
 
   return (
     <div className="dash-shell">
-      <aside className="sidebar">
-      <div className="sidebar-logo">
-
-        <svg
-          width="170"
-          height="48"
-          viewBox="0 0 220 60"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Icon */}
-          <rect
-            x="0"
-            y="5"
-            width="50"
-            height="50"
-            rx="14"
-            fill="url(#paint0_linear)"
-          />
-
-          <path
-            d="M25 18L36 24L25 30L14 24L25 18Z"
-            fill="white"
-          />
-
-          <path
-            d="M18 28.5V33C18 35.5 21 37 25 37C29 37 32 35.5 32 33V28.5"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-
-          <path
-            d="M33 25.5V32"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-
-          {/* Tên EduQuiz */}
-          <text
-            x="65"
-            y="37"
-            fontFamily="Inter, sans-serif"
-            fontSize="26"
-            fontWeight="800"
-            fill="#0F172A"
-          >
-            Edu
-            <tspan fill="#2563EB">Quiz</tspan>
-          </text>
-
-          {/* Gradient */}
-          <defs>
-            <linearGradient
-              id="paint0_linear"
-              x1="0"
-              y1="5"
-              x2="50"
-              y2="55"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#3B82F6" />
-              <stop offset="1" stopColor="#1D4ED8" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        <span className="sidebar-subtitle">
-          EduQuiz-Hệ thống tri thức
-        </span>
-
-      </div>
-
-        <nav className="sidebar-nav">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/dashboard'); }}>
-            <span className="sidebar-icon">▦</span> Tổng quan
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/exams'); }}>
-            <span className="sidebar-icon">📄</span> Đề thi
-          </a>
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/questions'); }}>
-            <span className="sidebar-icon">📝</span> Ngân hàng câu hỏi
-          </a>
-
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/results'); }}>
-            <span className="sidebar-icon">📊</span> Kết quả
-          </a>
-          <a className="sidebar-link sidebar-link--active" href="#" onClick={(e) => e.preventDefault()}>
-            <span className="sidebar-icon">👥</span> Thành viên
-          </a>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <a className="sidebar-link" href="#" onClick={(e) => { e.preventDefault(); navigate('/teacher/settings'); }}>
-            <span className="sidebar-icon">⚙️</span> Cài đặt
-          </a>
-          <a className="sidebar-link sidebar-link--danger" href="#" onClick={(e) => { e.preventDefault(); logout(); }}>
-            <span className="sidebar-icon">↪</span> Đăng xuất
-          </a>
-        </div>
-      </aside>
+      {/* Sidebar component menu trái */}
+        <TeacherSidebar />
 
       <main className="dash-main">
         <header className="dash-header dash-header--overview">
           <div>
             <p className="overview-badge">Quản lý thành viên</p>
-            <h1 className="dash-greeting">Chào buổi sáng, Thầy {user?.name ?? 'An'}!</h1>
+            <h1 className="dash-greeting">Chào buổi sáng {user?.name ?? 'An'}!</h1>
             <p className="dash-subtitle">Hôm nay hãy kiểm tra danh sách lớp học và thành viên trong lớp.</p>
           </div>
           <div className="overview-actions">

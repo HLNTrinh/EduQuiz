@@ -1,4 +1,4 @@
-.result-overview-shell {
+.dash-shell {
   --result-blue: #2867df;
   --result-blue-soft: #edf4ff;
   --result-ink: #172844;
@@ -11,27 +11,27 @@
   font-family: "DM Sans", "Segoe UI", sans-serif;
 }
 
-.result-overview-shell *,
-.result-overview-shell *::before,
-.result-overview-shell *::after {
+.dash-shell *,
+.dash-shell *::before,
+.dash-shell *::after {
   box-sizing: border-box;
 }
-
+/*
 .result-sidebar {
     position: fixed;
     left: 0;
     top: 0;
     width: 237px;
     min-height: 100vh;
- border-right: 1px solid var(--result-line);
-  background: #ffffff;
-    overflow-y: auto; /* nếu menu bên trái dài thì sidebar tự cuộn */
-    box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+    border-right: 1px solid var(--result-line);
+    background: #ffffff;
+    overflow-y: auto; *//* nếu menu bên trái dài thì sidebar tự cuộn */
+    /*box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
     z-index: 1000;
-}
-.result-overview-main {
+}*/
+.dash-main {
     margin-left: 237px;
 
     width: calc(100% - 237px);
@@ -42,12 +42,14 @@
 
 
 /*Logo*/
+/*
 .sidebar-logo {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   margin-top: 20px;
-  padding: 0 10px 20px; /* Khoảng cách rõ ràng giữa logo và menu */
+  padding: 0 10px 20px; *//* Khoảng cách rõ ràng giữa logo và menu */
+  /*
   margin-bottom: 10px;
   margin-left: 10px;
 }
@@ -70,7 +72,7 @@
   font-weight: 700;
 
   white-space: nowrap;
-}
+}*/
 .result-sidebar-brand-name,
 .result-sidebar-brand-sub {
   margin: 0;
@@ -90,23 +92,23 @@
   font-weight: 800;
   letter-spacing: 0.55px;
 }
-
+/*
 .result-sidebar-nav,
 .result-sidebar-bottom {
   display: grid;
   gap: 5px;
 
-}
-
+}*/
+/*
 .result-sidebar-bottom {
-  margin-top: 310px; /* khoảng cách sau menu Kết quả/Thành viên */
+  margin-top: 310px; 
   padding-top: 14px;
   border-top: 1px solid #f0f2f6;
   display: flex;
   flex-direction: column;
   gap: 5px;
-}
-
+}*/
+/*
 .result-sidebar-nav a,
 .result-sidebar-bottom a {
   min-height: 37px;
@@ -139,9 +141,9 @@
 
 .result-sidebar-bottom a.danger {
   color: #df5961;
-}
+}*/
 
-.result-overview-main {
+.dash-main {
   min-width: 0;
   flex: 1;
 }

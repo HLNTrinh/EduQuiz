@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { quizService, quizAttemptService } from '../services/services';
+import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/Result.css';
 
 export const TeacherResultPage = () => {
@@ -188,96 +189,11 @@ export const TeacherResultPage = () => {
   }, [teacherAttempts]);
 
   return (
-    <div className="result-overview-shell">
-      <aside className="result-sidebar">
-        {/* LOGO SIDEBAR */}
-        <div className="sidebar-logo">
-          <svg
-            width="170"
-            height="48"
-            viewBox="0 0 220 60"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect
-              x="0"
-              y="5"
-              width="50"
-              height="50"
-              rx="14"
-              fill="url(#paint0_linear)"
-            />
-            <path
-              d="M25 18L36 24L25 30L14 24L25 18Z"
-              fill="white"
-            />
-            <path
-              d="M18 28.5V33C18 35.5 21 37 25 37C29 37 32 35.5 32 33V28.5"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-            <path
-              d="M33 25.5V32"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <text
-              x="65"
-              y="37"
-              fontFamily="Inter, sans-serif"
-              fontSize="26"
-              fontWeight="800"
-              fill="#0F172A"
-            >
-              Edu
-              <tspan fill="#2563EB">Quiz</tspan>
-            </text>
-            <defs>
-              <linearGradient
-                id="paint0_linear"
-                x1="0"
-                y1="5"
-                x2="50"
-                y2="55"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#3B82F6" />
-                <stop offset="1" stopColor="#1D4ED8" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <span className="sidebar-subtitle">
-            EduQuiz-Hệ thống tri thức
-          </span>
-        </div>
+    <div className="dash-shell">
+      {/* Thanh menu bên trái */}
+      <TeacherSidebar />
 
-        <nav className="result-sidebar-nav">
-          <a href="#" onClick={(event) => { event.preventDefault(); navigate('/teacher/dashboard'); }}>
-            <span>▦</span> Tổng quan
-          </a>
-          <a href="#" onClick={(event) => { event.preventDefault(); navigate('/teacher/questions'); }}>
-            <span>📝</span> Ngân hàng câu hỏi
-          </a>
-          <a href="#" onClick={(event) => { event.preventDefault(); navigate('/teacher/exams'); }}>
-            <span>📄</span> Đề thi
-          </a>
-          <a className="active" href="#" onClick={(event) => event.preventDefault()}>
-            <span>📊</span> Kết quả
-          </a>
-          <a href="#" onClick={(event) => { event.preventDefault(); navigate('/teacher/members'); }}>
-            <span>👥</span> Thành viên
-          </a>
-        </nav>
-
-        <div className="result-sidebar-bottom">
-          <a href="#" onClick={(event) => event.preventDefault()}><span>⚙️</span> Cài đặt</a>
-          <a className="danger" href="#" onClick={(event) => { event.preventDefault(); logout(); }}><span>↪</span> Đăng xuất</a>
-        </div>
-      </aside>
-
-      <main className="result-overview-main">
+      <main className="dash-main">
         <div className="result-container result-overview-container">
           <div className="result-header result-header--overview">
             <h1>📊 Báo cáo kết quả học sinh</h1>
