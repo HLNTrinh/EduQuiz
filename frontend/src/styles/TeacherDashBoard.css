@@ -342,7 +342,7 @@ CENTER
 
 .panel-title{
 
-    font-size:26px;
+    font-size:24px;
 
     font-weight:700;
 }
@@ -351,7 +351,7 @@ CENTER
 
     color:#97a1b4;
 
-    font-size:15px;
+    font-size:18px;
 }
 
 .btn-outline{
@@ -446,7 +446,8 @@ CENTER
     margin-top:15px;
 
     color:#8b95a7;
-}/*biểu đồ*/
+}
+/*biểu đồ*/
 
 .summary-chart-bar {
   display: flex;
@@ -454,26 +455,7 @@ CENTER
   gap: 18px;
   padding: 16px 0;
 }
-/*
-.summary-bar-container {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  height: 220px;
-  padding-top: 12px;
-}
 
-.summary-bar-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  min-width: 80px;
-}
-*/
 .summary-bar-container{
     display:flex;
     align-items:flex-end;
@@ -491,49 +473,44 @@ CENTER
     width:90px;
 }
 /*
-.summary-bar-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #111827;
-}*/
 .summary-bar-value{
     margin-bottom:12px;
 
     font-size:20px;
     font-weight:700;
 }
+*/
+.summary-bar-value{
+    position:absolute;
+    top:-24px;
+    left:50%;
+    transform:translateX(-50%);
 
+    font-size:16px;
+    font-weight:700;
+    white-space:nowrap;
+}
 .summary-bar-track{
     width:50px;          /* chiều rộng cột */
     height:180px;        /* chiều cao tối đa */
 
-    background:#edf2f7;
+    /*background:#edf2f7;*/
 
-    border-radius:12px;
+    /*border-radius:12px;*/
 
     display:flex;
     align-items:flex-end;
 
-    overflow:hidden;
+    overflow:visible; 
 }
 .summary-bar-fill{
     width:100%;
-    width:100%;
-    border-top-left-radius:0;
-    border-top-right-radius:0;
-
+    border-radius: 0;
+    position:relative;
     transition:height .4s ease;
 }
 /*Label*/
-/*
-.summary-bar-caption {
-  font-size: 13px;
-  color: #475569;
-  text-align: center;
-  max-width: 100%;
-  line-height: 1.4;
-}
-*/
+
 .summary-bar-caption{
     margin-top:12px;
 

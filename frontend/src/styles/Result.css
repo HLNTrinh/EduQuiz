@@ -16,21 +16,6 @@
 .dash-shell *::after {
   box-sizing: border-box;
 }
-/*
-.result-sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 237px;
-    min-height: 100vh;
-    border-right: 1px solid var(--result-line);
-    background: #ffffff;
-    overflow-y: auto; *//* nếu menu bên trái dài thì sidebar tự cuộn */
-    /*box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    z-index: 1000;
-}*/
 .dash-main {
     margin-left: 237px;
 
@@ -42,37 +27,7 @@
 
 
 /*Logo*/
-/*
-.sidebar-logo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 20px;
-  padding: 0 10px 20px; *//* Khoảng cách rõ ràng giữa logo và menu */
-  /*
-  margin-bottom: 10px;
-  margin-left: 10px;
-}
 
-.sidebar-logo svg {
-  width: 170px;
-  height: 48px;
-  display: block;
-}
-
-.sidebar-subtitle {
-  display: block;
-
-  margin-top: -4px;
-  margin-left: 50px;
-
-  color: #93a0b4;
-
-  font-size: 8px;
-  font-weight: 700;
-
-  white-space: nowrap;
-}*/
 .result-sidebar-brand-name,
 .result-sidebar-brand-sub {
   margin: 0;
@@ -92,56 +47,6 @@
   font-weight: 800;
   letter-spacing: 0.55px;
 }
-/*
-.result-sidebar-nav,
-.result-sidebar-bottom {
-  display: grid;
-  gap: 5px;
-
-}*/
-/*
-.result-sidebar-bottom {
-  margin-top: 310px; 
-  padding-top: 14px;
-  border-top: 1px solid #f0f2f6;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}*/
-/*
-.result-sidebar-nav a,
-.result-sidebar-bottom a {
-  min-height: 37px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 0 11px;
-  border-radius: 6px;
-  color: #5e6d85;
-  font-size: 11px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 160ms ease, background 160ms ease;
-}
-
-.result-sidebar-nav a:hover,
-.result-sidebar-nav a.active,
-.result-sidebar-bottom a:hover {
-  color: var(--result-blue);
-  background: var(--result-blue-soft);
-}
-
-.result-sidebar-nav a span,
-.result-sidebar-bottom a span {
-  width: 16px;
-  display: inline-flex;
-  justify-content: center;
-  font-size: 13px;
-}
-
-.result-sidebar-bottom a.danger {
-  color: #df5961;
-}*/
 
 .dash-main {
   min-width: 0;
