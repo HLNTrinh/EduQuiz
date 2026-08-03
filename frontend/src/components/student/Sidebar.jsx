@@ -1,6 +1,6 @@
 import "./Sidebar.css";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Sidebar() {
     const { user, logout } = useAuth();
@@ -58,22 +58,9 @@ export default function Sidebar() {
                 </NavLink>
             </nav>
 
-            {/* Bottom Section */}
+{/* Bottom Section */}
             <div className="sidebar-bottom">
-                <NavLink
-                    to="/student/settings"
-                    className={({ isActive }) =>
-                        isActive ? "sidebar-link active" : "sidebar-link"
-                    }
-                >
-                    <span className="link-icon">⚙️</span>
-                    Cài đặt
-                </NavLink>
-
-                <button className="logout-btn" onClick={logout}>
-                    <span className="link-icon">↪️</span>
-                    Đăng xuất
-                </button>
+                {/* Empty - Settings & Logout moved to UserMenu dropdown */}
             </div>
         </aside>
     );

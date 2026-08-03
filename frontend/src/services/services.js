@@ -68,6 +68,11 @@ export const classService = {
     const body = response ?? {};
     return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
   },
+  getStudentClasses: async () => {
+    const response = await api.get('/classes/student');
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
 };
 
 export const quizAttemptService = {
@@ -77,4 +82,12 @@ export const quizAttemptService = {
   getAttemptResult:  (attemptId)    => api.get(`/quiz-attempts/${attemptId}/result`),
   getStudentAttempts:(params)       => api.get('/quiz-attempts', { params }),
   getTeacherAttempts:(params)       => api.get('/quiz-attempts/teacher', { params }),
+};
+
+export const notificationService = {
+  getStudentNotifications: async (params) => {
+    const response = await api.get('/notifications/student', { params });
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
 };
