@@ -30,6 +30,8 @@ const {
   deleteClass,
   addStudent,
   removeStudent,
+  importStudents,
+  upload,
 } = require('../controllers/adminClassController');
 
 const {
@@ -82,6 +84,7 @@ router.put('/classes/:id', updateClass);
 router.delete('/classes/:id', deleteClass);
 router.post('/classes/:id/students', addStudent);
 router.delete('/classes/:id/students/:studentId', removeStudent);
+router.post('/classes/:id/import-students', upload.single('file'), importStudents);
 
 // ==================== Notification Management ====================
 router.get('/notifications', getNotifications);

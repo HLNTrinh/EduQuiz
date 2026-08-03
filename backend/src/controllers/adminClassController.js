@@ -1,6 +1,11 @@
 const Class = require('../models/Class');
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const ExcelJS = require('exceljs');
+const multer = require('multer');
+const { Readable } = require('stream');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
 
 // Utility: escape regex for exact name matching
 function escapeRegex(text) {
@@ -233,6 +238,159 @@ const addStudent = async (req, res) => {
 };
 
 /* =========================
+   POST /api/admin/classes/:id/import-students
+   Import danh sách học sinh từ file CSV/Excel, tự động tạo user và gắn vào lớp
+   Chiến lược A: bỏ qua email trùng (trong file hoặc với DB) và báo cáo
+========================= */
+const importStudents = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Vui lòng upload file CSV hoặc Excel' });
+    }
+
+    const classItem = await Class.findById(req.params.id);
+    if (!classItem) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
+    }
+
+    // Đọc file bằng exceljs (hỗ trợ cả .csv, .xlsx, .xls)
+    const workbook = new ExcelJS.Workbook();
+    const originalName = (req.file.originalname || '').toLowerCase();
+    let worksheet;
+
+    if (originalName.endsWith('.csv')) {
+      // File CSV: dùng csv.read với stream (ổn định hơn buffer)
+      const stream = Readable.from(req.file.buffer);
+      await workbook.csv.read(stream, { parserOptions: { delimiter: ',' } });
+      worksheet = workbook.worksheets[0];
+    } else {
+      // File Excel (.xlsx, .xls): dùng xlsx.load
+      await workbook.xlsx.load(req.file.buffer);
+      worksheet = workbook.worksheets[0];
+    }
+
+    if (!worksheet) {
+      return res.status(400).json({ success: false, message: 'File không có dữ liệu' });
+    }
+
+    // Đọc tất cả dòng thành mảng
+    const rows = [];
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // bỏ qua header
+      const values = row.values;
+      // values[1] = Họ tên, values[2] = Email, values[3] = SĐT, values[4] = Mật khẩu
+      const name = (values[1] || '').toString().trim();
+      const email = (values[2] || '').toString().trim().toLowerCase();
+      const phone = (values[3] || '').toString().trim();
+      const password = (values[4] || '').toString().trim();
+      if (name && email) {
+        rows.push({ name, email, phone, password });
+      }
+    });
+
+    if (rows.length === 0) {
+      return res.status(400).json({ success: false, message: 'File không có dòng dữ liệu hợp lệ (cần Họ tên và Email)' });
+    }
+
+    // Bước 1: Loại bỏ email trùng trong file (giữ dòng đầu tiên)
+    const seenEmails = new Set();
+    const uniqueRows = [];
+    const duplicateInFile = [];
+    rows.forEach((row) => {
+      if (seenEmails.has(row.email)) {
+        duplicateInFile.push(row.email);
+      } else {
+        seenEmails.add(row.email);
+        uniqueRows.push(row);
+      }
+    });
+
+    // Bước 2: Tìm email đã tồn tại trong DB (lấy cả _id để gắn vào lớp)
+    const emails = uniqueRows.map((r) => r.email);
+    const existingUsers = await User.find({ email: { $in: emails } }).select('email').lean();
+    const existingByEmail = new Map(existingUsers.map((u) => [u.email, u._id]));
+
+    // Bước 3: Tách dòng
+    // - toCreate: email chưa tồn tại → tạo tài khoản mới
+    // - toAddToClass: email đã tồn tại → không tạo mới, chỉ gắn vào lớp
+    const toCreate = [];
+    const toAddToClass = [];
+    uniqueRows.forEach((row) => {
+      if (existingByEmail.has(row.email)) {
+        toAddToClass.push({ row, userId: existingByEmail.get(row.email) });
+      } else {
+        toCreate.push(row);
+      }
+    });
+
+    // Bước 4: Băm mật khẩu và tạo user mới
+    const createdUsers = [];
+    const errors = [];
+    const defaultPassword = 'EduQuiz@123';
+
+    for (const row of toCreate) {
+      try {
+        const hashedPassword = await bcrypt.hash(row.password || defaultPassword, 12);
+        const user = await User.create({
+          name: row.name,
+          email: row.email,
+          password: hashedPassword,
+          role: 'student',
+          status: 'active',
+          phone: row.phone || null,
+          joinDate: new Date(),
+          avatar: `https://i.pravatar.cc/200?img=${Math.floor(Math.random() * 70)}`,
+        });
+        createdUsers.push(user._id);
+      } catch (err) {
+        // Nếu lỗi unique (email trùng do race condition) thì gắn vào lớp thay vì tạo mới
+        if (err.code === 11000) {
+          const dup = await User.findOne({ email: row.email }).select('_id').lean();
+          if (dup) toAddToClass.push({ row, userId: dup._id });
+        } else {
+          errors.push(`Lỗi tạo user ${row.email}: ${err.message}`);
+        }
+      }
+    }
+
+    // Bước 5: Gắn user (mới + đã tồn tại) vào lớp, tránh trùng trong lớp
+    const studentsToAdd = [...createdUsers, ...toAddToClass.map((item) => item.userId)];
+    const addedToClass = [];
+    const alreadyInClass = [];
+    if (studentsToAdd.length > 0) {
+      const currentIds = new Set(classItem.students.map((id) => id.toString()));
+      studentsToAdd.forEach((id) => {
+        const idStr = id.toString();
+        if (currentIds.has(idStr)) {
+          alreadyInClass.push(idStr);
+        } else {
+          classItem.students.push(id);
+          currentIds.add(idStr);
+          addedToClass.push(idStr);
+        }
+      });
+      classItem.studentCount = classItem.students.length;
+      await classItem.save();
+    }
+
+    // Bước 6: Trả về báo cáo
+    const skipped = duplicateInFile.length + alreadyInClass.length;
+    res.json({
+      success: true,
+      message: `Import thành công ${createdUsers.length} học sinh mới, thêm ${addedToClass.length} học sinh vào lớp`,
+      created: createdUsers.length,
+      addedToClass: addedToClass.length,
+      skipped,
+      duplicateInFile,
+      alreadyInClass,
+      errors,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
+  }
+};
+
+/* =========================
    DELETE /api/admin/classes/:id/students/:studentId
    Xóa học sinh khỏi lớp
 ========================= */
@@ -273,4 +431,6 @@ module.exports = {
   deleteClass,
   addStudent,
   removeStudent,
+  importStudents,
+  upload,
 };

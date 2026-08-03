@@ -733,75 +733,89 @@
 /* Pagination Footer */
 .table-footer-pagination {
   padding: 16px 24px;
-  background-color: #f8fafc;
+  background-color: rgba(248, 250, 252, 0.5);
   border-top: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
 }
 
 .footer-stats-text {
-  font-size: 12px;
+  font-size: 13.5px;
   color: #64748b;
   font-weight: 500;
   margin: 0;
 }
 
+.pagination-highlight {
+  font-weight: 600;
+  color: #0f172a;
+}
+
 .pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-nav-btn {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-nav-btn:hover:not(:disabled) {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.pagination-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-pages {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.btn-pagination-nav {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
+.page-number-btn {
   background-color: #ffffff;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-pagination-nav:hover:not(:disabled) {
-  background-color: #f1f5f9;
-  color: #0f172a;
-}
-
-.btn-pagination-nav:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-pagination-page {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
   color: #475569;
-  font-size: 12px;
-  font-weight: 700;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.btn-pagination-page:hover {
-  background-color: #f1f5f9;
+.page-number-btn:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
   color: #0f172a;
 }
 
-.btn-pagination-page.active {
+.page-number-btn.active {
   background-color: #004ac6;
   border-color: #004ac6;
   color: #ffffff;
+  font-weight: 600;
 }
 
 /* Fallback selected state when no class chosen */
@@ -1024,4 +1038,46 @@
     gap: 12px;
     align-items: center;
   }
+}
+
+/* ===== Import students from file ===== */
+.form-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-divider::before,
+.form-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.import-result {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #334155;
+}
+
+.import-result p {
+  margin: 2px 0;
+}
+
+.import-warning {
+  color: #b45309;
+}
+
+.import-error {
+  color: #dc2626;
 }

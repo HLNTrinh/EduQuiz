@@ -12,6 +12,8 @@ import {
   Search,
   CheckCircle,
   Users,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import {
   addStudentToClass,
@@ -19,6 +21,7 @@ import {
   deleteClass,
   getClasses,
   getUsers,
+  importStudentsToClass,
   removeStudentFromClass,
   updateClass,
 } from '../services/adminService';
@@ -60,6 +63,9 @@ export default function AdminClassManagementPage() {
   const [editClassStatus, setEditClassStatus] = useState('active');
   const [activeMenuStudentId, setActiveMenuStudentId] = useState(null);
   const [emailDetails, setEmailDetails] = useState(null);
+  const [importFile, setImportFile] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const showToast = useCallback((message, type = 'success') => setToast({ message, type }), []);
 
@@ -90,11 +96,23 @@ export default function AdminClassManagementPage() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  // Reset to page 1 when switching class or searching students
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedClassId, studentSearchQuery]);
+
   const activeClass = classes.find((item) => item._id === selectedClassId) || null;
   const students = activeClass?.students || [];
   const filteredStudents = students.filter((student) =>
     `${student.name || ''} ${student.email || ''}`.toLowerCase().includes(studentSearchQuery.toLowerCase())
   );
+
+  // Pagination calculations
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / itemsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredStudents.length);
+  const paginatedStudents = filteredStudents.slice(startIndex, endIndex);
 
   const handleAddClass = async (event) => {
     event.preventDefault();
@@ -158,13 +176,29 @@ export default function AdminClassManagementPage() {
   const handleAddStudent = async (event) => {
     event.preventDefault();
     if (!activeClass) return;
+    const hasSelectedStudent = Boolean(studentId.trim());
+    const hasImportFile = Boolean(importFile);
+    if (!hasSelectedStudent && !hasImportFile) {
+      showToast('Vui lòng chọn học sinh hoặc tải file danh sách.', 'error');
+      return;
+    }
     try {
       setSaving(true);
-      await addStudentToClass(activeClass._id, studentId.trim());
+      const messages = [];
+      if (hasSelectedStudent) {
+        await addStudentToClass(activeClass._id, studentId.trim());
+        messages.push('Đã thêm học sinh được chọn vào lớp.');
+      }
+      if (hasImportFile) {
+        const res = await importStudentsToClass(activeClass._id, importFile);
+        const data = res?.data || res;
+        messages.push(data.message || 'Import danh sách học sinh thành công.');
+      }
       setStudentId('');
+      setImportFile(null);
       setShowAddStudent(false);
       await fetchClasses();
-      showToast('Đã thêm học sinh vào lớp.');
+      showToast(messages.join(' '));
     } catch (error) {
       showToast(error.message || 'Không thể thêm học sinh. Kiểm tra lại ID tài khoản.', 'error');
     } finally { setSaving(false); }
@@ -190,6 +224,7 @@ export default function AdminClassManagementPage() {
       const enrolledIds = new Set((activeClass?.students || []).map((student) => student._id));
       setAvailableStudents((res.users || []).filter((student) => !enrolledIds.has(student._id)));
       setStudentId('');
+      setImportFile(null);
       setShowAddStudent(true);
     } catch (error) {
       showToast(error.message || 'Không thể tải danh sách học sinh.', 'error');
@@ -227,8 +262,21 @@ export default function AdminClassManagementPage() {
                 <div className="stats-dashboard-grid"><div className="stats-chip chip-blue"><span className="stats-chip-title">Tổng học sinh</span><span className="stats-chip-value">{activeClass.studentCount || 0}</span></div></div>
               </div>
               <div className="students-table-container"><div className="table-header-row"><h3 className="table-header-title">Danh sách học sinh</h3><div className="table-filter-actions"><div className="table-search-box"><Search size={14} className="table-search-icon" /><input type="text" placeholder="Tìm học sinh..." className="table-search-input" value={studentSearchQuery} onChange={(e) => setStudentSearchQuery(e.target.value)} /></div><button className="btn-primary-sm" onClick={openAddStudentModal} disabled={saving || studentsLoading}><UserPlus size={16} /><span>{studentsLoading ? 'Đang tải...' : 'Thêm học sinh'}</span></button></div></div>
-                <div className="table-scroller"><table className="students-data-table"><thead><tr><th>ID tài khoản</th><th>Họ và tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th className="text-right-aligned">Thao tác</th></tr></thead><tbody>{filteredStudents.length === 0 ? <tr><td colSpan="6" className="table-empty-cell">Chưa có học sinh trong lớp này</td></tr> : filteredStudents.map((student) => <tr key={student._id}><td className="student-code-cell" title={student._id}>{getShortId(student._id)}</td><td><div className="student-profile-cell"><div className="student-avatar-initial bg-blue">{getInitials(student.name)}</div><span className="student-fullname" title={student.name}>{student.name}</span></div></td><td><button type="button" className="student-email student-email-button" title="Bấm để xem email đầy đủ" onClick={() => setEmailDetails({ name: student.name, email: student.email })}>{student.email || '---'}</button></td><td>{USER_ROLE_LABELS[student.role] || student.role || '---'}</td><td><span className={`status-pill ${student.status === 'active' ? 'online' : 'offline'}`}>{USER_STATUS_LABELS[student.status] || '---'}</span></td><td className="text-right-aligned actions-cell-container"><button className="action-menu-btn" onClick={() => setActiveMenuStudentId(activeMenuStudentId === student._id ? null : student._id)}><MoreVertical size={16} /></button>{activeMenuStudentId === student._id && <div className="student-action-dropdown"><button className="dropdown-delete-btn" onClick={() => handleDeleteStudent(student._id)}>Xoá khỏi lớp</button></div>}</td></tr>)}</tbody></table></div>
-                <div className="table-footer-pagination"><p className="footer-stats-text">Hiển thị {filteredStudents.length} trên tổng số {activeClass.studentCount || 0} học sinh</p></div>
+                <div className="table-scroller"><table className="students-data-table"><thead><tr><th>ID tài khoản</th><th>Họ và tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th className="text-right-aligned">Thao tác</th></tr></thead><tbody>{filteredStudents.length === 0 ? <tr><td colSpan="6" className="table-empty-cell">Chưa có học sinh trong lớp này</td></tr> : paginatedStudents.map((student) => <tr key={student._id}><td className="student-code-cell" title={student._id}>{getShortId(student._id)}</td><td><div className="student-profile-cell"><div className="student-avatar-initial bg-blue">{getInitials(student.name)}</div><span className="student-fullname" title={student.name}>{student.name}</span></div></td><td><button type="button" className="student-email student-email-button" title="Bấm để xem email đầy đủ" onClick={() => setEmailDetails({ name: student.name, email: student.email })}>{student.email || '---'}</button></td><td>{USER_ROLE_LABELS[student.role] || student.role || '---'}</td><td><span className={`status-pill ${student.status === 'active' ? 'online' : 'offline'}`}>{USER_STATUS_LABELS[student.status] || '---'}</span></td><td className="text-right-aligned actions-cell-container"><button className="action-menu-btn" onClick={() => setActiveMenuStudentId(activeMenuStudentId === student._id ? null : student._id)}><MoreVertical size={16} /></button>{activeMenuStudentId === student._id && <div className="student-action-dropdown"><button className="dropdown-delete-btn" onClick={() => handleDeleteStudent(student._id)}>Xoá khỏi lớp</button></div>}</td></tr>)}</tbody></table></div>
+                {filteredStudents.length > 0 && (
+                  <div className="table-footer-pagination">
+                    <p className="footer-stats-text">Hiển thị <span className="pagination-highlight">{startIndex + 1} - {endIndex}</span> trên tổng số <span className="pagination-highlight">{filteredStudents.length}</span> học sinh</p>
+                    <div className="pagination-controls">
+                      <button className="pagination-nav-btn" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={safeCurrentPage === 1} title="Trang trước"><ChevronLeft size={16} /></button>
+                      <div className="pagination-pages">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button key={page} className={`page-number-btn ${safeCurrentPage === page ? 'active' : ''}`} onClick={() => setCurrentPage(page)}>{page}</button>
+                        ))}
+                      </div>
+                      <button className="pagination-nav-btn" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={safeCurrentPage === totalPages} title="Trang sau"><ChevronRight size={16} /></button>
+                    </div>
+                  </div>
+                )}
               </div>
             </> : <div className="no-class-selected-state"><School size={48} className="empty-state-icon" /><h3>Chưa có lớp học</h3><p>Hãy tạo một lớp học mới để bắt đầu quản lý.</p></div>}
           </div>
@@ -236,7 +284,7 @@ export default function AdminClassManagementPage() {
       </div>
       {showAddClass && <ClassModal title="Tạo lớp học mới" onClose={() => setShowAddClass(false)} onSubmit={handleAddClass} saving={saving}><ClassFields name={newClassName} setName={setNewClassName} teacher={newClassTeacher} setTeacher={setNewClassTeacher} teacherId={newClassTeacherId} setTeacherId={setNewClassTeacherId} year={newClassYear} setYear={setNewClassYear} /></ClassModal>}
       {showEditClass && <ClassModal title="Sửa thông tin lớp học" onClose={() => setShowEditClass(false)} onSubmit={handleEditClassSubmit} saving={saving}><ClassFields name={editClassName} setName={setEditClassName} teacher={editClassTeacher} setTeacher={setEditClassTeacher} teacherId={editClassTeacherId} setTeacherId={setEditClassTeacherId} year={editClassYear} setYear={setEditClassYear} status={editClassStatus} setStatus={setEditClassStatus} /></ClassModal>}
-      {showAddStudent && <ClassModal title="Thêm học sinh vào lớp" onClose={() => setShowAddStudent(false)} onSubmit={handleAddStudent} saving={saving}><div className="form-group"><label className="form-label">Chọn học sinh <span className="required">*</span></label><select className="form-input" value={studentId} onChange={(e) => setStudentId(e.target.value)} required><option value="">-- Chọn tài khoản học sinh --</option>{availableStudents.map((student) => <option key={student._id} value={student._id}>{student.name} — {student.email}</option>)}</select>{availableStudents.length === 0 && <small>Không còn học sinh đang hoạt động để thêm vào lớp này.</small>}</div></ClassModal>}
+      {showAddStudent && <ClassModal title="Thêm học sinh vào lớp" onClose={() => setShowAddStudent(false)} onSubmit={handleAddStudent} saving={saving}><div className="form-group"><label className="form-label">Chọn học sinh</label><select className="form-input" value={studentId} onChange={(e) => setStudentId(e.target.value)}><option value="">-- Chọn tài khoản học sinh --</option>{availableStudents.map((student) => <option key={student._id} value={student._id}>{student.name} — {student.email}</option>)}</select>{availableStudents.length === 0 && <small>Không còn học sinh đang hoạt động để thêm vào lớp này.</small>}</div><div className="form-divider"><span>hoặc import từ file</span></div><div className="form-group"><label className="form-label">Tải file danh sách học sinh</label><input type="file" accept=".csv,.xlsx,.xls" className="form-input" onChange={(e) => setImportFile(e.target.files[0] || null)} /><small>File CSV hoặc Excel gồm các cột: Họ tên, Email, Số điện thoại, Mật khẩu (mật khẩu trống sẽ dùng mặc định EduQuiz@123). Học sinh đã có tài khoản sẽ được gắn vào lớp mà không tạo tài khoản mới.</small></div></ClassModal>}
       {emailDetails && <div className="modal-overlay" onClick={() => setEmailDetails(null)}><div className="modal-card email-details-modal" onClick={(event) => event.stopPropagation()}><div className="modal-header"><h3 className="modal-title">Email tài khoản</h3><button className="modal-close-btn" type="button" onClick={() => setEmailDetails(null)}><X size={20} /></button></div><div className="modal-body"><strong>{emailDetails.name}</strong><span className="full-student-email">{emailDetails.email}</span></div><div className="modal-footer"><button type="button" className="btn-modal-submit" onClick={() => setEmailDetails(null)}>Đóng</button></div></div></div>}
     </AdminLayout>
   );

@@ -26,6 +26,14 @@ export const addStudentToClass = (classId, studentId) =>
   api.post(`/admin/classes/${classId}/students`, { studentId });
 export const removeStudentFromClass = (classId, studentId) =>
   api.delete(`/admin/classes/${classId}/students/${studentId}`);
+export const importStudentsToClass = (classId, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  // Content-Type: undefined để axios tự set multipart/form-data kèm boundary
+  return api.post(`/admin/classes/${classId}/import-students`, formData, {
+    headers: { 'Content-Type': undefined },
+  });
+};
 
 // ==================== Notifications ====================
 export const getNotifications = (params) => api.get('/admin/notifications', { params });
