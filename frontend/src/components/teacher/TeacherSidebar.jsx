@@ -171,7 +171,7 @@ export default function TeacherSidebar() {
           Thành viên
         </a>
       </nav>
-
+{/* Bottom section for settings and logout 
       <div className="sidebar-bottom">
         <a
           className="sidebar-link"
@@ -197,6 +197,7 @@ export default function TeacherSidebar() {
           Đăng xuất
         </a>
       </div>
+      */}
     </aside>
   );
 }

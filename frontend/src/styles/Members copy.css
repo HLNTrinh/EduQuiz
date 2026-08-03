@@ -57,7 +57,7 @@
   font-size: 15px;
   box-shadow: 0 4px 10px rgba(40, 103, 223, 0.2);
 }
-/*
+
 .dash-shell .sidebar-brand-name,
 .dash-shell .sidebar-brand-sub {
   margin: 0;
@@ -118,7 +118,7 @@
   justify-content: center;
   font-size: 13px;
 }
-*/
+
 .dash-shell .dash-main {
   min-width: 0;
   flex: 1;
@@ -135,33 +135,35 @@
   margin: 0 -30px 20px;
   padding: 0 30px;
   border-bottom: 1px solid var(--members-line);
-  
+  background: #fff;
 }
-.dash-shell .overview-badge{
-    font-size:22px;
-    color:#1E3A5F;
-    font-weight:800;
+
+.dash-shell .overview-badge {
+  margin: 0 0 4px;
+  color: #8996aa;
+  font-size: 9px;
 }
+
 .dash-shell .dash-greeting {
   margin: 0;
   color: var(--members-ink);
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   letter-spacing: -0.1px;
 }
 
 .dash-shell .dash-subtitle {
   margin: 3px 0 0;
   color: var(--members-muted);
-  font-size: 12px;
+  font-size: 9px;
 }
-/*
+
 .dash-shell .overview-actions {
   display: flex;
   align-items: center;
   gap: 7px;
 }
-*/
+
 .dash-shell .btn-outline,
 .dash-shell .btn-start {
   min-height: 29px;
@@ -212,9 +214,6 @@
 .dash-shell .members-hero-card p {
   color: #fff;
 }
-.dash-shell .members-hero-card p {
-  font-size: 10px;
-}
 
 .dash-shell .members-hero-card h2 {
   margin: 0;
@@ -242,13 +241,13 @@
   background: rgba(255, 255, 255, 0.14) !important;
 }
 
-.dash-shell .members-hero-card .card-label {
+.dash-shell .members-hero-card .stat-card-label {
   margin: 0 0 3px;
-  font-size: 12px;
+  font-size: 8px;
   font-weight: 700;
 }
 
-.dash-shell .members-hero-card .card-value {
+.dash-shell .members-hero-card .stat-card-value {
   margin: 0;
   font-size: 19px;
   font-weight: 800;
@@ -288,7 +287,7 @@
 .dash-shell .members-section-heading p {
   margin: 4px 0 0;
   color: #97a3b5;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .dash-shell .members-card-grid {
@@ -328,7 +327,7 @@
 
 .dash-shell .class-card-title {
   color: #263a5b;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -336,7 +335,7 @@
   max-width: 120px;
   margin-top: 4px;
   color: #8190a6;
-  font-size: 10px;
+  font-size: 8px;
   line-height: 1.35;
 }
 
@@ -344,13 +343,13 @@
   min-height: 23px;
   padding: 0 7px;
   color: var(--members-blue);
-  font-size: 10px;
+  font-size: 8px;
 }
 
 .dash-shell .class-card-meta {
   margin-top: 12px;
   color: #687893;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .dash-shell .summary-score-row {
@@ -376,7 +375,7 @@
   outline: none;
   color: #34445f;
   background: #fbfcfe;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .dash-shell .members-search-group input:focus {
@@ -388,14 +387,14 @@
   min-width: 49px;
   min-height: 28px;
   padding: 0 8px;
-  font-size: 10px;
+  font-size: 8px;
 }
 
 .dash-shell .members-table {
   width: 100%;
   border-collapse: collapse;
   color: #53637b;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .dash-shell .members-table th {
@@ -403,7 +402,7 @@
   border-top: 1px solid var(--members-line);
   border-bottom: 1px solid var(--members-line);
   color: #8996aa;
-  font-size: 12px;
+  font-size: 8px;
   font-weight: 800;
   text-align: left;
   text-transform: uppercase;
@@ -416,20 +415,6 @@
   white-space: nowrap;
 }
 
-.dash-shell .members-table td .member-profile-cell {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.dash-shell .member-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #e8eef4;
-}
-
 .dash-shell .members-table tbody tr:hover {
   background: #fbfdff;
 }
@@ -440,7 +425,7 @@
   min-height: 17px;
   padding: 0 7px;
   border-radius: 9px;
-  font-size: 10px;
+  font-size: 7px;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -459,7 +444,7 @@
   min-height: 23px;
   padding: 0 8px;
   color: var(--members-blue);
-  font-size: 10px;
+  font-size: 8px;
 }
 
 .dash-shell .members-table-footer {
@@ -468,7 +453,7 @@
   justify-content: space-between;
   min-height: 42px;
   color: #8a98ad;
-  font-size: 12px;
+  font-size: 8px;
 }
 
 .dash-shell .members-table-footer > div {
@@ -480,7 +465,7 @@
   min-width: 24px;
   min-height: 24px;
   padding: 0 6px;
-  font-size: 11px;
+  font-size: 8px;
 }
 
 @media (max-width: 1050px) {
