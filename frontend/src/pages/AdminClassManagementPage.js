@@ -19,6 +19,7 @@ import {
   deleteClass,
   getClasses,
   getUsers,
+  importStudentsToClass,
   removeStudentFromClass,
   updateClass,
 } from '../services/adminService';
@@ -60,6 +61,9 @@ export default function AdminClassManagementPage() {
   const [editClassStatus, setEditClassStatus] = useState('active');
   const [activeMenuStudentId, setActiveMenuStudentId] = useState(null);
   const [emailDetails, setEmailDetails] = useState(null);
+  const [importFile, setImportFile] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   const showToast = useCallback((message, type = 'success') => setToast({ message, type }), []);
 
@@ -190,11 +194,34 @@ export default function AdminClassManagementPage() {
       const enrolledIds = new Set((activeClass?.students || []).map((student) => student._id));
       setAvailableStudents((res.users || []).filter((student) => !enrolledIds.has(student._id)));
       setStudentId('');
+      setImportFile(null);
+      setImportResult(null);
       setShowAddStudent(true);
     } catch (error) {
       showToast(error.message || 'Không thể tải danh sách học sinh.', 'error');
     } finally {
       setStudentsLoading(false);
+    }
+  };
+
+  const handleImportStudents = async () => {
+    if (!activeClass || !importFile) {
+      showToast('Vui lòng chọn file CSV hoặc Excel.', 'error');
+      return;
+    }
+    try {
+      setImporting(true);
+      setImportResult(null);
+      const res = await importStudentsToClass(activeClass._id, importFile);
+      const data = res?.data || res;
+      setImportResult(data);
+      setImportFile(null);
+      await fetchClasses();
+      showToast(data.message || 'Import học sinh thành công.');
+    } catch (error) {
+      showToast(error.message || 'Không thể import danh sách học sinh.', 'error');
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -236,7 +263,7 @@ export default function AdminClassManagementPage() {
       </div>
       {showAddClass && <ClassModal title="Tạo lớp học mới" onClose={() => setShowAddClass(false)} onSubmit={handleAddClass} saving={saving}><ClassFields name={newClassName} setName={setNewClassName} teacher={newClassTeacher} setTeacher={setNewClassTeacher} teacherId={newClassTeacherId} setTeacherId={setNewClassTeacherId} year={newClassYear} setYear={setNewClassYear} /></ClassModal>}
       {showEditClass && <ClassModal title="Sửa thông tin lớp học" onClose={() => setShowEditClass(false)} onSubmit={handleEditClassSubmit} saving={saving}><ClassFields name={editClassName} setName={setEditClassName} teacher={editClassTeacher} setTeacher={setEditClassTeacher} teacherId={editClassTeacherId} setTeacherId={setEditClassTeacherId} year={editClassYear} setYear={setEditClassYear} status={editClassStatus} setStatus={setEditClassStatus} /></ClassModal>}
-      {showAddStudent && <ClassModal title="Thêm học sinh vào lớp" onClose={() => setShowAddStudent(false)} onSubmit={handleAddStudent} saving={saving}><div className="form-group"><label className="form-label">Chọn học sinh <span className="required">*</span></label><select className="form-input" value={studentId} onChange={(e) => setStudentId(e.target.value)} required><option value="">-- Chọn tài khoản học sinh --</option>{availableStudents.map((student) => <option key={student._id} value={student._id}>{student.name} — {student.email}</option>)}</select>{availableStudents.length === 0 && <small>Không còn học sinh đang hoạt động để thêm vào lớp này.</small>}</div></ClassModal>}
+      {showAddStudent && <ClassModal title="Thêm học sinh vào lớp" onClose={() => setShowAddStudent(false)} onSubmit={handleAddStudent} saving={saving}><div className="form-group"><label className="form-label">Chọn học sinh <span className="required">*</span></label><select className="form-input" value={studentId} onChange={(e) => setStudentId(e.target.value)} required><option value="">-- Chọn tài khoản học sinh --</option>{availableStudents.map((student) => <option key={student._id} value={student._id}>{student.name} — {student.email}</option>)}</select>{availableStudents.length === 0 && <small>Không còn học sinh đang hoạt động để thêm vào lớp này.</small>}</div><div className="form-divider"><span>hoặc import từ file</span></div><div className="form-group"><label className="form-label">Tải file danh sách học sinh</label><input type="file" accept=".csv,.xlsx,.xls" className="form-input" onChange={(e) => setImportFile(e.target.files[0] || null)} /><small>File CSV hoặc Excel gồm các cột: Họ tên, Email, Số điện thoại, Mật khẩu (mật khẩu trống sẽ dùng mặc định EduQuiz@123). Học sinh đã có tài khoản sẽ được gắn vào lớp mà không tạo tài khoản mới.</small></div><button type="button" className="btn-modal-submit" style={{ width: '100%' }} onClick={handleImportStudents} disabled={importing}>{importing ? 'Đang import...' : 'Import danh sách'}</button>{importResult && <div className="import-result"><p><strong>Kết quả:</strong> {importResult.message}</p><p>✅ Tạo tài khoản mới: {importResult.created || 0}</p><p>➕ Đã có tài khoản, thêm vào lớp: {importResult.addedToClass || 0}</p><p>⏭️ Bỏ qua: {importResult.skipped || 0}</p>{importResult.duplicateInFile?.length > 0 && <p className="import-warning">⚠️ Email trùng trong file: {importResult.duplicateInFile.join(', ')}</p>}{importResult.alreadyInClass?.length > 0 && <p className="import-warning">⚠️ Đã có trong lớp này: {importResult.alreadyInClass.join(', ')}</p>}{importResult.errors?.length > 0 && <p className="import-error">❌ Lỗi: {importResult.errors.join('; ')}</p>}</div>}</ClassModal>}
       {emailDetails && <div className="modal-overlay" onClick={() => setEmailDetails(null)}><div className="modal-card email-details-modal" onClick={(event) => event.stopPropagation()}><div className="modal-header"><h3 className="modal-title">Email tài khoản</h3><button className="modal-close-btn" type="button" onClick={() => setEmailDetails(null)}><X size={20} /></button></div><div className="modal-body"><strong>{emailDetails.name}</strong><span className="full-student-email">{emailDetails.email}</span></div><div className="modal-footer"><button type="button" className="btn-modal-submit" onClick={() => setEmailDetails(null)}>Đóng</button></div></div></div>}
     </AdminLayout>
   );
