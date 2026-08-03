@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { quizService, quizAttemptService } from '../services/services';
 import { classService } from '../services/authService';
+import { getNotifications } from '../services/adminService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/TeacherDashBoard.css';
 
@@ -13,6 +14,8 @@ export const TeacherDashboardPage = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [classes, setClasses] = useState([]);
   const [teacherAttempts, setTeacherAttempts] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
   const [summaryStats, setSummaryStats] = useState({
     averageScore: 0,
     passRate: 0,
@@ -25,8 +28,19 @@ export const TeacherDashboardPage = () => {
   useEffect(() => {
     if (user?._id) {
       fetchDashboardData();
+      fetchNotifications();
     }
   }, [user]);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await getNotifications({ page: 1, limit: 10 });
+      setNotifications(response.notifications || []);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+      setNotifications([]);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -240,11 +254,56 @@ export const TeacherDashboardPage = () => {
 
           {/* Bên phải */}
           <div className="navbar-right">
-
-            <button className="navbar-icon-btn" title="Thông báo">
+          {/* Phần bảng thông báo */}
+          <div className="notification-dropdown">
+            <button
+              className="navbar-icon-btn"
+              title="Thông báo"
+              onClick={() => setIsNotificationPanelOpen((prev) => !prev)}
+            >
               <FiBell size={20} />
-              <span className="navbar-badge">1</span>
+              {notifications.length > 0 && (
+                <span className="navbar-badge">
+                  {notifications.length > 99 ? "99+" : notifications.length}
+                </span>
+              )}
             </button>
+
+            {isNotificationPanelOpen && (
+              <div className="notification-popup">
+                <div className="notification-popup-header">
+                  <h3>Thông báo</h3>
+                  <span>{notifications.length} thông báo</span>
+                </div>
+
+                {notifications.length === 0 ? (
+                  <div className="notification-empty">
+                    Chưa có thông báo
+                  </div>
+                ) : (
+                  <div className="notification-popup-list">
+                    {notifications.map((item) => (
+                      <div className="notification-popup-item" key={item._id}>
+                        <div className="notification-icon">
+                          📢
+                        </div>
+
+                        <div className="notification-content">
+                          <h4>{item.title}</h4>
+
+                          <p>{item.content}</p>
+
+                          <span>
+                            {new Date(item.createdAt).toLocaleDateString("vi-VN")}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
             <button className="navbar-icon-btn" title="Trợ giúp">
               <FiHelpCircle size={20} />
@@ -258,6 +317,45 @@ export const TeacherDashboardPage = () => {
             </div>
           </div>
         </div>
+{/*
+{isNotificationPanelOpen && (
+          <section className="notification-panel">
+            <div className="notification-panel-header">
+              <div>
+                <h2>Thông báo</h2>
+                <p className="notification-panel-subtitle">Các thông báo mới nhất từ quản trị viên</p>
+              </div>
+              <span className="notification-count">
+                {notifications.length} thông báo
+              </span>
+            </div>
+
+            {notifications.length === 0 ? (
+              <div className="notification-empty">Chưa có thông báo mới</div>
+            ) : (
+              <div className="notification-list">
+                {notifications.map((item) => (
+                  <div className="notification-item" key={item._id}>
+                    <div className="notification-item-content">
+                      <div className="notification-item-title">
+                        {item.title}
+                        {item.pinned && <span className="notification-item-badge">Ghim</span>}
+                      </div>
+                      <p>{item.content}</p>
+                      <div className="notification-item-meta">
+                        {new Date(item.createdAt).toLocaleString('vi-VN', {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+        */}
 
         {/* Các thẻ thống kê (Stat-grid) */}
 

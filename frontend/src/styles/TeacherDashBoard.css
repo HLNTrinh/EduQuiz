@@ -116,7 +116,223 @@ HEADER
 
     gap:14px;
 }
+/*Nút thông báo*/
+.notification-dropdown{
+    position:relative;
+}
+.notification-popup{
 
+    position:absolute;
+
+    top:55px;
+
+    right:0;
+
+    width:380px;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    box-shadow:0 12px 35px rgba(0,0,0,.15);
+
+    overflow:hidden;
+
+    z-index:999;
+
+    animation:popup .25s ease;
+}
+/*
+.notification-panel{
+    margin-bottom:24px;
+    background:#fff;
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:20px;
+}*/
+/*
+.notification-panel-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    margin-bottom:16px;
+}
+
+.notification-panel-header h2{
+    margin:0;
+    font-size:20px;
+    color:#111827;
+}*/
+.notification-popup-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:20px;
+
+    border-bottom:1px solid #ececec;
+}
+
+.notification-popup-header h3{
+
+    margin:0;
+
+    font-size:25px;
+
+    font-weight:700;
+}
+
+.notification-popup-header span{
+
+    color:#7b7b7b;
+
+    font-size:15px;
+}
+.notification-popup-item{
+
+    display:flex;
+
+    gap:16px;
+
+    padding:18px 20px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+    border-bottom:1px solid #f2f2f2;
+}
+
+.notification-popup-item:hover{
+
+    background:#f8faff;
+}
+.notification-icon{
+
+    width:50px;
+
+    height:50px;
+
+    border-radius:14px;
+
+    background:#4f6ef7;
+
+    color:#fff;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:22px;
+
+    flex-shrink:0;
+}
+.notification-content{
+
+    flex:1;
+}
+
+.notification-content h4{
+
+    margin:0;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:#111827;
+}
+
+.notification-content p{
+
+    margin:6px 0;
+
+    color:#6b7280;
+
+    font-size:15px;
+
+    line-height:1.5;
+}
+
+.notification-content span{
+
+    color:#9ca3af;
+
+    font-size:13px;
+}
+/*Thanh cuộn*/
+.notification-popup-list::-webkit-scrollbar{
+
+    width:7px;
+}
+
+.notification-popup-list::-webkit-scrollbar-thumb{
+
+    background:#d1d5db;
+
+    border-radius:20px;
+}
+
+/*
+.notification-panel-subtitle{
+    margin:4px 0 0;
+    color:#6b7280;
+    font-size:14px;
+}
+
+.notification-count{
+    font-size:14px;
+    color:#374151;
+    font-weight:600;
+}
+
+.notification-list{
+    display:grid;
+    gap:14px;
+}
+
+.notification-item{
+    background:#f8fafc;
+    border-radius:14px;
+    padding:16px;
+    border:1px solid #e5e7eb;
+}
+
+.notification-item-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+    font-weight:700;
+    color:#111827;
+}
+
+.notification-item-badge{
+    background:#2563eb;
+    color:#fff;
+    border-radius:999px;
+    padding:4px 10px;
+    font-size:12px;
+}
+
+.notification-item-meta{
+    margin-top:10px;
+    color:#6b7280;
+    font-size:12px;
+}
+
+.notification-empty{
+    padding:24px;
+    color:#6b7280;
+}
+*/
 .navbar-icon-btn{
 
     width:42px;
@@ -176,7 +392,18 @@ HEADER
 
     border-radius:50%;
 }
+@keyframes popup{
 
+    from{
+        opacity:0;
+        transform:translateY(-10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
 /*==================================================
 STAT
 ==================================================*/
