@@ -1,7 +1,10 @@
 // Là cái trang lịch sử
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { quizAttemptService } from '../services/services';
+import NotificationBell from '../components/student/NotificationBell';
+import UserMenu from '../components/student/UserMenu';
 import '../styles/Results.css';
 
 const SUBJECT_MAP = {
@@ -21,6 +24,7 @@ const CHART_GAP = 12;
 
 export default function Results() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -85,9 +89,21 @@ export default function Results() {
   if (loading) return <div className="exam-loading">Đang tải lịch sử...</div>;
   if (error) return <div className="exam-error">{error}</div>;
 
-  return (
+return (
     <main className="results-main">
       <div className="results-body">
+        {/* Topbar */}
+        <header className="exam-topbar">
+          <div className="search-box" style={{ visibility: 'hidden' }}>
+            <SearchIcon />
+            <input placeholder="Tìm kiếm..." />
+          </div>
+<div className="dash-header-actions">
+            <NotificationBell />
+            <UserMenu size={36} />
+          </div>
+        </header>
+
         {/* Header */}
         <div className="results-head">
           <div>
@@ -250,6 +266,12 @@ export default function Results() {
 }
 
 /* ====================== Bar Chart (SVG) ====================== */
+function SearchIcon() {
+  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" /><path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+}
+function HelpIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .8-1 1.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /><circle cx="12" cy="17" r="0.9" fill="currentColor" /></svg>
+}
 function BarChart({ data }) {
   const maxVal = 100;
   const totalW = data.length * (CHART_BAR_W + CHART_GAP) + 20;

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/services';
+import NotificationBell from '../components/student/NotificationBell';
+import UserMenu from '../components/student/UserMenu';
+import AvatarInitials from '../components/student/AvatarInitials';
 import '../styles/Profile.css';
 
 const ROLE_LABELS = {
@@ -165,24 +168,17 @@ return (
     <div className="profile-main">
       <header className="profile-topbar">
         <h1>Hồ sơ cá nhân</h1>
-        <div className="dash-header-actions">
-          <button className="icon-btn"><BellIcon /></button>
-          <button className="icon-btn"><HelpIcon /></button>
-          <div className="user-chip">
-            <img src={profileData.avatar} alt="avatar" />
-            <div className="user-chip-text">
-              <span className="name">{profileData.name}</span>
-              <span className="role">{profileData.role}</span>
-            </div>
-          </div>
+<div className="dash-header-actions">
+          <NotificationBell />
+          <UserMenu size={36} />
         </div>
       </header>
 
       <section className="profile-grid">
         <div className="card profile-info-card">
           <div className="profile-info-top">
-            <div className="avatar-wrap">
-              <img src={profileData.avatar} alt="Avatar" />
+<div className="avatar-wrap">
+              <AvatarInitials name={profileData.name} size={96} />
               <button className="avatar-edit" onClick={handleAvatarUpload} title="Thay đổi ảnh đại diện">
                 <CameraIcon />
               </button>
