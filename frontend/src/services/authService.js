@@ -58,6 +58,10 @@ export const classService = {
     const response = await api.get(`/classes/teacher/${teacherId}`);
     return response?.data ?? response ?? [];
   },
+  getClassMembers: async (classId, params) => {
+    const response = await api.get(`/classes/${classId}/members`, { params });
+    return response?.data ?? response ?? {};
+  },
   // Giáo viên lấy danh sách kết quả học sinh
   getTeacherAttempts: (params) => api.get('/quiz-attempts/teacher', { params }),
 };
