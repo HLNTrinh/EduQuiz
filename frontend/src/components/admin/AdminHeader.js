@@ -1,10 +1,12 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FaSearch,
   FaBell,
   FaQuestionCircle,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaSun,
+  FaCloudSun,
+  FaMoon
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
@@ -12,6 +14,15 @@ const AVATAR_COLORS = [
   '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
   '#ec4899', '#06b6d4', '#6366f1', '#f97316'
 ];
+
+// Xác định buổi trong ngày dựa trên giờ thực tế
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 11) return { text: 'Chào buổi sáng', icon: <FaSun /> };
+  if (hour >= 11 && hour < 13) return { text: 'Chào buổi trưa', icon: <FaSun /> };
+  if (hour >= 13 && hour < 18) return { text: 'Chào buổi chiều', icon: <FaCloudSun /> };
+  return { text: 'Chào buổi tối', icon: <FaMoon /> };
+};
 
 export default function AdminHeader({ searchQuery, setSearchQuery, showToastMessage }) {
   const navigate = useNavigate();
@@ -44,6 +55,7 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
   }, [user]);
 
   const adminName = currentUser?.name || 'Quản trị viên';
+  const greeting = getGreeting();
 
   // Lấy chữ cái đầu tiên của từ cuối cùng trong tên (Ví dụ: "Duy" -> "D")
   const getInitialLetter = (name) => {
@@ -73,15 +85,9 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
 
   return (
     <header className="asm-header">
-      <div className="asm-search-container">
-        <FaSearch className="asm-search-icon" />
-        <input
-          type="text"
-          className="asm-search-input"
-          placeholder="Tìm kiếm..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="asm-greeting">
+        <span className="asm-greeting-icon">{greeting.icon}</span>
+        <span className="asm-greeting-text">{greeting.text}, {adminName}!</span>
       </div>
 
       <div className="asm-header-right">
