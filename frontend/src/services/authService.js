@@ -66,6 +66,21 @@ export const classService = {
   getTeacherAttempts: (params) => api.get('/quiz-attempts/teacher', { params }),
 };
 
+export const notificationService = {
+  // Lấy danh sách thông báo
+  getNotifications: async () => {
+    const response = await api.get("/notifications");
+    return response?.data ?? response ?? [];
+  },
+
+  // Đánh dấu đã đọc (nếu có)
+  markAsRead: async (notificationId) => {
+    const response = await api.put(`/notifications/${notificationId}/read`);
+    return response?.data ?? response;
+  },
+};
+
+
 export const quizAttemptService = {
   startQuizAttempt: (quizId) => api.post(`/quiz-attempts/start/${quizId}`),
   saveAnswer: (attemptId, data) => api.post(`/quiz-attempts/${attemptId}/answer`, data),

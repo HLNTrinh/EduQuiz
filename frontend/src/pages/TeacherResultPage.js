@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { quizService, quizAttemptService } from '../services/services';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
+import NotificationDropdown from '../components/teacher/NotificationDropdown';
+import TeacherAvatar from '../components/teacher/TeacherAvatar';
 import '../styles/Result.css';
 
 export const TeacherResultPage = () => {
@@ -196,8 +198,15 @@ export const TeacherResultPage = () => {
       <main className="dash-main">
         <div className="result-container result-overview-container">
           <div className="result-header result-header--overview">
-            <h1>📊 Báo cáo kết quả học sinh</h1>
-            <p className="quiz-title">Tổng quan kết quả bài thi cho giáo viên</p>
+            <div>
+              <p className="overview-badge">Báo cáo kết quả học sinh</p>
+              <p className="quiz-title">Tổng quan kết quả bài thi cho giáo viên</p>
+            </div>
+
+            <div className="result-header-right">
+              <NotificationDropdown />
+              <TeacherAvatar user={user} logout={logout} />
+            </div>
           </div>
 
           {/* ===== Danh sách đề thi đã phát ===== */}

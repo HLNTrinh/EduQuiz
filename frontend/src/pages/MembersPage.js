@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { classService } from '../services/authService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import TeacherAvatar from "../components/teacher/TeacherAvatar";
+import NotificationDropdown from "../components/teacher/NotificationDropdown";
 import '../styles/Members.css';
 
 export const MembersPage = () => {
@@ -80,9 +81,12 @@ const filteredStudents = students;
           <div>
             <p className="overview-badge">Quản lý thành viên</p>
             <h1 className="dash-greeting">Hôm nay hãy kiểm tra danh sách lớp học và thành viên trong lớp.</h1>
-            
           </div>
-          <TeacherAvatar user={user} logout={logout} />
+
+          <div className="dash-header-right">
+            <NotificationDropdown />
+            <TeacherAvatar user={user} logout={logout} />
+          </div>
         </header>
 
         <section className="members-hero-card">

@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FaSearch,
   FaBell,
-  FaQuestionCircle
+  FaQuestionCircle,
+  FaSignOutAlt
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
@@ -14,7 +15,21 @@ const AVATAR_COLORS = [
 
 export default function AdminHeader({ searchQuery, setSearchQuery, showToastMessage }) {
   const navigate = useNavigate();
-  const { user } = useAuth() || {};
+  const { user, logout } = useAuth() || {};
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+
+  useEffect(() => {
+    const close = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', close);
+
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
 
   // Lấy thông tin user từ AuthContext hoặc localStorage/sessionStorage
   const currentUser = useMemo(() => {
@@ -52,6 +67,10 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
   const initialLetter = getInitialLetter(adminName);
   const bgColor = getAvatarBgColor(adminName);
 
+  const handleLogout = () => {
+    if (logout) logout();
+  };
+
   return (
     <header className="asm-header">
       <div className="asm-search-container">
@@ -75,16 +94,46 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
         </button>
         <div className="asm-v-divider" />
 
-        <div className="asm-user-profile">
+        <div className="asm-user-profile" ref={ref}>
           <div className="asm-user-info">
             <p className="asm-user-name">{adminName}</p>
           </div>
-          <div
-            className="asm-avatar asm-avatar-text"
-            style={{ backgroundColor: bgColor }}
+          <button
+            className="asm-avatar-btn"
+            onClick={() => setOpen(!open)}
           >
-            {initialLetter}
-          </div>
+            <div
+              className="asm-avatar asm-avatar-text"
+              style={{ backgroundColor: bgColor }}
+            >
+              {initialLetter}
+            </div>
+          </button>
+
+          {open && (
+            <div className="asm-user-menu">
+              <div className="asm-user-menu-header">
+                <div
+                  className="asm-user-menu-avatar"
+                  style={{ backgroundColor: bgColor }}
+                >
+                  {initialLetter}
+                </div>
+                <div>
+                  <h3>{adminName}</h3>
+                  <span>Quản trị viên</span>
+                </div>
+              </div>
+
+              <button
+                className="asm-menu-item logout"
+                onClick={handleLogout}
+              >
+                <FaSignOutAlt />
+                Đăng xuất
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
