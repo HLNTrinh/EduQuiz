@@ -179,7 +179,7 @@ export default function AdminNotificationManagementPage() {
   };
 
   return (
-    <AdminLayout pageTitle="Quản lý Thông báo" pageSubtitle="Gửi thông tin cập nhật và quản lý danh sách thông báo trên toàn hệ thống.">
+    <AdminLayout>
       {/* Workspace Body */}
       <main className="page-body">
         {/* Create Notification Panel */}
@@ -218,7 +218,8 @@ export default function AdminNotificationManagementPage() {
 
               <div className="form-footer">
                 <div className="checkbox-group">
-                  <label className="checkbox-label">
+                  {/* [CHUA HOAT DONG] Checkbox "Gui qua Email" - chi la UI gia, KHONG gui email thuc te. Backend createNotification khong nhan field sendEmail. */}
+                  {/* <label className="checkbox-label">
                     <input
                       type="checkbox"
                       className="checkbox-input"
@@ -226,7 +227,7 @@ export default function AdminNotificationManagementPage() {
                       onChange={(e) => setSendEmail(e.target.checked)}
                     />
                     <span>Gửi qua Email</span>
-                  </label>
+                  </label> */}
                   <label className="checkbox-label">
                     <input
                       type="checkbox"
@@ -236,7 +237,8 @@ export default function AdminNotificationManagementPage() {
                     />
                     <span>Ghim lên đầu trang chủ</span>
                   </label>
-                  <label className="checkbox-label">
+                  {/* [CHUA HOAT DONG] Checkbox "Thong bao day (Push Notification)" - chi la UI gia, KHONG day thong bao thoi gian thuc. Backend khong co co che push notification. */}
+                  {/* <label className="checkbox-label">
                     <input
                       type="checkbox"
                       className="checkbox-input"
@@ -244,13 +246,18 @@ export default function AdminNotificationManagementPage() {
                       onChange={(e) => setPushNotification(e.target.checked)}
                     />
                     <span>Thông báo đẩy (Push Notification)</span>
-                  </label>
+                  </label> */}
                 </div>
 
-                <button type="submit" className="submit-btn">
-                  <span className="btn-icon"><FaPaperPlane /></span>
-                  <span>{editingId !== null ? 'Cập nhật ngay' : 'Gửi thông báo ngay'}</span>
-                </button>
+                <div className="form-buttons">
+                  <button type="button" className="cancel-btn" onClick={handleCancelEdit}>
+                    Hủy soạn thảo
+                  </button>
+                  <button type="submit" className="submit-btn">
+                    <span className="btn-icon"><FaPaperPlane /></span>
+                    <span>{editingId !== null ? 'Cập nhật ngay' : 'Gửi thông báo ngay'}</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -284,9 +291,9 @@ export default function AdminNotificationManagementPage() {
                   Bản nháp
                 </button>
               </div>
-              <a href="#view-all" className="view-all-link" onClick={(e) => { e.preventDefault(); triggerToast('Đang tải toàn bộ dữ liệu thông báo...'); }}>
+              {/* <a href="#view-all" className="view-all-link" onClick={(e) => { e.preventDefault(); triggerToast('Đang tải toàn bộ dữ liệu thông báo...'); }}>
                 Xem tất cả &rarr;
-              </a>
+              </a> */}
             </div>
           </div>
 
@@ -366,31 +373,28 @@ export default function AdminNotificationManagementPage() {
             )}
           </div>
 
-          <div className="load-more-container">
+          {/* <div className="load-more-container">
             <button
               className="load-more-btn"
               onClick={() => triggerToast('Hệ thống đã tải tất cả thông báo hiện có.')}
             >
               Tải thêm thông báo cũ hơn
             </button>
-          </div>
+          </div> */}
         </section>
 
         {/* Bottom Action bar */}
-        <div className="page-footer-bar">
+        {/* <div className="page-footer-bar">
           <p className="footer-notice">
             * Các thông báo ghim sẽ tự động hiển thị nổi bật trên Dashboard của học sinh và giáo viên.
           </p>
           <div className="footer-actions">
-            <button className="cancel-btn" onClick={handleCancelEdit}>
-              Hủy soạn thảo
-            </button>
             <button className="save-config-btn" onClick={() => triggerToast('Đã lưu cấu hình thông báo lên hệ thống!')}>
               <span className="btn-icon"><FaSave /></span>
               Lưu cấu hình thông báo
             </button>
           </div>
-        </div>
+        </div> */}
       </main>
 
       {/* Floating alert toast */}
