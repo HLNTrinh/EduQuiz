@@ -234,7 +234,7 @@ export default function AdminClassManagementPage() {
   };
 
   return (
-    <AdminLayout pageTitle="Quản lý lớp học" pageSubtitle="Theo dõi danh sách lớp, giáo viên và học sinh.">
+    <AdminLayout>
       {toast && <div className={`toast ${toast.type}`} style={{ position: 'fixed', top: 24, right: 24, zIndex: 2000 }}>{toast.message}</div>}
       <div className="dashboard-content" id="dashboard-content-area">
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
