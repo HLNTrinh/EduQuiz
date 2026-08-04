@@ -110,7 +110,7 @@ export default function AdminUserManagementPage() {
   // Map role từ API (en) sang UI (vi)
   const mapRoleToUI = (role) => {
     const map = { admin: 'Quản trị viên', teacher: 'Giáo viên', student: 'Học sinh' };
-    return map[role] || role;
+    return map[role] || 'Học sinh';
   };
 
   const mapRoleToAPI = (roleUI) => {
@@ -165,7 +165,7 @@ export default function AdminUserManagementPage() {
     setFormData({
       name: user.name || '',
       email: user.email || '',
-      role: mapRoleToUI(user.role),
+      role: user.role || 'student',
       status: mapStatusToUI(user.status),
       phone: user.phone || '',
       password: ''
@@ -553,11 +553,23 @@ export default function AdminUserManagementPage() {
                   </div>
                   <div className="form-field">
                     <label className="form-label">Vai trò</label>
-                    <select name="role" value={formData.role} onChange={handleInputChange} className="form-select">
+                    <select 
+                      name="role" 
+                      value={formData.role} 
+                      onChange={handleInputChange} 
+                      className="form-select"
+                      disabled={selectedUser?._id === currentAdmin?._id}
+                      style={selectedUser?._id === currentAdmin?._id ? { backgroundColor: '#f1f5f9', cursor: 'not-allowed', opacity: 0.7 } : {}}
+                    >
                       <option value="student">Học sinh</option>
                       <option value="teacher">Giáo viên</option>
                       <option value="admin">Quản trị viên</option>
                     </select>
+                    {selectedUser?._id === currentAdmin?._id && (
+                      <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                        Bạn không thể thay đổi vai trò của chính mình.
+                      </small>
+                    )}
                   </div>
                   <div className="form-field">
                     <label className="form-label">Mật khẩu hiện tại</label>
