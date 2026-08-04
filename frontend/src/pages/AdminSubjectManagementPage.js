@@ -437,11 +437,11 @@ export default function AdminSubjectManagementPage() {
 
       {/* Add/Edit Modal */}
       {showAddEditModal && (
-        <div className="modal-overlay">
+        <div className="admin-subject-modal-overlay">
           <div className="modal-container">
-            <div className="modal-header">
+            <div className="admin-subject-modal-header">
               <h3>{modalType === 'add' ? 'Thêm môn học mới' : 'Chỉnh sửa thông tin môn học'}</h3>
-              <button className="modal-close-btn" onClick={() => setShowAddEditModal(false)}>
+              <button className="admin-subject-modal-close-btn" onClick={() => setShowAddEditModal(false)}>
                 <MdClose />
               </button>
             </div>
@@ -501,11 +501,11 @@ export default function AdminSubjectManagementPage() {
 
       {/* View Modal */}
       {showViewModal && currentSubject && (
-        <div className="modal-overlay">
+        <div className="admin-subject-modal-overlay">
           <div className="modal-container">
-            <div className="modal-header">
+            <div className="admin-subject-modal-header">
               <h3>Chi tiết môn học</h3>
-              <button className="modal-close-btn" onClick={() => setShowViewModal(false)}>
+              <button className="admin-subject-modal-close-btn" onClick={() => setShowViewModal(false)}>
                 <MdClose />
               </button>
             </div>
@@ -553,11 +553,11 @@ export default function AdminSubjectManagementPage() {
 
       {/* Delete Modal */}
       {showDeleteModal && currentSubject && (
-        <div className="modal-overlay">
+        <div className="admin-subject-modal-overlay">
           <div className="modal-container">
-            <div className="modal-header">
+            <div className="admin-subject-modal-header">
               <h3>Xác nhận xóa môn học</h3>
-              <button className="modal-close-btn" onClick={() => setShowDeleteModal(false)}>
+              <button className="admin-subject-modal-close-btn" onClick={() => setShowDeleteModal(false)}>
                 <MdClose />
               </button>
             </div>
