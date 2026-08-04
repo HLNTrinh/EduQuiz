@@ -2,7 +2,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { classService } from '../services/authService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
+import TeacherAvatar from "../components/teacher/TeacherAvatar";
 import '../styles/Members.css';
 
 export const MembersPage = () => {
@@ -13,36 +15,60 @@ export const MembersPage = () => {
   const [classes, setClasses] = useState([]);
   const [students, setStudents] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingStudents, setLoadingStudents] = useState(false);
   
 // Thêm useEffect để lấy danh sách lớp từ API
 useEffect(() => {
   if (!user?._id) return;
 
-  fetch(`http://localhost:8080/api/classes/teacher/${user._id}`)
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.success) {
-        setClasses(data.data);
-
-        if (data.data.length > 0) {
-          setSelectedClass(data.data[0]);
-
-          setStudents(data.data[0].students);
-        }
+  classService.getTeacherClasses(user._id)
+    .then((classesData) => {
+      setClasses(classesData);
+      if (classesData?.length > 0) {
+        setSelectedClass(classesData[0]);
+        setPage(1);
       }
     })
     .catch(console.error);
 }, [user]);
 
-    const filteredStudents = useMemo(() => {
-    const query = search.toLowerCase();
+useEffect(() => {
+  const loadStudents = async () => {
+    if (!selectedClass?._id) {
+      setStudents([]);
+      setTotalStudents(0);
+      setTotalPages(1);
+      return;
+    }
 
-    return students.filter((student) =>
-      student.name.toLowerCase().includes(query) ||
-      student.email.toLowerCase().includes(query) ||
-      student.status.toLowerCase().includes(query)
-    );
-  }, [students, search]);
+    setLoadingStudents(true);
+    try {
+      const result = await classService.getClassMembers(selectedClass._id, {
+        page,
+        limit,
+        search,
+      });
+      setStudents(result.students || []);
+      setTotalStudents(result.total || 0);
+      setTotalPages(result.pages || 1);
+    } catch (error) {
+      console.error('Lỗi tải danh sách học sinh:', error);
+      setStudents([]);
+      setTotalStudents(0);
+      setTotalPages(1);
+    } finally {
+      setLoadingStudents(false);
+    }
+  };
+
+  loadStudents();
+}, [selectedClass, page, search, limit]);
+
+const filteredStudents = students;
 
   return (
     <div className="dash-shell">
@@ -53,29 +79,25 @@ useEffect(() => {
         <header className="dash-header dash-header--overview">
           <div>
             <p className="overview-badge">Quản lý thành viên</p>
-            <h1 className="dash-greeting">Chào buổi sáng {user?.name ?? 'An'}!</h1>
-            <p className="dash-subtitle">Hôm nay hãy kiểm tra danh sách lớp học và thành viên trong lớp.</p>
+            <h1 className="dash-greeting">Hôm nay hãy kiểm tra danh sách lớp học và thành viên trong lớp.</h1>
+            
           </div>
-          <div className="overview-actions">
-            <button className="btn-outline" onClick={() => navigate('/teacher/exams')}>Tạo kiểm tra mới</button>
-            <button className="btn-start" onClick={() => navigate('/teacher/questions')}>Thêm câu hỏi</button>
-          </div>
+          <TeacherAvatar user={user} logout={logout} />
         </header>
 
         <section className="members-hero-card">
           <div>
-            <p className="overview-badge">Danh sách lớp phụ trách</p>
             <h2>Lớp học đang quản lý</h2>
-            <p>Hiện tại bạn đang phụ trách {classes.length} lớp với tổng số {classes.reduce((sum, item) => sum + item.students.length, 0)} học sinh.</p>
+            <p >Hiện tại bạn đang phụ trách {classes.length} lớp với tổng số {classes.reduce((sum, item) => sum + item.students.length, 0)} học sinh.</p>
           </div>
           <div className="hero-stat">
             <div className="stat-card stat-card--primary" style={{ padding: '20px 24px', borderRadius: '20px', background: 'rgba(255,255,255,0.15)' }}>
-              <p className="stat-card-label" style={{ color: 'rgba(255,255,255,0.88)' }}>Lớp đang quản lý</p>
-              <p className="stat-card-value" style={{ color: 'white' }}>{classes.length}</p>
+              <p className="card-label" style={{ color: 'rgba(255,255,255,0.88)' }}>Lớp đang quản lý</p>
+              <p className="card-value" style={{ color: 'white' }}>{classes.length}</p>
             </div>
             <div className="stat-card" style={{ padding: '20px 24px', borderRadius: '20px', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}>
-              <p className="stat-card-label" style={{ color: 'rgba(255,255,255,0.88)' }}>Học sinh hiện tại</p>
-              <p className="stat-card-value" style={{ color: 'white' }}>{classes.reduce((sum, item) => sum + item.students.length, 0)}</p>
+              <p className="card-label" style={{ color: 'rgba(255,255,255,0.88)' }}>Học sinh hiện tại</p>
+              <p className="card-value" style={{ color: 'white' }}>{classes.reduce((sum, item) => sum + item.students.length, 0)}</p>
             </div>
           </div>
         </section>
@@ -97,7 +119,7 @@ useEffect(() => {
                     <p className="class-card-title">{item.name}</p>
                     <p className="class-card-subtitle">Môn: {item.subject}</p>
                   </div>
-                  <button className="btn-outline" onClick={() => { setSelectedClass(item); setStudents(item.students);}} >
+                  <button className="btn-outline" onClick={() => { setSelectedClass(item); setPage(1); }} >
     Xem học sinh
 </button>
                 </div>
@@ -124,7 +146,10 @@ useEffect(() => {
                 type="text"
                 placeholder="Tìm học sinh..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
               />
               <button className="btn-outline">Bộ lọc</button>
             </div>
@@ -144,12 +169,21 @@ useEffect(() => {
               {filteredStudents.map((student) => (
                 <tr key={student._id}>
                   <td>{student._id}</td>
-                  <td>{student.name}</td>
+                  <td>
+                    <div className="member-profile-cell">
+                      <img
+                        src={student.avatar || `https://i.pravatar.cc/40?u=${student._id}`}
+                        alt={student.name}
+                        className="member-avatar"
+                      />
+                      <span>{student.name}</span>
+                    </div>
+                  </td>
                   <td>{student.email}</td>
                   <td>
-                  <span className={`status-pill ${ student.status === "active" ? "status-pill--active": "status-pill--inactive"}`}>
+                    <span className={`status-pill ${ student.status === "active" ? "status-pill--active": "status-pill--inactive"}`}>
                       {student.status}
-                  </span>
+                    </span>
                   </td>
                   <td>
                     <button className="btn-outline" onClick={() => alert(`Xem ${student.name}`)}>Xem</button>
@@ -160,11 +194,17 @@ useEffect(() => {
           </table>
 
           <div className="members-table-footer">
-            <span>Hiển thị 1-4 trong số {filteredStudents.length} học sinh</span>
+            <span>Hiển thị {students.length > 0 ? `${(page - 1) * limit + 1} - ${Math.min(page * limit, totalStudents)}` : '0'} trong số {totalStudents} học sinh</span>
             <div>
-              <button className="btn-outline">1</button>
-              <button className="btn-outline">2</button>
-              <button className="btn-outline">3</button>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index}
+                  className={`btn-outline ${page === index + 1 ? 'active' : ''}`}
+                  onClick={() => setPage(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              ))}
             </div>
           </div>
         </section>

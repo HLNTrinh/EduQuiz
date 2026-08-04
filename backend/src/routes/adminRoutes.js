@@ -55,6 +55,10 @@ const {
   updateSettings,
 } = require('../controllers/adminSettingController');
 
+// Các route thông báo có thể truy cập bằng mọi tài khoản đã xác thực
+router.get('/notifications', authenticate, getNotifications);
+router.get('/notifications/:id', authenticate, getNotificationById);
+
 // Tất cả routes admin đều cần authenticate + authorize('admin')
 router.use(authenticate, authorize('admin'));
 
@@ -87,8 +91,8 @@ router.delete('/classes/:id/students/:studentId', removeStudent);
 router.post('/classes/:id/import-students', upload.single('file'), importStudents);
 
 // ==================== Notification Management ====================
-router.get('/notifications', getNotifications);
-router.get('/notifications/:id', getNotificationById);
+router.get('/notifications', authenticate, getNotifications);
+router.get('/notifications/:id', authenticate, getNotificationById);
 router.post('/notifications', createNotification);
 router.put('/notifications/:id', updateNotification);
 router.delete('/notifications/:id', deleteNotification);

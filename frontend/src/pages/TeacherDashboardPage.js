@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FiBell, FiHelpCircle } from 'react-icons/fi';
+import { FiHelpCircle } from 'react-icons/fi';
+import { FaBell } from "react-icons/fa6";
+import {
+  FiFileText,
+  FiClipboard,
+  FiPlay,
+  FiUsers
+} from "react-icons/fi";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { quizService, quizAttemptService } from '../services/services';
 import { classService } from '../services/authService';
+import { getNotifications } from '../services/adminService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
+import TeacherAvatar from "../components/teacher/TeacherAvatar";
 import '../styles/TeacherDashBoard.css';
 
 export const TeacherDashboardPage = () => {
@@ -13,6 +22,8 @@ export const TeacherDashboardPage = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [classes, setClasses] = useState([]);
   const [teacherAttempts, setTeacherAttempts] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
   const [summaryStats, setSummaryStats] = useState({
     averageScore: 0,
     passRate: 0,
@@ -25,8 +36,19 @@ export const TeacherDashboardPage = () => {
   useEffect(() => {
     if (user?._id) {
       fetchDashboardData();
+      fetchNotifications();
     }
   }, [user]);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await getNotifications({ page: 1, limit: 10 });
+      setNotifications(response.notifications || []);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+      setNotifications([]);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -240,22 +262,64 @@ export const TeacherDashboardPage = () => {
 
           {/* Bên phải */}
           <div className="navbar-right">
-
-            <button className="navbar-icon-btn" title="Thông báo">
-              <FiBell size={20} />
-              <span className="navbar-badge">1</span>
+          {/* Phần bảng thông báo */}
+          <div className="notification-dropdown-wrapper">
+            <button
+              className={`navbar-icon-btn ${
+                isNotificationPanelOpen ? "navbar-icon-btn-active" : ""
+              }`}
+              title="Thông báo"
+              onClick={() => setIsNotificationPanelOpen((prev) => !prev)}
+            >
+              <FaBell size={20} />
+              {notifications.length > 0 && (
+                <span className="navbar-badge">
+                  {notifications.length > 99 ? "99+" : notifications.length}
+                </span>
+              )}
             </button>
+
+            {isNotificationPanelOpen && (
+              <div className="notification-popup-panel">
+                <div className="notification-popup-header">
+                  <h3>Thông báo</h3>
+                  <span>{notifications.length} thông báo</span>
+                </div>
+
+                {notifications.length === 0 ? (
+                  <div className="notification-empty">
+                    Chưa có thông báo
+                  </div>
+                ) : (
+                  <div className="notification-popup-list">
+                    {notifications.map((item) => (
+                      <div className="notification-popup-item" key={item._id}>
+                        <div className="notification-icon">
+                          📢
+                        </div>
+
+                        <div className="notification-content">
+                          <h4>{item.title}</h4>
+
+                          <p>{item.content}</p>
+
+                          <span>
+                            {new Date(item.createdAt).toLocaleDateString("vi-VN")}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            </div>
 
             <button className="navbar-icon-btn" title="Trợ giúp">
               <FiHelpCircle size={20} />
             </button>
 
-            <div className="navbar-avatar">
-              <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop"
-                alt={user.name}
-              />
-            </div>
+            <TeacherAvatar user={user} logout={logout} />
           </div>
         </div>
 
@@ -267,87 +331,81 @@ export const TeacherDashboardPage = () => {
           <div className="stat-card stat-card--questions">
             <div className="stat-card-top">
               <div className="stat-card-icon">
-                📄
+                <FiFileText size={20} /> 
               </div>
-
-              <span className="stat-card-trend">
-                ↗ +12%
-              </span>
             </div>
+
+            <p className="stat-card-value">
+              {stats.questions.toLocaleString("vi-VN")}
+            </p>
 
             <p className="stat-card-label">
               Tổng câu hỏi
             </p>
 
-            <p className="stat-card-value">
-              {stats.questions.toLocaleString('vi-VN')}
-            </p>
+            <span className="stat-card-badge">
+              +12%
+            </span>
           </div>
 
 
           {/* Tổng đề thi */}
           <div className="stat-card stat-card--exams">
-            <div className="stat-card-top">
               <div className="stat-card-icon">
-                🧾
+                  <FiClipboard size={20} />
               </div>
 
-              <span className="stat-card-trend">
-                ↗ +5
-              </span>
-            </div>
+              <div className="stat-card-value">
+                  {stats.total}
+              </div>
 
-            <p className="stat-card-label">
-              Tổng đề thi
-            </p>
+              <div className="stat-card-label">
+                  Tổng đề thi
+              </div>
 
-            <p className="stat-card-value">
-              {stats.total}
-            </p>
+              <div className="stat-card-badge">
+                  +5
+              </div>
           </div>
 
 
           {/* Đề đang hoạt động */}
           <div className="stat-card stat-card--active">
-            <div className="stat-card-top">
               <div className="stat-card-icon">
-                ▶
+                  <FiPlay size={20} />
               </div>
 
-              <span className="stat-card-live">
-                LIVE
-              </span>
-            </div>
+              <div className="stat-card-value">
+                  {stats.published.toString().padStart(2, "0")}
+              </div>
 
-            <p className="stat-card-label">
-              Đề đang hoạt động
-            </p>
+              <div className="stat-card-label">
+                  Đề đang hoạt động
+              </div>
 
-            <p className="stat-card-value">
-              {stats.published.toString().padStart(2, '0')}
-            </p>
+              <div className="stat-card-live">
+                  LIVE
+              </div>
           </div>
 
 
           {/* Học sinh đã làm */}
           <div className="stat-card stat-card--students">
-            <div className="stat-card-top">
               <div className="stat-card-icon">
-                👥
+                  <FiUsers size={20} />
               </div>
 
-              <span className="stat-card-total">
-                Tổng cộng
-              </span>
-            </div>
+              <div className="stat-card-value">
+                  {(summaryStats.completedQuizzes || 0).toLocaleString("vi-VN")}
+              </div>
 
-            <p className="stat-card-label">
-              Học sinh đã làm
-            </p>
+              <div className="stat-card-label">
+                  Học sinh đã làm
+              </div>
 
-            <p className="stat-card-value">
-              {(summaryStats.completedQuizzes || 0).toLocaleString('vi-VN')}
-            </p>
+              <div className="stat-card-total">
+                  Tổng cộng
+              </div>
           </div>
 
         </section>        
@@ -362,42 +420,40 @@ export const TeacherDashboardPage = () => {
               </div>
               <button className="btn-outline" onClick={() => navigate('/teacher/results')}>Xem chi tiết</button>
             </div>
-
-            <div className="summary-score-row">
-              <div>
-                <p className="summary-score-value">
-                  {summaryStats.averageScore || 0}
-                </p>
-                <p className="summary-score-note">
-                  Điểm trung bình chung theo học sinh
-                </p>
+            
+            <div className="summary-chart">
+              {/* Đường kẻ ngang */}
+              <div className="summary-chart-grid">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
               </div>
-              <div className="summary-score-pill">
-                {summaryStats.passRate}% học sinh đạt
-              </div>
-            </div>
 
-            <div className="summary-chart-bar">
               <div className="summary-bar-container">
                 {chartItems.map((item, index) => {
-                  const maxValue = Math.max(...chartItems.map((i) => Number(i.value || 0)), 1);
-                  const heightPercent =
-                    maxValue > 0 ? (Number(item.value || 0) / maxValue) * 100 : 0;
+                  const maxValue = Math.max(
+                    ...chartItems.map(i => Number(i.value || 0)),
+                    1
+                  );
+
+                 const heightPercent =
+                  maxValue > 0
+                    ? (Number(item.value || 0) / maxValue) * 100
+                    : 0;
 
                   return (
                     <div className="summary-bar-column" key={index}>
-                      <div className="summary-bar-track">
                         <div
                           className="summary-bar-fill"
                           style={{
                             height: `${Math.max(heightPercent, 10)}%`,
-                            background: chartColors[index % chartColors.length],
+                            background: "linear-gradient(180deg, #66A8FF 0%, #2563EB 100%)",
                           }}
                         >
-                          <span className="summary-bar-value">
-                            {item.value}
-                          </span>
-                        </div>
+                        <span className="summary-bar-value">
+                          {item.value.toFixed(1)}
+                        </span>
                       </div>
 
                       <span className="summary-bar-caption">

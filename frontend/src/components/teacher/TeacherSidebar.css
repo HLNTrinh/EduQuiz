@@ -116,16 +116,7 @@ SIDEBAR
 
     transform:translateX(4px);
 }
-/*
-.sidebar-link--active{
 
-    background:#edf4ff;
-
-    color:var(--primary);
-
-    font-weight:600;
-}
-*/
 .sidebar-link--active {
     background: #eef4ff;
     color: #2563eb;
