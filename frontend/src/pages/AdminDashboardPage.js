@@ -147,7 +147,7 @@ export default function AdminDashboardPage() {
           <div className="db-chart-card col-span-2">
             <div className="db-chart-header">
               <div className="db-chart-title-wrapper">
-                <h4 className="db-chart-title">Số bài thi 7 ngày qua</h4>
+                <h4 className="db-chart-title">{chartPeriod === 'week' ? 'Số bài thi 4 tuần qua' : 'Số bài thi 7 ngày qua'}</h4>
                 <p className="db-chart-desc">Theo dõi lưu lượng làm bài của học sinh</p>
               </div>
               <div className="db-chart-toggle">
