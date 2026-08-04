@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AvatarInitials from './AvatarInitials';
 
@@ -10,6 +11,7 @@ const roleMap = {
 
 export default function UserMenu({ size = 36 }) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -24,6 +26,9 @@ export default function UserMenu({ size = 36 }) {
   }, []);
 
   const roleLabel = roleMap[user?.role] || user?.role || '';
+
+  const profilePath =
+    user?.role === 'teacher' ? '/teacher/profile' : '/student/profile';
 
   return (
     <div className="user-menu-wrap" ref={ref} style={{ position: 'relative' }}>
@@ -44,7 +49,17 @@ export default function UserMenu({ size = 36 }) {
               <span className="user-menu-role">{roleLabel}</span>
             </div>
           </div>
-          <div className="user-menu-divider" />
+<div className="user-menu-divider" />
+          <button
+            className="user-menu-item"
+            onClick={() => {
+              setOpen(false);
+              navigate(profilePath);
+            }}
+          >
+            <ProfileIcon />
+            Hồ sơ
+          </button>
           <button
             className="user-menu-item user-menu-logout"
             onClick={logout}
@@ -142,6 +157,15 @@ export default function UserMenu({ size = 36 }) {
         }
       `}</style>
     </div>
+  );
+}
+
+function ProfileIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
   );
 }
 
