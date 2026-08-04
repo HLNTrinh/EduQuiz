@@ -105,9 +105,38 @@ const getChartData = async (req, res) => {
     });
 
     // Chuyển về mảng và sắp xếp theo ngày tăng dần
-    const chartData = Object.values(groupedData).sort(
+    const dailyData = Object.values(groupedData).sort(
       (a, b) => new Date(a.date) - new Date(b.date)
     );
+
+    let chartData;
+
+    if (period === 'week') {
+      // Nhóm 28 ngày thành 4 tuần, mỗi tuần 1 cột
+      const weekGroups = [];
+      for (let i = 0; i < 4; i++) {
+        const weekStart = dailyData[i * 7];
+        const weekEnd = dailyData[i * 7 + 6];
+        const weekCount = dailyData
+          .slice(i * 7, i * 7 + 7)
+          .reduce((sum, day) => sum + day.count, 0);
+
+        // Format ngày: DD/MM
+        const formatDate = (dateStr) => {
+          const d = new Date(dateStr);
+          return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+        };
+
+        weekGroups.push({
+          label: `${formatDate(weekStart.date)} - ${formatDate(weekEnd.date)}`,
+          count: weekCount,
+          date: weekStart.date,
+        });
+      }
+      chartData = weekGroups;
+    } else {
+      chartData = dailyData;
+    }
 
     res.json({ success: true, chartData });
   } catch (error) {
