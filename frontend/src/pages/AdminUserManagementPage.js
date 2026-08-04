@@ -275,7 +275,7 @@ export default function AdminUserManagementPage() {
   };
 
   return (
-    <AdminLayout pageTitle="Quản lý người dùng" pageSubtitle="Xem, tìm kiếm và quản lý phân quyền cho tất cả thành viên trong hệ thống.">
+    <AdminLayout>
       {/* Header */}
       <div className="page-intro-section">
         <button className="add-user-primary-btn" onClick={() => { resetForm(); setIsAddModalOpen(true); }}>

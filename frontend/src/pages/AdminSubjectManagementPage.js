@@ -29,6 +29,9 @@ export default function AdminSubjectManagementPage() {
   // State managers
   const [subjects, setSubjects] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
+  const [activeCount, setActiveCount] = useState(0);
+  const [pausedCount, setPausedCount] = useState(0);
+  const [deptCount, setDeptCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDept, setSelectedDept] = useState('all');
   const [loading, setLoading] = useState(false);
@@ -83,6 +86,9 @@ export default function AdminSubjectManagementPage() {
       const res = await getSubjects(params);
       setSubjects(res.subjects || []);
       setTotalItems(res.total || 0);
+      setActiveCount(res.activeCount || 0);
+      setPausedCount(res.pausedCount || 0);
+      setDeptCount(res.deptCount || 0);
     } catch (error) {
       showToast('Lỗi tải danh sách môn học', 'error');
     } finally {
@@ -212,12 +218,9 @@ export default function AdminSubjectManagementPage() {
 
   // Stat summary
   const totalCount = totalItems;
-  const activeCount = subjects.filter(s => s.status === 'active').length;
-  const pausedCount = subjects.filter(s => s.status === 'inactive').length;
-  const deptCount = [...new Set(subjects.map(s => s.department))].length;
 
   return (
-    <AdminLayout pageTitle="Quản lý môn học" pageSubtitle="Danh sách và quản lý các môn học hiện có trong hệ thống.">
+    <AdminLayout>
       {/* Toast */}
       {toast && (
         <div className="toast-container" id="toastContainer">
