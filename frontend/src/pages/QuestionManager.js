@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { questionService, subjectService } from '../services/authService';import TeacherSidebar from "../components/teacher/TeacherSidebar";
+import { questionService, subjectService } from '../services/authService';
+import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/QuestionsBank.css';
 import { RxCross2 } from "react-icons/rx";
 
@@ -30,7 +32,27 @@ export const QuestionManager = () => {
   const [formData, setFormData] = useState(emptyForm);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
+  //const [message, setMessage] = useState('');
+  const [toast, setToast] = useState({
+    show: false,
+    text: "",
+    type: "success",
+  });
+  const showToast = (text, type = "success") => {
+    setToast({
+      show: true,
+      text,
+      type,
+    });
+
+    setTimeout(() => {
+      setToast(prev => ({
+        ...prev,
+        show: false,
+      }));
+    }, 3500);
+  };
+
   const [subjectList, setSubjectList] = useState([]);
   const [subjects, setSubjects] = useState([]);
 
@@ -55,7 +77,8 @@ export const QuestionManager = () => {
       const items = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
       setQuestions(items);
     } catch (error) {
-      setMessage(error.message || 'Không thể tải câu hỏi.');
+     //setMessage(error.message || 'Không thể tải câu hỏi.');
+      showToast(error.message || 'Không thể tải câu hỏi.', 'error');
     } finally {
       setLoading(false);
     }
@@ -130,7 +153,8 @@ if (sortOrder === 'Mới nhất') {
         category: subjects.length > 1 ? subjects[1] : '',
       });
     }
-    setMessage('');
+   //setMessage('');
+    setToast(prev => ({ ...prev, show: false }));
     setShowForm(true);
   };
 
@@ -145,7 +169,8 @@ if (sortOrder === 'Mới nhất') {
       })) || emptyForm.options,
     });
 
-    setMessage('');
+    //setMessage('');
+    setToast(prev => ({ ...prev, show: false }));
     setShowEditModal(true);
   };
   const handleOptionChange = (index, field, value) => {
@@ -162,17 +187,20 @@ if (sortOrder === 'Mới nhất') {
     const correctCount = options.filter((option) => option.isCorrect).length;
 
     if (!content) {
-      setMessage('Vui lòng nhập nội dung câu hỏi.');
+      //setMessage('Vui lòng nhập nội dung câu hỏi.');
+      showToast('Vui lòng nhập nội dung câu hỏi.', 'error');
       return;
     }
 
     if (options.length !== 4 || options.some((option) => !option.text)) {
-      setMessage('Vui lòng nhập đủ 4 đáp án.' );
+      //setMessage('Vui lòng nhập đủ 4 đáp án.' );
+      showToast('Vui lòng nhập đủ 4 đáp án.', 'error');
       return;
     }
 
     if (correctCount !== 1) {
-      setMessage('Vui lòng chọn đúng một đáp án.');
+      //setMessage('Vui lòng chọn đúng một đáp án.');
+      showToast('Vui lòng chọn đúng một đáp án.', 'error)');
       return;
     }
 
@@ -206,9 +234,12 @@ if (sortOrder === 'Mới nhất') {
         ...emptyForm,
         category: subjects.length > 1 ? subjects[1] : '',
       });
-      setMessage(formData._id ? 'Đã cập nhật câu hỏi thành công.' : 'Đã thêm câu hỏi mới thành công.');
+      //setMessage(formData._id ? 'Đã cập nhật câu hỏi thành công.' : 'Đã thêm câu hỏi mới thành công.');
+      showToast(formData._id ? 'Đã cập nhật câu hỏi thành công.' : 'Đã thêm câu hỏi mới thành công.', 'success');
+
     } catch (error) {
-      setMessage(error.message || 'Không thể lưu câu hỏi.');
+      //setMessage(error.message || 'Không thể lưu câu hỏi.');
+      showToast(error.message || 'Không thể lưu câu hỏi.', 'error');
     }
   };
 
@@ -217,9 +248,11 @@ if (sortOrder === 'Mới nhất') {
     try {
       await questionService.deleteQuestion(questionId);
       setQuestions((prev) => prev.filter((item) => item._id !== questionId));
-      setMessage('Đã xóa câu hỏi thành công.');
+      //setMessage('Đã xóa câu hỏi thành công.');
+      showToast('Đã xóa câu hỏi thành công.', 'success');
     } catch (error) {
-      setMessage(error.message || 'Không thể xóa câu hỏi.');
+      //setMessage(error.message || 'Không thể xóa câu hỏi.');
+      showToast(error.message || 'Không thể xóa câu hỏi.', 'error');
     }
   };
 
@@ -237,9 +270,15 @@ if (sortOrder === 'Mới nhất') {
             <button className="btn-start" type="button" onClick={() => handleOpenForm(null)}>+ Thêm câu hỏi mới</button>
           </div>
         </header>
-
-
-        {message ? <div className="notice" style={{ marginBottom: '16px' }}>{message}</div> : null}
+        
+        {toast.show && (
+          <div className={`toast toast--${toast.type}`}>
+            {toast.type === "success"
+              ? <FiCheckCircle className="toast-icon" />
+              : <FiXCircle className="toast-icon" />}
+            <span>{toast.text}</span>
+          </div>
+        )}        
 
 
         {showForm ? (

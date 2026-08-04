@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { questionService, quizService, subjectService, classService } from '../services/authService';
@@ -35,7 +36,14 @@ export const ExamManager = () => {
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
   const [message, setMessage] = useState('');
+  const [toast, setToast] = useState({
+  show: false,
+  text: "",
+  type: "success",
+});
+
   const [formData, setFormData] = useState(buildInitialForm());
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [newQuestion, setNewQuestion] = useState({
@@ -72,7 +80,8 @@ export const ExamManager = () => {
           : [];
       setClasses(teacherClasses);
     } catch (error) {
-      setMessage('Không thể tải dữ liệu đề thi và câu hỏi.');
+      //setMessage('Không thể tải dữ liệu đề thi và câu hỏi.');
+      showToast('Không thể tải dữ liệu đề thi và câu hỏi.', 'error');
     } finally {
       setLoading(false);
     }
@@ -126,6 +135,7 @@ const query = searchQuery.toLowerCase();
     });
     setShowQuestionForm(false);
     setMessage('');
+    //showToast(' ');
   };
 
   const openQuestionEditor = (question = null) => {
@@ -150,6 +160,7 @@ const query = searchQuery.toLowerCase();
     }
     setShowQuestionForm(true);
     setMessage('');
+    //showToast(' ');
   };
 
   const handleSaveQuestion = async () => {
@@ -185,10 +196,12 @@ const query = searchQuery.toLowerCase();
 
       if (editingQuestionId) {
         setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._id ? { ...item, ...savedQuestion } : item)));
-        setMessage('Đã cập nhật câu hỏi thành công.');
+        //setMessage('Đã cập nhật câu hỏi thành công.');
+        showToast('Đã cập nhật câu hỏi thành công.', 'success');
       } else {
         setSelectedQuestions((prev) => [...prev, { ...savedQuestion, score: 10 }]);
-        setMessage('Đã tạo câu hỏi mới và chọn vào đề thi.');
+        //setMessage('Đã tạo câu hỏi mới và chọn vào đề thi.');
+        showToast('Đã tạo câu hỏi mới và chọn vào đề thi.', 'success');
       }
 
       resetQuestionEditor();
@@ -198,23 +211,42 @@ const query = searchQuery.toLowerCase();
       setSubmitting(false);
     }
   };
+//Hàm hiển thị thông báo
+const showToast = (text, type = "success") => {
+  setToast({
+    show: true,
+    text,
+    type,
+  });
+
+  setTimeout(() => {
+    setToast((prev) => ({
+      ...prev,
+      show: false,
+    }));
+  }, 3500);
+};
+
 
   const handleSubmit = async (event) => {
     if (event && typeof event.preventDefault === 'function') event.preventDefault();
 
     if (!formData.title.trim()) {
-      setMessage('Vui lòng nhập tên đề thi.');
+      //setMessage('Vui lòng nhập tên đề thi.');
+      showToast("Vui lòng nhập tên đề thi.", "error");
       return;
     }
 
     if (!selectedQuestions.length) {
-      setMessage('Vui lòng chọn ít nhất một câu hỏi cho đề thi.');
+      //setMessage('Vui lòng chọn ít nhất một câu hỏi cho đề thi.');
+      showToast("Vui lòng chọn ít nhất một câu hỏi cho đề thi.", "error");
       return;
     }
 
     try {
       setSubmitting(true);
       setMessage('');
+      //showToast(' ');
 
       const payload = {
         title: formData.title.trim(),
@@ -247,10 +279,12 @@ const query = searchQuery.toLowerCase();
       setSelectedQuestions([]);
       setFormData(buildInitialForm());
       setSelectedSubject('');
-      setMessage(response?.message || 'Tạo đề thi thành công.');
+      //setMessage(response?.message || 'Tạo đề thi thành công.');
+      showToast(response?.message || 'Tạo đề thi thành công.', 'success');
       return createdQuiz;
     } catch (error) {
-      setMessage(error.message || 'Không thể tạo đề thi.');
+      //setMessage(error.message || 'Không thể tạo đề thi.');
+      showToast(error.message || 'Không thể tạo đề thi.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -278,14 +312,22 @@ const query = searchQuery.toLowerCase();
 
       // map questions to full objects from questions list
       const selected = (q.questions || []).map((it) => {
-        const matched = questions.find((qq) => String(qq._id) === String(it.questionId));
-        return matched ? { ...matched, score: 10 } : { _id: it.questionId, score: 10 };
+        const questionId = it.questionId?._id ? it.questionId._id : it.questionId;
+        const matched = questions.find((qq) => String(qq._id) === String(questionId));
+        if (matched) {
+          return { ...matched, score: 10 };
+        }
+        if (it.questionId && typeof it.questionId === 'object') {
+          return { ...it.questionId, score: 10 };
+        }
+        return { _id: questionId, score: 10 };
       });
 
       setSelectedQuestions(selected);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      setMessage(error.message || 'Không thể tải đề thi.');
+      //setMessage(error.message || 'Không thể tải đề thi.');
+      showToast(error.message || 'Không thể tải đề thi.', 'error');
     } finally {
       setLoading(false);
     }
@@ -296,9 +338,11 @@ const query = searchQuery.toLowerCase();
     try {
       await quizService.deleteQuiz(quizId);
       setQuizzes((prev) => prev.filter((q) => (q._id || q.id) !== quizId));
-      setMessage('Đã xóa đề thi.');
+      //setMessage('Đã xóa đề thi.');
+      showToast('Đã xóa đề thi.', 'success');
     } catch (error) {
-      setMessage(error.message || 'Không thể xóa đề thi.');
+      //setMessage(error.message || 'Không thể xóa đề thi.');
+      showToast(error.message || 'Không thể xóa đề thi.', 'error');
     }
   };
 
@@ -307,9 +351,11 @@ const query = searchQuery.toLowerCase();
       await quizService.publishQuiz(quizId);
       // refresh list
       await loadData();
-      setMessage('Đã công bố đề thi.');
+      //setMessage('Đã công bố đề thi.');
+      showToast('Đã công bố đề thi.', 'success');
     } catch (error) {
-      setMessage(error.message || 'Không thể công bố đề thi.');
+      //setMessage(error.message || 'Không thể công bố đề thi.');
+      showToast(error.message || 'Không thể công bố đề thi.', 'error');
     }
   };
 
@@ -337,7 +383,15 @@ const query = searchQuery.toLowerCase();
             }}>Xuất bản & Giao bài</button>
           </div>
         </header>
-{message ? <div className="notice">{message}</div> : null}
+
+        {toast.show && (
+          <div className={`toast toast--${toast.type}`}>
+            {toast.type === "success"
+              ? <FiCheckCircle className="toast-icon" />
+              : <FiXCircle className="toast-icon" />}
+            <span>{toast.text}</span>
+          </div>
+        )}
 
         <form id="exam-form" onSubmit={handleSubmit}>
           <section className="exam-form-grid">
@@ -612,7 +666,7 @@ const query = searchQuery.toLowerCase();
                   <div className="stat-pill stat-pill--blue">{totalPoints.toFixed(1)} điểm</div>
                 </div>
                 <div className="panel-actions-buttons">
-<button
+                  <button
                     className="btn-outline btn-small"
                     type="button"
                     onClick={() => setSelectedQuestions((prev) => {
