@@ -91,6 +91,9 @@ app.use("/api/classes", require("./routes/classRoutes"));
 // subjects
 app.use("/api/subjects", require("./routes/subjectRoutes"));
 
+// notifications
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+
 /* =========================
    Admin Routes
 ========================= */

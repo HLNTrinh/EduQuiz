@@ -53,6 +53,28 @@ export const quizService = {
   publishQuiz: (id)       => api.post(`/quizzes/${id}/publish`),
 };
 
+export const subjectService = {
+  getSubjects: async () => {
+    const response = await api.get('/subjects');
+    // api interceptor trả về response.data rồi, nên response chính là body
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
+};
+
+export const classService = {
+  getTeacherClasses: async (teacherId) => {
+    const response = await api.get(`/classes/teacher/${teacherId}`);
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
+  getStudentClasses: async () => {
+    const response = await api.get('/classes/student');
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
+};
+
 export const quizAttemptService = {
   startQuizAttempt:  (quizId)       => api.post(`/quiz-attempts/start/${quizId}`),
   saveAnswer:        (attemptId, data) => api.post(`/quiz-attempts/${attemptId}/answer`, data),
@@ -60,4 +82,12 @@ export const quizAttemptService = {
   getAttemptResult:  (attemptId)    => api.get(`/quiz-attempts/${attemptId}/result`),
   getStudentAttempts:(params)       => api.get('/quiz-attempts', { params }),
   getTeacherAttempts:(params)       => api.get('/quiz-attempts/teacher', { params }),
+};
+
+export const notificationService = {
+  getStudentNotifications: async (params) => {
+    const response = await api.get('/notifications/student', { params });
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
 };

@@ -1,0 +1,223 @@
+/*Nút thông báo*/
+.notification-dropdown-wrapper{
+    position:relative;
+}
+.notification-popup-panel{
+
+    position:absolute;
+
+    top:55px;
+
+    right:0;
+
+    width:380px;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    box-shadow:0 12px 35px rgba(0,0,0,.15);
+
+    overflow:hidden;
+
+    z-index:999;
+
+    animation:popup .25s ease;
+}
+
+.notification-popup-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:20px;
+
+    border-bottom:1px solid #ececec;
+}
+
+.notification-popup-header h3{
+
+    margin:0;
+
+    font-size:25px;
+
+    font-weight:700;
+}
+
+.notification-popup-header span{
+
+    color:#7b7b7b;
+
+    font-size:15px;
+}
+.notification-popup-item{
+
+    display:flex;
+
+    gap:16px;
+
+    padding:18px 20px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+    border-bottom:1px solid #f2f2f2;
+}
+
+.notification-popup-item:hover{
+
+    background:#f8faff;
+}
+.notification-icon{
+
+    width:50px;
+
+    height:50px;
+
+    border-radius:14px;
+
+    background:#4f6ef7;
+
+    color:#fff;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:22px;
+
+    flex-shrink:0;
+}
+.notification-content{
+
+    flex:1;
+}
+
+.notification-content h4{
+
+    margin:0;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:#111827;
+}
+
+.notification-content p{
+
+    margin:6px 0;
+
+    color:#6b7280;
+
+    font-size:15px;
+
+    line-height:1.5;
+}
+
+.notification-content span{
+
+    color:#9ca3af;
+
+    font-size:13px;
+}
+/*Thanh cuộn*/
+.notification-popup-list::-webkit-scrollbar{
+
+    width:7px;
+}
+
+.notification-popup-list::-webkit-scrollbar-thumb{
+
+    background:#d1d5db;
+
+    border-radius:20px;
+}
+/*cái chuông*/
+.navbar-icon-btn{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    border:none;
+
+    background:#f6f8fc;
+
+    cursor:pointer;
+
+    position:relative;
+
+    transition:.25s;
+}
+
+.navbar-icon-btn-active {
+    background:#fef3c7;
+    color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.navbar-icon-btn-active svg {
+    color:#f59e0b;
+}
+
+.navbar-icon-btn:hover{
+
+    background:#eef4ff;
+}
+
+.navbar-badge{
+
+    position:absolute;
+
+    right:5px;
+
+    top:6px;
+
+    width:16px;
+
+    height:16px;
+
+    border-radius:50%;
+
+    background:#ef4444;
+
+    color:#fff;
+
+    font-size:10px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+}
+
+.navbar-avatar img{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+}
+@keyframes popup{
+
+    from{
+        opacity:0;
+        transform:translateY(-10px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}

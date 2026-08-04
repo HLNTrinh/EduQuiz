@@ -321,8 +321,7 @@ const query = searchQuery.toLowerCase();
       <main className="dash-main">
         <header className="dash-header dash-header--overview">
           <div>
-            {/* <p className="overview-badge">Tạo đề thi mới</p> */}
-            <h1 className="dash-greeting">Tạo đề thi</h1>
+            <p className="overview-badge">Tạo đề thi mới</p>
             <p className="dash-subtitle">Thiết lập đề kiểm tra, chọn câu hỏi và xuất bản cho học sinh.</p>
           </div>
           <div className="overview-actions">

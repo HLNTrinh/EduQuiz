@@ -231,7 +231,6 @@ if (sortOrder === 'Mới nhất') {
         <header className="dash-header dash-header--overview">
           <div>
             <p className="overview-badge">Ngân hàng câu hỏi</p>
-            <h1 className="dash-greeting">Ngân hàng câu hỏi</h1>
             <p className="dash-subtitle">Quản lý và tổ chức kho câu hỏi trắc nghiệm của bạn.</p>
           </div>
           <div className="overview-actions">
