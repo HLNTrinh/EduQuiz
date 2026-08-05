@@ -74,6 +74,7 @@ const login = async (identifier, password, rememberMe = false) => {
 };
 
   // Đăng nhập admin (chỉ dành cho trang /admin)
+  // Dùng sessionStorage để mỗi tab có session riêng, không ảnh hưởng tab khác
   const adminLogin = async (identifier, password) => {
     try {
       const data = await authService.adminLogin({
@@ -83,10 +84,10 @@ const login = async (identifier, password, rememberMe = false) => {
 
       const currentUser = data?.user || data;
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(currentUser));
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("user");
+      sessionStorage.setItem("token", data.token);
+      sessionStorage.setItem("user", JSON.stringify(currentUser));
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
 
       setUser(currentUser);
 
