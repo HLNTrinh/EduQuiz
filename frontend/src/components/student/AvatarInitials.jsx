@@ -1,15 +1,16 @@
 import React from 'react';
 
 /**
- * AvatarInitials - Hiển thị avatar dạng chữ cái viết tắt của tên
- * 
+ * AvatarInitials - Hiển thị avatar đại diện (ảnh) hoặc chữ cái viết tắt của tên
+ *
  * @param {string} name - Tên người dùng
+ * @param {string} avatar - URL ảnh đại diện (nếu có)
  * @param {number} size - Kích thước avatar (px)
  * @param {string} className - Class CSS bổ sung
  */
-export default function AvatarInitials({ name = '', size = 40, className = '' }) {
+export default function AvatarInitials({ name = '', avatar = '', size = 40, className = '' }) {
   const getInitials = (fullName) => {
-if (!fullName || typeof fullName !== 'string') return '';
+    if (!fullName || typeof fullName !== 'string') return '';
     const parts = fullName.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
@@ -34,23 +35,50 @@ if (!fullName || typeof fullName !== 'string') return '';
   const bgColor = getColorFromName(name);
   const fontSize = Math.max(size * 0.38, 12);
 
+  const baseStyle = {
+    width: size,
+    height: size,
+    borderRadius: '50%',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    overflow: 'hidden',
+  };
+
+  // Nếu có avatar, hiển thị ảnh đại diện
+  if (avatar) {
+    return (
+      <div className={`avatar-initials ${className}`} style={baseStyle} title={name || 'User'}>
+        <img
+          src={avatar}
+          alt={name || 'avatar'}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Không có avatar → hiển thị chữ cái viết tắt
   return (
     <div
       className={`avatar-initials ${className}`}
       style={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
+        ...baseStyle,
         backgroundColor: bgColor,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         color: '#fff',
         fontWeight: 700,
         fontSize,
         lineHeight: 1,
         userSelect: 'none',
-        flexShrink: 0,
       }}
       title={name || 'User'}
     >
