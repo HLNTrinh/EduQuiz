@@ -49,8 +49,16 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const identifier = (email || '').toString().trim();
 
-    const user = await User.findOne({ email }).select('+password');
+    // Cho phép đăng nhập bằng email HOẶC mã userCode
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { userCode: identifier },
+      ],
+    }).select('+password');
+
     if (!user) {
       return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
     }

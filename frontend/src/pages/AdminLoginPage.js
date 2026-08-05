@@ -17,7 +17,7 @@ function AdminLoginPage() {
     setError("");
 
     if (!username || !password) {
-      setError("Vui lòng nhập email và mật khẩu");
+      setError("Vui lòng nhập email/mã số và mật khẩu");
       return;
     }
 
@@ -60,11 +60,11 @@ function AdminLoginPage() {
         <form onSubmit={handleLogin}>
 
           <div className="form-group">
-            <label>Tên đăng nhập</label>
+            <label>Email hoặc mã số</label>
 
             <input
               type="text"
-              placeholder="Email của bạn"
+              placeholder="Email hoặc mã số người dùng"
               value={username}
               onChange={(e)=>setUsername(e.target.value)}
             />

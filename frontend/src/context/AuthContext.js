@@ -45,11 +45,11 @@ export const AuthProvider = ({ children }) => {
       });
   }, []);
 
-  // Đăng nhập
-const login = async (email, password, rememberMe = false) => {
+  // Đăng nhập (hỗ trợ email hoặc mã userCode)
+const login = async (identifier, password, rememberMe = false) => {
   try {
     const data = await authService.login({
-      email,
+      email: identifier,
       password,
     });
 

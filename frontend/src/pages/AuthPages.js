@@ -107,7 +107,7 @@ export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -118,14 +118,14 @@ export function LoginPage() {
     e.preventDefault();
     setError("");
 
-    if (!email || !password) {
-      setError("Vui lòng nhập email và mật khẩu.");
+    if (!identifier || !password) {
+      setError("Vui lòng nhập email/mã số và mật khẩu.");
       return;
     }
 
     setLoading(true);
     try {
-      const data = await login(email, password, rememberMe);
+      const data = await login(identifier, password, rememberMe);
       const userRole = data?.user?.role || 'student';
       navigate(`/${userRole}/dashboard`);
     } catch (err) {
@@ -160,17 +160,17 @@ export function LoginPage() {
 
           <form className="auth-form" onSubmit={handleLogin}>
             <div className="auth-field">
-              <label className="auth-label" htmlFor="login-email">EMAIL</label>
+              <label className="auth-label" htmlFor="login-email">EMAIL HOẶC MÃ SỐ</label>
               <div className="auth-field-row">
-                <span className="auth-field-icon material-symbols-outlined">mail</span>
+                <span className="auth-field-icon material-symbols-outlined">person</span>
                 <input
                   id="login-email"
-                  type="email"
-                  placeholder="example@eduquiz.vn"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="Email hoặc mã số người dùng"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   className="auth-input"
-                  autoComplete="email"
+                  autoComplete="username"
                 />
               </div>
             </div>
