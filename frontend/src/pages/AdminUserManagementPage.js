@@ -49,6 +49,7 @@ export default function AdminUserManagementPage() {
   // Form input state
   const [formData, setFormData] = useState({
     name: '',
+    userCode: '',
     email: '',
     role: 'student',
     status: 'active',
@@ -144,6 +145,7 @@ export default function AdminUserManagementPage() {
     try {
       const payload = {
         name: formData.name,
+        userCode: formData.userCode || '',
         email: formData.email,
         password: formData.password || '123456',
         role: mapRoleToAPI(formData.role),
@@ -164,8 +166,9 @@ export default function AdminUserManagementPage() {
     setSelectedUser(user);
     setFormData({
       name: user.name || '',
+      userCode: user.userCode || '',
       email: user.email || '',
-      role: user.role || 'student',
+      role: mapRoleToUI(user.role),
       status: mapStatusToUI(user.status),
       phone: user.phone || '',
       password: ''
@@ -184,6 +187,7 @@ export default function AdminUserManagementPage() {
     try {
       const payload = {
         name: formData.name,
+        userCode: formData.userCode || '',
         email: formData.email,
         role: mapRoleToAPI(formData.role),
         status: mapStatusToAPI(formData.status),
@@ -227,6 +231,7 @@ export default function AdminUserManagementPage() {
   const resetForm = () => {
     setFormData({
       name: '',
+      userCode: '',
       email: '',
       role: 'student',
       status: 'active',
@@ -373,7 +378,7 @@ export default function AdminUserManagementPage() {
               ) : users.length > 0 ? (
                 users.map((user, index) => (
                   <tr key={user._id || index}>
-                    <td className="user-id-cell">#{user._id?.slice(-6)?.toUpperCase() || '---'}</td>
+                    <td className="user-id-cell">{user.userCode || '---'}</td>
                     <td>
                       <div className="user-profile-cell">
                         <div className="table-user-avatar-text" style={{ background: getColorFromName(user.name) }}>
@@ -478,6 +483,13 @@ export default function AdminUserManagementPage() {
               <div className="modal-body">
                 <div className="modal-form">
                   <div className="form-field">
+                    <label className="form-label">Mã người dùng</label>
+                    <input type="text" name="userCode" value={formData.userCode}
+                      onChange={handleInputChange} placeholder="Nhập mã người dùng (VD: GV001, HS001, ADMIN001)"
+                      className="admin-user-form-input" />
+                    <small style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>Để trống nếu không muốn đặt mã</small>
+                  </div>
+                  <div className="form-field">
                     <label className="form-label">Họ và tên *</label>
                     <input type="text" name="name" value={formData.name}
                       onChange={handleInputChange} placeholder="Nhập họ và tên" 
@@ -533,6 +545,13 @@ export default function AdminUserManagementPage() {
             <form onSubmit={handleEditUser}>
               <div className="modal-body">
                 <div className="modal-form">
+                  <div className="form-field">
+                    <label className="form-label">Mã người dùng</label>
+                    <input type="text" name="userCode" value={formData.userCode}
+                      onChange={handleInputChange} placeholder="Nhập mã người dùng (VD: GV001, HS001, ADMIN001)"
+                      className="admin-user-form-input" />
+                    <small style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>Để trống nếu không muốn đặt mã</small>
+                  </div>
                   <div className="form-field">
                     <label className="form-label">Họ và tên *</label>
                     <input type="text" name="name" value={formData.name}
@@ -629,7 +648,7 @@ export default function AdminUserManagementPage() {
               <div className="info-grid">
                 <div className="info-item">
                   <span className="info-label">Mã số tài khoản:</span>
-                  <span className="info-value">#{selectedUser._id?.slice(-6)?.toUpperCase() || '---'}</span>
+                  <span className="info-value">{selectedUser.userCode || '---'}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Số điện thoại:</span>
