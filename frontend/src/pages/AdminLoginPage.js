@@ -87,8 +87,8 @@ function AdminLoginPage() {
 
         </form>
 
-        <button className="back-btn">
-          Quay lại trang đăng nhập
+        <button className="back-btn" onClick={() => navigate('/home')}>
+          Quay lại trang chủ
         </button>
 
       </div>
