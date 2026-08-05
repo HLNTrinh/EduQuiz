@@ -377,6 +377,12 @@
   min-height: 88px;
   resize: vertical;
 }
+textarea.form-input{
+    height:auto;
+    min-height:75px;
+    padding:10px 12px;
+    resize:none;
+}
 
 .dash-shell .form-input:focus,
 .dash-shell .search-input:focus {
