@@ -1,7 +1,8 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiUser, FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import AvatarInitials from "../student/AvatarInitials";
 import "./TeacherAvatar.css";
 
 export default function TeacherAvatar() {
@@ -23,28 +24,14 @@ export default function TeacherAvatar() {
         return () => document.removeEventListener("mousedown", close);
     }, []);
 
-    const initials = useMemo(() => {
-        if (!user?.name) return "GV";
-
-        const words = user.name.trim().split(/\s+/);
-
-        if (words.length === 1)
-            return words[0][0].toUpperCase();
-
-        return (
-            words[0][0] +
-            words[words.length - 1][0]
-        ).toUpperCase();
-    }, [user]);
-
     return (
         <div className="teacher-avatar-wrapper" ref={ref}>
             <button
                 className="teacher-avatar-btn"
                 onClick={() => setOpen(!open)}
             >
-                <div className="teacher-avatar-circle">
-                    {initials}
+<div className="teacher-avatar-circle">
+                    <AvatarInitials name={user?.name} size={46} />
                 </div>
             </button>
 
@@ -53,8 +40,8 @@ export default function TeacherAvatar() {
 
                     <div className="teacher-avatar-header">
 
-                        <div className="teacher-avatar-large">
-                            {initials}
+<div className="teacher-avatar-large">
+                            <AvatarInitials name={user?.name} size={48} />
                         </div>
 
                         <div>
