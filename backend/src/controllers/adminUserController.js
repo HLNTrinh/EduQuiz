@@ -23,6 +23,7 @@ const getUsers = async (req, res) => {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
+        { userCode: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -77,7 +78,7 @@ const getUserById = async (req, res) => {
 ========================= */
 const createUser = async (req, res) => {
   try {
-    const { name, email, password, role, status, phone, gender, schoolClass } = req.body;
+    const { name, userCode, email, password, role, status, phone, gender, schoolClass } = req.body;
 
     // Kiểm tra email tồn tại
     const existingUser = await User.findOne({ email });
@@ -85,10 +86,19 @@ const createUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
     }
 
+    // Kiểm tra userCode trùng nếu có
+    if (userCode) {
+      const existingCode = await User.findOne({ userCode });
+      if (existingCode) {
+        return res.status(400).json({ success: false, message: 'Mã người dùng đã tồn tại' });
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password || '123456', 12);
 
     const user = await User.create({
       name,
+      userCode: userCode || null,
       email,
       password: hashedPassword,
       role: role || 'student',
@@ -116,10 +126,11 @@ const createUser = async (req, res) => {
 ========================= */
 const updateUser = async (req, res) => {
   try {
-    const { name, email, role, status, phone } = req.body;
+    const { name, userCode, email, role, status, phone } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name;
+    if (userCode !== undefined) updateData.userCode = userCode || null;
     if (email) updateData.email = email;
     if (role) updateData.role = role;
     if (status) updateData.status = status;
@@ -224,6 +235,7 @@ const getTeachers = async (req, res) => {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
+        { userCode: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -232,7 +244,7 @@ const getTeachers = async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
 
     const [users, total] = await Promise.all([
-      User.find(filter).select('name email avatar').sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
+      User.find(filter).select('name email avatar userCode').sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
       User.countDocuments(filter),
     ]);
 

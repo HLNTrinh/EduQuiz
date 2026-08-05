@@ -35,7 +35,7 @@ const getClasses = async (req, res) => {
     const [classes, total] = await Promise.all([
       Class.find(filter)
         .populate('teacher', 'name email avatar')
-        .populate('students', 'name email avatar role status')
+        .populate('students', 'name email avatar role status userCode')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum)
@@ -63,7 +63,7 @@ const getClassById = async (req, res) => {
   try {
     const classItem = await Class.findById(req.params.id)
       .populate('teacher', 'name email avatar')
-      .populate('students', 'name email avatar role status')
+      .populate('students', 'name email avatar role status userCode')
       .lean();
 
     if (!classItem) return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
@@ -171,7 +171,7 @@ const updateClass = async (req, res) => {
       runValidators: true,
     })
       .populate('teacher', 'name email avatar')
-      .populate('students', 'name email avatar role status');
+      .populate('students', 'name email avatar role status userCode');
 
     if (!updatedClass) return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
 
@@ -237,7 +237,7 @@ const addStudent = async (req, res) => {
 
     const updatedClass = await Class.findById(req.params.id)
       .populate('teacher', 'name email avatar')
-      .populate('students', 'name email avatar role status')
+      .populate('students', 'name email avatar role status userCode')
       .lean();
 
     res.json({ success: true, message: 'Thêm học sinh thành công', class: updatedClass });
@@ -287,13 +287,14 @@ const importStudents = async (req, res) => {
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return; // bỏ qua header
       const values = row.values;
-      // values[1] = Họ tên, values[2] = Email, values[3] = SĐT, values[4] = Mật khẩu
-      const name = (values[1] || '').toString().trim();
-      const email = (values[2] || '').toString().trim().toLowerCase();
-      const phone = (values[3] || '').toString().trim();
-      const password = (values[4] || '').toString().trim();
+      // values[1] = Mã số học sinh, values[2] = Họ tên, values[3] = Email, values[4] = SĐT, values[5] = Mật khẩu
+      const userCode = (values[1] || '').toString().trim();
+      const name = (values[2] || '').toString().trim();
+      const email = (values[3] || '').toString().trim().toLowerCase();
+      const phone = (values[4] || '').toString().trim();
+      const password = (values[5] || '').toString().trim();
       if (name && email) {
-        rows.push({ name, email, phone, password });
+        rows.push({ userCode, name, email, phone, password });
       }
     });
 
@@ -316,8 +317,31 @@ const importStudents = async (req, res) => {
 
     // Bước 2: Tìm email đã tồn tại trong DB (lấy cả _id để gắn vào lớp)
     const emails = uniqueRows.map((r) => r.email);
-    const existingUsers = await User.find({ email: { $in: emails } }).select('email').lean();
+    const existingUsers = await User.find({ email: { $in: emails } }).select('email userCode').lean();
     const existingByEmail = new Map(existingUsers.map((u) => [u.email, u._id]));
+
+    // Kiểm tra userCode trùng (trong file và với DB)
+    const userCodesInFile = uniqueRows.filter(r => r.userCode).map(r => r.userCode);
+    const existingCodes = userCodesInFile.length > 0
+      ? await User.find({ userCode: { $in: userCodesInFile } }).select('userCode').lean()
+      : [];
+    const existingCodesSet = new Set(existingCodes.map(u => u.userCode));
+    const seenCodesInFile = new Set();
+    const duplicateCodesInFile = [];
+    uniqueRows.forEach((row) => {
+      if (row.userCode) {
+        if (seenCodesInFile.has(row.userCode) || existingCodesSet.has(row.userCode)) {
+          duplicateCodesInFile.push(row.userCode);
+        }
+        seenCodesInFile.add(row.userCode);
+      }
+    });
+    if (duplicateCodesInFile.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Mã số học sinh trùng (trong file hoặc đã tồn tại): ${[...new Set(duplicateCodesInFile)].join(', ')}`,
+      });
+    }
 
     // Bước 3: Tách dòng
     // - toCreate: email chưa tồn tại → tạo tài khoản mới
@@ -342,6 +366,7 @@ const importStudents = async (req, res) => {
         const hashedPassword = await bcrypt.hash(row.password || defaultPassword, 12);
         const user = await User.create({
           name: row.name,
+          userCode: row.userCode || null,
           email: row.email,
           password: hashedPassword,
           role: 'student',
@@ -423,7 +448,7 @@ const removeStudent = async (req, res) => {
 
     const updatedClass = await Class.findById(id)
       .populate('teacher', 'name email avatar')
-      .populate('students', 'name email avatar role status')
+      .populate('students', 'name email avatar role status userCode')
       .lean();
 
     res.json({ success: true, message: 'Xóa học sinh khỏi lớp thành công', class: updatedClass });
