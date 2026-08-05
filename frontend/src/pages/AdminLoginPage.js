@@ -6,7 +6,7 @@ import "../styles/AdminLogin.css";
 
 function AdminLoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { adminLogin } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +23,7 @@ function AdminLoginPage() {
 
     setLoading(true);
     try {
-      const data = await login(username, password, false);
+      const data = await adminLogin(username, password);
       if (data?.user?.role === "admin") {
         navigate("/admin/dashboard");
       } else {

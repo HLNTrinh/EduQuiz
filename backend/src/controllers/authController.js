@@ -63,6 +63,63 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
     }
 
+    // 🔒 Chặn admin đăng nhập từ trang người dùng
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Tài khoản admin không được đăng nhập từ trang này. Vui lòng dùng trang quản trị.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
+    }
+
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        role: user.role,
+        email: user.email 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    const { password: _, ...safeUser } = user.toObject();
+
+    res.json({
+      message: 'Đăng nhập thành công',
+      token,
+      user: safeUser
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
+/* =========================
+   Admin Login (chỉ dành cho trang /admin)
+========================= */
+const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const identifier = (email || '').toString().trim();
+
+    // Cho phép đăng nhập bằng email HOẶC mã userCode
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { userCode: identifier },
+      ],
+    }).select('+password');
+
+    if (!user) {
+      return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
+    }
+
+    // 🔒 Chỉ cho phép admin đăng nhập từ trang quản trị
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Tài khoản này không có quyền admin' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
@@ -193,6 +250,7 @@ const updateSettings = async (req, res) => {
 module.exports = { 
   register, 
   login, 
+  adminLogin, 
   getMe, 
   updateProfile, 
   changePassword, 

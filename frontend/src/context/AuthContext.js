@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
       });
   }, []);
 
-  // Đăng nhập (hỗ trợ email hoặc mã userCode)
+  // Đăng nhập (hỗ trợ email hoặc mã userCode) — dành cho student/teacher
 const login = async (identifier, password, rememberMe = false) => {
   try {
     const data = await authService.login({
@@ -73,6 +73,28 @@ const login = async (identifier, password, rememberMe = false) => {
   }
 };
 
+  // Đăng nhập admin (chỉ dành cho trang /admin)
+  const adminLogin = async (identifier, password) => {
+    try {
+      const data = await authService.adminLogin({
+        email: identifier,
+        password,
+      });
+
+      const currentUser = data?.user || data;
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(currentUser));
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+
+      setUser(currentUser);
+
+      return data;
+    } catch (error) {
+      throw new Error(normalizeAuthError(error));
+    }
+  };
 
   // Đăng ký
   const register = async (name, email, password) => {
@@ -125,6 +147,7 @@ const login = async (identifier, password, rememberMe = false) => {
         user,
         loading,
         login,
+        adminLogin,
         register,
         logout,
         updateUser,

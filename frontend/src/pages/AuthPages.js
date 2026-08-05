@@ -104,7 +104,7 @@ function AuthFooterLinks() {
 // LOGIN PAGE
 // =====================
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const navigate = useNavigate();
 
   const [identifier, setIdentifier] = useState("");
@@ -127,6 +127,14 @@ export function LoginPage() {
     try {
       const data = await login(identifier, password, rememberMe);
       const userRole = data?.user?.role || 'student';
+
+      // 🔒 Chặn admin đăng nhập từ trang người dùng (lớp bảo vệ frontend)
+      if (userRole === 'admin') {
+        logout(); // Xóa token vừa tạo
+        setError("Không đúng tài khoản hoặc mật khẩu!");
+        return;
+      }
+
       navigate(`/${userRole}/dashboard`);
     } catch (err) {
       setError(err.message || "Đăng nhập thất bại. Vui lòng thử lại.");
