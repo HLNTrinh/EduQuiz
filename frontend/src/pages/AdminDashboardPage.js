@@ -24,6 +24,7 @@ export default function AdminDashboardPage() {
   const [roleDistribution, setRoleDistribution] = useState(null);
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAllActivities, setShowAllActivities] = useState(false);
 
   // Fetch tất cả dữ liệu khi component mount
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function AdminDashboardPage() {
         getDashboardStats(),
         getChartData({ period: 'day' }),
         getRoleDistribution(),
-        getRecentActivities({ limit: 10 }),
+        getRecentActivities({ limit: 15 }),
       ]);
       setStats(statsRes.stats);
       setChartData(chartRes.chartData || []);
@@ -73,6 +74,10 @@ export default function AdminDashboardPage() {
     return name.includes(q) || target.includes(q) || action.includes(q);
   });
 
+  // Chỉ hiển thị 10 hoạt động đầu tiên, bấm "Xem tất cả" để hiện đủ 15
+  const visibleActivities = showAllActivities ? filteredActivities : filteredActivities.slice(0, 10);
+  const hasMoreActivities = filteredActivities.length > 10;
+
   // Tính % lớn nhất trong chart để scale height
   const maxCount = chartData.length > 0 ? Math.max(...chartData.map(d => d.count)) : 1;
 
@@ -83,8 +88,32 @@ export default function AdminDashboardPage() {
     return num.toLocaleString('vi-VN');
   };
 
+  // Helper: lấy 2 chữ cái đầu và cuối của tên cho avatar
+  const getInitials = (name = '') => {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return '?';
+    if (words.length === 1) return words[0][0].toUpperCase();
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  };
+
+  // Helper: tạo màu ngẫu nhiên nhưng cố định dựa trên tên người dùng
+  const getColorFromName = (name = '') => {
+    const colors = [
+      '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', 
+      '#14b8a6', '#f97316', '#6366f1', '#84cc16', '#06b6d4', '#d946ef',
+      '#0ea5e9', '#22c55e', '#eab308', '#a855f7', '#f43f5e', '#64748b'
+    ];
+    let hash = 0;
+    const str = name || '';
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  };
+
   return (
-    <AdminLayout pageTitle="Tổng quan hệ thống">
+    <AdminLayout>
       <div className="db-body">
         
         {/* Stats Metrics Grid */}
@@ -147,7 +176,7 @@ export default function AdminDashboardPage() {
           <div className="db-chart-card col-span-2">
             <div className="db-chart-header">
               <div className="db-chart-title-wrapper">
-                <h4 className="db-chart-title">Số bài thi 7 ngày qua</h4>
+                <h4 className="db-chart-title">{chartPeriod === 'week' ? 'Số bài thi 4 tuần qua' : 'Số bài thi 7 ngày qua'}</h4>
                 <p className="db-chart-desc">Theo dõi lưu lượng làm bài của học sinh</p>
               </div>
               <div className="db-chart-toggle">
@@ -284,9 +313,11 @@ export default function AdminDashboardPage() {
         <div className="db-activity-section">
           <div className="db-activity-header">
             <h4 className="db-activity-title">Hoạt động gần đây</h4>
-            <button className="db-view-all-btn">
-              Xem tất cả
-            </button>
+            {hasMoreActivities && (
+              <button className="db-view-all-btn" onClick={() => setShowAllActivities(!showAllActivities)}>
+                {showAllActivities ? 'Thu gọn' : 'Xem tất cả'}
+              </button>
+            )}
           </div>
 
           <div className="db-table-responsive">
@@ -306,30 +337,25 @@ export default function AdminDashboardPage() {
                       Đang tải dữ liệu...
                     </td>
                   </tr>
-                ) : filteredActivities.length > 0 ? (
-                  filteredActivities.map((activity) => (
+                ) : visibleActivities.length > 0 ? (
+                  visibleActivities.map((activity) => (
                     <tr key={activity.id}>
                       <td>
                         <div className="db-user-cell">
-                          {activity.user?.avatar ? (
-                            <img 
-                              className="db-user-avatar" 
-                              src={activity.user.avatar} 
-                              alt={activity.user.name} 
-                            />
-                          ) : (
-                            <div className="db-user-avatar" style={{ 
-                              background: '#e2e8f0', 
+                          <div 
+                            className="db-user-avatar" 
+                            style={{ 
+                              background: getColorFromName(activity.user?.name),
                               display: 'flex', 
                               alignItems: 'center', 
                               justifyContent: 'center',
-                              fontSize: '14px',
-                              fontWeight: 600,
-                              color: '#64748b'
-                            }}>
-                              {activity.user?.name?.charAt(0) || '?'}
-                            </div>
-                          )}
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              color: '#ffffff'
+                            }}
+                          >
+                            {getInitials(activity.user?.name)}
+                          </div>
                           <span className="db-user-name">{activity.user?.name || 'Người dùng'}</span>
                         </div>
                       </td>

@@ -128,9 +128,18 @@ export const TeacherDashboardPage = () => {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 3)
       .map((attempt) => ({
-        name: attempt.studentId?.name || 'Học sinh',
-        action: `nộp bài ${attempt.quizId?.title || 'một đề thi'}`,
-        meta: `${formatTimeAgo(attempt.createdAt)} · Điểm: ${attempt.score ?? 0}`,
+        name: attempt.studentId?.name || "Học sinh",
+        quiz: attempt.quizId?.title || "Đề thi",
+        score: Number(attempt.score || 0),
+        time: formatTimeAgo(attempt.createdAt),
+
+        avatar:
+          (attempt.studentId?.name || "HS")
+            .split(" ")
+            .map(w => w[0])
+            .slice(0, 2)
+            .join("")
+            .toUpperCase(),
       }));
   }, [teacherAttempts]);
 
@@ -247,39 +256,35 @@ export const TeacherDashboardPage = () => {
       {/* Nội dung chính bên phải */}
       <main className="dash-main">
         {/* Header chào mừng */}
-        <div className="navbar-welcome">
+        <header className="dashboard-header">
+          <div className="dashboard-header-left">
+            <h1 className="dashboard-title">
+              Chào mừng trở lại, {user?.name || "Giáo viên"}! 🌞
+            </h1>
 
-          {/* Bên trái */}
-          <div className="navbar-welcome-text">
-            <span className="navbar-greeting">
-              Chào mừng trở lại,
-            </span>
-
-            <span className="navbar-username">
-              {user?.name || 'Giáo viên'}
-            </span>
+            <p className="dashboard-subtitle">
+              Chúc bạn một ngày làm việc hiệu quả.
+            </p>
           </div>
 
-          {/* Bên phải */}
-          <div className="navbar-right">
-          {/* Phần bảng thông báo */}
-          <div className="notification-dropdown-wrapper">
-            <button
-              className={`navbar-icon-btn ${
-                isNotificationPanelOpen ? "navbar-icon-btn-active" : ""
-              }`}
-              title="Thông báo"
-              onClick={() => setIsNotificationPanelOpen((prev) => !prev)}
-            >
-              <FaBell size={20} />
-              {notifications.length > 0 && (
-                <span className="navbar-badge">
-                  {notifications.length > 99 ? "99+" : notifications.length}
-                </span>
-              )}
-            </button>
+          <div className="dashboard-header-right">
+            <div className="notification-dropdown-wrapper">
+              <button
+                className={`navbar-icon-btn ${
+                  isNotificationPanelOpen ? "navbar-icon-btn-active" : ""
+                }`}
+                onClick={() => setIsNotificationPanelOpen(prev => !prev)}
+              >
+                <FaBell size={18} />
 
-            {isNotificationPanelOpen && (
+                {notifications.length > 0 && (
+                  <span className="navbar-badge">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+
+              {isNotificationPanelOpen && (
               <div className="notification-popup-panel">
                 <div className="notification-popup-header">
                   <h3>Thông báo</h3>
@@ -314,14 +319,16 @@ export const TeacherDashboardPage = () => {
               </div>
             )}
             </div>
-
             <button className="navbar-icon-btn" title="Trợ giúp">
               <FiHelpCircle size={20} />
-            </button>
-
+            </button>    
             <TeacherAvatar user={user} logout={logout} />
           </div>
-        </div>
+        </header>
+
+
+
+        
 
         {/* Các thẻ thống kê (Stat-grid) */}
 
@@ -476,14 +483,48 @@ export const TeacherDashboardPage = () => {
             <div className="activity-list">
               {recentActivities.map((item, index) => (
                 <div className="activity-item" key={index}>
-                  <div className="activity-item-dot" />
-                  <div className="activity-item-body">
-                    <p className="activity-item-title">{item.name}</p>
-                    <p className="activity-item-text">{item.action}</p>
-                    <p className="activity-item-meta">{item.meta}</p>
+
+                  <div className="activity-avatar">
+                    {item.avatar}
                   </div>
+
+                  <div className="activity-content">
+
+                    <div className="activity-top">
+
+                      <span className="activity-name">
+                        {item.name}
+                      </span>
+
+                      <span className="activity-time">
+                        {item.time}
+                      </span>
+
+                    </div>
+
+                    <div className="activity-text">
+                      Nộp bài thi:
+                      <strong> {item.quiz}</strong>
+                    </div>
+
+                    <span
+                      className={
+                        item.score >= 8
+                          ? "activity-score success"
+                          : "activity-score warning"
+                      }
+                    >
+                      Điểm: {item.score}
+                    </span>
+
+                  </div>
+
                 </div>
               ))}
+
+              <button className="activity-more">
+                Xem tất cả hoạt động
+              </button>
             </div>
           </aside>
         </section>

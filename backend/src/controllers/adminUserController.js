@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Class = require('../models/Class');
 const bcrypt = require('bcryptjs');
 
 /* =========================
@@ -158,6 +159,26 @@ const deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
     }
+
+    // Cách 2: Khi xóa user, đồng thời xóa user khỏi tất cả các lớp và cập nhật lại studentCount
+    const userId = user._id;
+
+    // Tìm các lớp có chứa user TRƯỚC khi pull (sau khi pull sẽ không tìm thấy nữa)
+    const affectedClasses = await Class.find({ students: userId });
+
+    // Xóa user khỏi tất cả các lớp
+    await Class.updateMany(
+      { students: userId },
+      { $pull: { students: userId } }
+    );
+
+    // Cập nhật lại studentCount cho các lớp bị ảnh hưởng
+    for (const cls of affectedClasses) {
+      cls.students = cls.students.filter((id) => id.toString() !== userId.toString());
+      cls.studentCount = cls.students.length;
+      await cls.save();
+    }
+
     res.json({ success: true, message: 'Xóa người dùng thành công' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });

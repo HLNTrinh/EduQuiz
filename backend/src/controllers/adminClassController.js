@@ -43,7 +43,14 @@ const getClasses = async (req, res) => {
       Class.countDocuments(filter),
     ]);
 
-    res.json({ success: true, classes, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
+    // Cách 1: Tính lại studentCount dựa trên danh sách học sinh THỰC SỰ còn tồn tại sau khi populate
+    // (populate sẽ tự động bỏ qua các ObjectId đã bị xóa khỏi User collection)
+    const classesWithCorrectCount = classes.map((c) => ({
+      ...c,
+      studentCount: c.students.length,
+    }));
+
+    res.json({ success: true, classes: classesWithCorrectCount, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
@@ -60,6 +67,8 @@ const getClassById = async (req, res) => {
       .lean();
 
     if (!classItem) return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
+    // Cách 1: Tính lại studentCount dựa trên danh sách học sinh THỰC SỰ còn tồn tại sau khi populate
+    classItem.studentCount = classItem.students.length;
     res.json({ success: true, class: classItem });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });

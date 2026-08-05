@@ -23,10 +23,16 @@ const getSubjects = async (req, res) => {
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
-    const [subjects, total] = await Promise.all([
+    const [subjects, total, activeCount, pausedCount, allSubjects] = await Promise.all([
       Subject.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
       Subject.countDocuments(filter),
+      Subject.countDocuments({ status: 'active' }),
+      Subject.countDocuments({ status: 'inactive' }),
+      Subject.find().select('department').lean(),
     ]);
+
+    // Đếm số khoa/ngành duy nhất từ tất cả môn học
+    const deptCount = [...new Set(allSubjects.map(s => s.department))].length;
 
     // Lấy số lượng đề thi thực tế cho từng môn từ Quiz model
     const subjectIds = subjects.map(s => s._id);
@@ -46,7 +52,7 @@ const getSubjects = async (req, res) => {
       quizCount: countMap[s._id.toString()] || 0,
     }));
 
-    res.json({ success: true, subjects: subjectsWithQuizCount, total, page: pageNum, totalPages: Math.ceil(total / limitNum) });
+    res.json({ success: true, subjects: subjectsWithQuizCount, total, page: pageNum, totalPages: Math.ceil(total / limitNum), activeCount, pausedCount, deptCount });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }

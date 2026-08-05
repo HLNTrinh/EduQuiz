@@ -838,7 +838,7 @@
   max-width: 480px;
 }
 
-.modal-header {
+.admin-user-modal-header {
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
@@ -846,7 +846,7 @@
   justify-content: space-between;
 }
 
-.modal-header h3 {
+.admin-user-modal-header h3 {
   font-size: 18px;
   font-weight: 700;
   margin: 0;
@@ -893,7 +893,7 @@
   color: var(--text-muted);
 }
 
-.form-input {
+.admin-user-form-input {
   width: 100%;
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -904,7 +904,7 @@
   transition: all 0.2s;
 }
 
-.form-input:focus {
+.admin-user-form-input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(0, 74, 198, 0.1);
 }
