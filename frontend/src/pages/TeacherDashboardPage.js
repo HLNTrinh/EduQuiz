@@ -14,6 +14,7 @@ import { classService } from '../services/authService';
 import { getNotifications } from '../services/adminService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import TeacherAvatar from "../components/teacher/TeacherAvatar";
+import NotificationDropdown from "../components/teacher/NotificationDropdown";
 import '../styles/TeacherDashBoard.css';
 
 export const TeacherDashboardPage = () => {
@@ -233,8 +234,8 @@ export const TeacherDashboardPage = () => {
 
   if (loading) return <div className="loading">Đang tải...</div>;
 
-  //const chartColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444'];
-  const chartColors = ['#2563eb'];
+  const chartColors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444'];
+  //const chartColors = ['#2563eb'];
   const chartItems = classSummaries.length > 0
     ? classSummaries
     : Array.from({ length: 4 }, (_, index) => ({ label: 'Chưa có dữ liệu', value: 0 }));
@@ -268,6 +269,7 @@ export const TeacherDashboardPage = () => {
           </div>
 
           <div className="dashboard-header-right">
+            {/*}
             <div className="notification-dropdown-wrapper">
               <button
                 className={`navbar-icon-btn ${
@@ -322,6 +324,9 @@ export const TeacherDashboardPage = () => {
             <button className="navbar-icon-btn" title="Trợ giúp">
               <FiHelpCircle size={20} />
             </button>    
+            <TeacherAvatar user={user} logout={logout} />
+            */}
+            <NotificationDropdown notifications={notifications} />
             <TeacherAvatar user={user} logout={logout} />
           </div>
         </header>

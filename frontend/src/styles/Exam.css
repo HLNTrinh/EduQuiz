@@ -377,6 +377,12 @@
   min-height: 88px;
   resize: vertical;
 }
+textarea.form-input{
+    height:auto;
+    min-height:75px;
+    padding:10px 12px;
+    resize:none;
+}
 
 .dash-shell .form-input:focus,
 .dash-shell .search-input:focus {
@@ -800,4 +806,176 @@
   .dash-shell .overview-actions .btn-outline {
     flex: 1;
   }
+}
+
+/*==========================
+        TOAST
+==========================*/
+
+.toast{
+    position: fixed;
+
+    top: 28px;
+    right: 30px;      /* cách mép phải */
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    min-width: 420px;
+    max-width: 520px;
+
+    padding: 18px 24px;
+
+    border-radius: 18px;
+
+    background: #1f2638;
+
+    color: #fff;
+
+    font-size: 20px;
+    font-weight: 700;
+
+    box-shadow: 0 18px 45px rgba(0,0,0,.28);
+
+    z-index: 9999;
+
+    animation:
+        toastSlide .35s ease,
+        toastFade .35s ease 3.15s forwards;
+}
+
+.toast-icon{
+    color:#19d28d;
+    font-size:28px;
+    flex-shrink:0;
+}
+.toast--success{
+    background:#1f2638;
+}
+
+.toast--success .toast-icon{
+    color:#22c55e;
+}
+
+.toast--error{
+    background:#1f2638;
+}
+
+.toast--error .toast-icon{
+    color:#ef4444;
+}
+
+@keyframes toastSlide{
+    from{
+        opacity:0;
+        transform:translateX(40px);   /* trượt từ phải sang */
+    }
+
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
+
+@keyframes toastFade{
+    to{
+        opacity:0;
+        transform:translateX(40px);   /* trượt ra bên phải */
+    }
+}
+
+/*Phân trang danh sách đề thi*/
+/* ==========================
+        PAGINATION
+========================== */
+.pagination-wrapper{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:22px;
+    gap:16px;
+    flex-wrap:wrap;
+}
+
+.pagination-info{
+    font-size:14px;
+    color:#64748b;
+}
+
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    width: 28px;
+    height: 28px;
+
+    border: 1px solid #dbe6f6;
+    border-radius: 6px;
+
+    background: #fff;
+    color: #5b6880;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    /* Thêm */
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;    
+}
+
+.page-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 55%;
+    height: 100%;
+    background: rgba(255,255,255,.35);
+    transform: skewX(-25deg);
+    transition: left .45s ease;
+}
+
+.page-btn:hover::before {
+    left: 140%;
+}
+
+/* Hover */
+.page-btn:hover {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+}
+
+/* Khi nhấn */
+.page-btn:active {
+    transform: translateY(0) scale(0.96);
+}
+
+/* Trang hiện tại */
+.page-btn--active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+}
+
+.pagination button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }

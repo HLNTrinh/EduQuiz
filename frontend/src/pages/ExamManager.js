@@ -1,4 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
+import { HiOutlinePlus, HiOutlinePencilSquare } from "react-icons/hi2";
+import { RiDeleteBin3Line } from "react-icons/ri";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { questionService, quizService, subjectService, classService } from '../services/authService';
@@ -35,7 +39,14 @@ export const ExamManager = () => {
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
   const [message, setMessage] = useState('');
+  const [toast, setToast] = useState({
+  show: false,
+  text: "",
+  type: "success",
+});
+
   const [formData, setFormData] = useState(buildInitialForm());
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [newQuestion, setNewQuestion] = useState({
@@ -48,6 +59,11 @@ export const ExamManager = () => {
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState('');
+
+  /*thêm state phân trang hiện ds đề thi*/
+  const QUIZZES_PER_PAGE = 5;
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const loadData = async () => {
     if (!user?._id) {
@@ -72,7 +88,8 @@ export const ExamManager = () => {
           : [];
       setClasses(teacherClasses);
     } catch (error) {
-      setMessage('Không thể tải dữ liệu đề thi và câu hỏi.');
+      //setMessage('Không thể tải dữ liệu đề thi và câu hỏi.');
+      showToast('Không thể tải dữ liệu đề thi và câu hỏi.', 'error');
     } finally {
       setLoading(false);
     }
@@ -126,6 +143,7 @@ const query = searchQuery.toLowerCase();
     });
     setShowQuestionForm(false);
     setMessage('');
+    //showToast(' ');
   };
 
   const openQuestionEditor = (question = null) => {
@@ -150,6 +168,7 @@ const query = searchQuery.toLowerCase();
     }
     setShowQuestionForm(true);
     setMessage('');
+    //showToast(' ');
   };
 
   const handleSaveQuestion = async () => {
@@ -185,10 +204,12 @@ const query = searchQuery.toLowerCase();
 
       if (editingQuestionId) {
         setSelectedQuestions((prev) => prev.map((item) => (item._id === savedQuestion._id ? { ...item, ...savedQuestion } : item)));
-        setMessage('Đã cập nhật câu hỏi thành công.');
+        //setMessage('Đã cập nhật câu hỏi thành công.');
+        showToast('Đã cập nhật câu hỏi thành công.', 'success');
       } else {
         setSelectedQuestions((prev) => [...prev, { ...savedQuestion, score: 10 }]);
-        setMessage('Đã tạo câu hỏi mới và chọn vào đề thi.');
+        //setMessage('Đã tạo câu hỏi mới và chọn vào đề thi.');
+        showToast('Đã tạo câu hỏi mới và chọn vào đề thi.', 'success');
       }
 
       resetQuestionEditor();
@@ -198,23 +219,42 @@ const query = searchQuery.toLowerCase();
       setSubmitting(false);
     }
   };
+//Hàm hiển thị thông báo
+const showToast = (text, type = "success") => {
+  setToast({
+    show: true,
+    text,
+    type,
+  });
+
+  setTimeout(() => {
+    setToast((prev) => ({
+      ...prev,
+      show: false,
+    }));
+  }, 3500);
+};
+
 
   const handleSubmit = async (event) => {
     if (event && typeof event.preventDefault === 'function') event.preventDefault();
 
     if (!formData.title.trim()) {
-      setMessage('Vui lòng nhập tên đề thi.');
+      //setMessage('Vui lòng nhập tên đề thi.');
+      showToast("Vui lòng nhập tên đề thi.", "error");
       return;
     }
 
     if (!selectedQuestions.length) {
-      setMessage('Vui lòng chọn ít nhất một câu hỏi cho đề thi.');
+      //setMessage('Vui lòng chọn ít nhất một câu hỏi cho đề thi.');
+      showToast("Vui lòng chọn ít nhất một câu hỏi cho đề thi.", "error");
       return;
     }
 
     try {
       setSubmitting(true);
       setMessage('');
+      //showToast(' ');
 
       const payload = {
         title: formData.title.trim(),
@@ -247,10 +287,12 @@ const query = searchQuery.toLowerCase();
       setSelectedQuestions([]);
       setFormData(buildInitialForm());
       setSelectedSubject('');
-      setMessage(response?.message || 'Tạo đề thi thành công.');
+      //setMessage(response?.message || 'Tạo đề thi thành công.');
+      showToast(response?.message || 'Tạo đề thi thành công.', 'success');
       return createdQuiz;
     } catch (error) {
-      setMessage(error.message || 'Không thể tạo đề thi.');
+      //setMessage(error.message || 'Không thể tạo đề thi.');
+      showToast(error.message || 'Không thể tạo đề thi.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -278,14 +320,22 @@ const query = searchQuery.toLowerCase();
 
       // map questions to full objects from questions list
       const selected = (q.questions || []).map((it) => {
-        const matched = questions.find((qq) => String(qq._id) === String(it.questionId));
-        return matched ? { ...matched, score: 10 } : { _id: it.questionId, score: 10 };
+        const questionId = it.questionId?._id ? it.questionId._id : it.questionId;
+        const matched = questions.find((qq) => String(qq._id) === String(questionId));
+        if (matched) {
+          return { ...matched, score: 10 };
+        }
+        if (it.questionId && typeof it.questionId === 'object') {
+          return { ...it.questionId, score: 10 };
+        }
+        return { _id: questionId, score: 10 };
       });
 
       setSelectedQuestions(selected);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      setMessage(error.message || 'Không thể tải đề thi.');
+      //setMessage(error.message || 'Không thể tải đề thi.');
+      showToast(error.message || 'Không thể tải đề thi.', 'error');
     } finally {
       setLoading(false);
     }
@@ -295,10 +345,26 @@ const query = searchQuery.toLowerCase();
     if (!window.confirm('Bạn có chắc muốn xóa đề thi này?')) return;
     try {
       await quizService.deleteQuiz(quizId);
-      setQuizzes((prev) => prev.filter((q) => (q._id || q.id) !== quizId));
-      setMessage('Đã xóa đề thi.');
+      //Khi xóa đề thi, cập nhật lại danh sách đề thi và phân trang
+      setQuizzes((prev) => {
+        const updated = prev.filter((q) => (q._id || q.id) !== quizId);
+
+        const maxPage = Math.max(
+            1,
+            Math.ceil(updated.length / QUIZZES_PER_PAGE)
+        );
+
+        if (currentPage > maxPage) {
+            setCurrentPage(maxPage);
+        }
+
+        return updated;
+    });
+      //setMessage('Đã xóa đề thi.');
+      showToast('Đã xóa đề thi.', 'success');
     } catch (error) {
-      setMessage(error.message || 'Không thể xóa đề thi.');
+      //setMessage(error.message || 'Không thể xóa đề thi.');
+      showToast(error.message || 'Không thể xóa đề thi.', 'error');
     }
   };
 
@@ -307,11 +373,31 @@ const query = searchQuery.toLowerCase();
       await quizService.publishQuiz(quizId);
       // refresh list
       await loadData();
-      setMessage('Đã công bố đề thi.');
+      //setMessage('Đã công bố đề thi.');
+      showToast('Đã công bố đề thi.', 'success');
     } catch (error) {
-      setMessage(error.message || 'Không thể công bố đề thi.');
+      //setMessage(error.message || 'Không thể công bố đề thi.');
+      showToast(error.message || 'Không thể công bố đề thi.', 'error');
     }
   };
+
+  /*Tính tổng số trang */
+  const totalPages = Math.ceil(quizzes.length / QUIZZES_PER_PAGE);
+
+  const paginatedQuizzes = useMemo(() => {
+    const start = (currentPage - 1) * QUIZZES_PER_PAGE;
+    return quizzes.slice(start, start + QUIZZES_PER_PAGE);
+  }, [quizzes, currentPage]);
+/* Tính toán các chỉ số hiển thị cho phân trang*/
+  const startItem =
+    quizzes.length === 0
+      ? 0
+      : (currentPage - 1) * QUIZZES_PER_PAGE + 1;
+
+  const endItem = Math.min(
+    currentPage * QUIZZES_PER_PAGE,
+    quizzes.length
+  );
 
   return (
     <div className="dash-shell">
@@ -337,7 +423,15 @@ const query = searchQuery.toLowerCase();
             }}>Xuất bản & Giao bài</button>
           </div>
         </header>
-{message ? <div className="notice">{message}</div> : null}
+
+        {toast.show && (
+          <div className={`toast toast--${toast.type}`}>
+            {toast.type === "success"
+              ? <FiCheckCircle className="toast-icon" />
+              : <FiXCircle className="toast-icon" />}
+            <span>{toast.text}</span>
+          </div>
+        )}
 
         <form id="exam-form" onSubmit={handleSubmit}>
           <section className="exam-form-grid">
@@ -508,7 +602,7 @@ const query = searchQuery.toLowerCase();
                     <h3 className="panel-title">{editingQuestionId ? 'Chỉnh sửa câu hỏi' : 'Tạo câu hỏi mới'}</h3>
                     <p className="panel-subtitle">Nhập câu hỏi trực tiếp trên giao diện, sau đó lưu hoặc chọn vào đề thi.</p>
                   </div>
-                  <button className="btn-outline btn-small" type="button" onClick={resetQuestionEditor}>Đóng</button>
+                  <button className="btn-outline btn-small" type="button" onClick={resetQuestionEditor}> <FiX size={18} /></button>
                 </div>
 
                 <label className="field-label">Nội dung câu hỏi</label>
@@ -589,8 +683,8 @@ const query = searchQuery.toLowerCase();
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button type="button" className="btn-outline btn-small" onClick={() => handleAddQuestion(item)}>Thêm</button>
-                      <button type="button" className="btn-outline btn-small" onClick={() => openQuestionEditor(item)}>Chỉnh sửa</button>
+                      <button type="button" className="btn-outline btn-small" onClick={() => handleAddQuestion(item)}><HiOutlinePlus size={16} /></button>
+                      <button type="button" className="btn-outline btn-small" onClick={() => openQuestionEditor(item)}><HiOutlinePencilSquare size={16} /></button>
                     </div>
                   </div>
                 ))
@@ -612,7 +706,7 @@ const query = searchQuery.toLowerCase();
                   <div className="stat-pill stat-pill--blue">{totalPoints.toFixed(1)} điểm</div>
                 </div>
                 <div className="panel-actions-buttons">
-<button
+                  <button
                     className="btn-outline btn-small"
                     type="button"
                     onClick={() => setSelectedQuestions((prev) => {
@@ -635,8 +729,8 @@ const query = searchQuery.toLowerCase();
                       <p className="question-title">{item.content}</p>
                       <p className="question-detail">Điểm: {item.score}</p>
                       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                          <button type="button" className="btn-outline btn-small" onClick={() => handleRemoveQuestion(item._id)}>Xóa</button>
-                        <button type="button" className="btn-outline btn-small" onClick={() => openQuestionEditor(item)}>Chỉnh sửa</button>
+                          <button type="button" className="btn-outline btn-small" onClick={() => handleRemoveQuestion(item._id)}><RiDeleteBin3Line size={16} /></button>
+                        <button type="button" className="btn-outline btn-small" onClick={() => openQuestionEditor(item)}><HiOutlinePencilSquare size={16} /></button>
                       </div>
                     </div>
                   </div>
@@ -666,7 +760,7 @@ const query = searchQuery.toLowerCase();
                 </tr>
               </thead>
               <tbody>
-                {quizzes.map((item) => (
+                {paginatedQuizzes.map((item) => (
                   <tr key={item._id || item.id}>
                     <td>{item.title}</td>
                     <td>{item.description || 'Không có mô tả'}</td>
@@ -678,17 +772,57 @@ const query = searchQuery.toLowerCase();
                     <td>{item.questions?.length || 0}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}>Sửa</button>
+                        <button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}><HiOutlinePencilSquare size={16} /></button>
                         {!item.isPublished && (
                           <button className="btn-outline btn-small" type="button" onClick={() => handlePublishQuiz(item._id || item.id)}>Công bố</button>
                         )}
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleDeleteQuiz(item._id || item.id)}>Xóa</button>
+                        <button className="btn-outline btn-small" type="button" onClick={() => handleDeleteQuiz(item._id || item.id)}><RiDeleteBin3Line size={16} /></button>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            {/* Thanh phân trang */}
+            <div className="pagination-wrapper">
+                <div className="pagination-info">
+                    Hiển thị từ {quizzes.length === 0 ? 0 : (currentPage - 1) * QUIZZES_PER_PAGE + 1}
+                    -
+                    {Math.min(currentPage * QUIZZES_PER_PAGE, quizzes.length)}
+                     trong tổng số {quizzes.length} đề thi
+                </div>
+
+                <div className="pagination">
+                    <button
+                        className="btn-outline btn-small"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage((p) => p - 1)}
+                    >
+                        ← Trước
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => (
+                        <button
+                            key={i}
+                            className={`page-btn ${
+                                currentPage === i + 1 ? "page-btn--active" : ""
+                            }`}
+                            onClick={() => setCurrentPage(i + 1)}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+
+                    <button
+                        className="btn-outline btn-small"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                    >
+                        Sau →
+                    </button>
+                </div>
+            </div>
           </div>
         </section>
       </main>
