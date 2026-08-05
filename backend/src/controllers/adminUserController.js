@@ -116,6 +116,16 @@ const createUser = async (req, res) => {
       user: safeUser,
     });
   } catch (error) {
+    // Bắt lỗi trùng khóa (email/userCode) từ unique index của MongoDB
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+      const message = field === 'email'
+        ? 'Email đã tồn tại'
+        : field === 'userCode'
+          ? 'Mã người dùng đã tồn tại'
+          : 'Dữ liệu đã tồn tại';
+      return res.status(400).json({ success: false, message });
+    }
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
 };
@@ -127,6 +137,22 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { name, userCode, email, role, status, phone } = req.body;
+
+    // Kiểm tra email trùng (loại trừ chính user đang sửa)
+    if (email) {
+      const existingEmail = await User.findOne({ email, _id: { $ne: req.params.id } });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
+      }
+    }
+
+    // Kiểm tra userCode trùng nếu có (loại trừ chính user đang sửa)
+    if (userCode) {
+      const existingCode = await User.findOne({ userCode, _id: { $ne: req.params.id } });
+      if (existingCode) {
+        return res.status(400).json({ success: false, message: 'Mã người dùng đã tồn tại' });
+      }
+    }
 
     const updateData = {};
     if (name) updateData.name = name;
@@ -156,6 +182,16 @@ const updateUser = async (req, res) => {
       user,
     });
   } catch (error) {
+    // Bắt lỗi trùng khóa (email/userCode) từ unique index của MongoDB
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+      const message = field === 'email'
+        ? 'Email đã tồn tại'
+        : field === 'userCode'
+          ? 'Mã người dùng đã tồn tại'
+          : 'Dữ liệu đã tồn tại';
+      return res.status(400).json({ success: false, message });
+    }
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
 };
