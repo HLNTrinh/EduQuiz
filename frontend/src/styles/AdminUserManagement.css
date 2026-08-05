@@ -818,8 +818,10 @@
   background-color: rgba(17, 28, 45, 0.4);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-y: auto;
+  padding: 24px 16px;
   z-index: 200;
   animation: fadeIn 0.25s ease;
 }
@@ -829,8 +831,10 @@
   border-radius: 16px;
   width: 100%;
   max-width: 520px;
+  max-height: calc(100vh - 48px);
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
+  overflow-y: auto;
+  margin: auto;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -940,6 +944,9 @@
   justify-content: flex-end;
   gap: 12px;
   background-color: #fafbfe;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
 }
 
 .btn-secondary {
@@ -1081,6 +1088,35 @@
 }
 
 @media (max-width: 768px) {
+  .modal-overlay-backdrop {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal-content-card {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  .modal-content-card.detail-modal {
+    max-width: 100%;
+  }
+
+  .admin-user-modal-header {
+    padding: 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+  }
+
   .admin-sidebar {
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
