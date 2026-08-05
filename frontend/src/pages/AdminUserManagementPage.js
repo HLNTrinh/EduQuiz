@@ -360,7 +360,7 @@ export default function AdminUserManagementPage() {
           <table className="users-list-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Mã người dùng</th>
                 <th>Họ tên & Email</th>
                 <th>Vai trò</th>
                 <th>Trạng thái</th>
