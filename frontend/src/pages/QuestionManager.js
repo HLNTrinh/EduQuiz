@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiCheckCircle, FiXCircle, FiX } from "react-icons/fi";
-import { MdAdd } from "react-icons/md";
+import { FiCheckCircle, FiXCircle,} from "react-icons/fi";
+import { FiX } from "react-icons/fi";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { questionService, subjectService } from '../services/authService';
@@ -268,7 +268,7 @@ if (sortOrder === 'Mới nhất') {
             <p className="dash-subtitle">Quản lý và tổ chức kho câu hỏi trắc nghiệm của bạn.</p>
           </div>
           <div className="overview-actions">
-            <button className="btn-start" type="button" onClick={() => handleOpenForm(null)}> <MdAdd size={20}/> Thêm câu hỏi mới</button>
+            <button className="btn-start" type="button" onClick={() => handleOpenForm(null)}> +Thêm câu hỏi mới </button>
           </div>
         </header>
         
@@ -397,7 +397,7 @@ if (sortOrder === 'Mới nhất') {
             <div className="modal-content" onClick={(event) => event.stopPropagation()}>
               <div className="modal-header">
                 <h3>Chỉnh sửa câu hỏi</h3>
-                <button className="modal-close-btn" type="button" onClick={() => setShowEditModal(false)}><FiX size={20} /></button>
+                <button className="modal-close-btn" type="button" onClick={() => setShowEditModal(false)}> <FiX size={20} /></button>
               </div>
               <form onSubmit={handleSubmit}>
                 <label className="field-label">Nội dung câu hỏi</label>

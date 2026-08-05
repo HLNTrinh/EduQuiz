@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
+import { HiOutlinePlus, HiOutlinePencilSquare } from "react-icons/hi2";
+import { RiDeleteBin3Line } from "react-icons/ri";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { questionService, quizService, subjectService, classService } from '../services/authService';
@@ -56,6 +59,11 @@ export const ExamManager = () => {
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState('');
+
+  /*thêm state phân trang hiện ds đề thi*/
+  const QUIZZES_PER_PAGE = 5;
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const loadData = async () => {
     if (!user?._id) {
@@ -337,7 +345,21 @@ const showToast = (text, type = "success") => {
     if (!window.confirm('Bạn có chắc muốn xóa đề thi này?')) return;
     try {
       await quizService.deleteQuiz(quizId);
-      setQuizzes((prev) => prev.filter((q) => (q._id || q.id) !== quizId));
+      //Khi xóa đề thi, cập nhật lại danh sách đề thi và phân trang
+      setQuizzes((prev) => {
+        const updated = prev.filter((q) => (q._id || q.id) !== quizId);
+
+        const maxPage = Math.max(
+            1,
+            Math.ceil(updated.length / QUIZZES_PER_PAGE)
+        );
+
+        if (currentPage > maxPage) {
+            setCurrentPage(maxPage);
+        }
+
+        return updated;
+    });
       //setMessage('Đã xóa đề thi.');
       showToast('Đã xóa đề thi.', 'success');
     } catch (error) {
@@ -358,6 +380,24 @@ const showToast = (text, type = "success") => {
       showToast(error.message || 'Không thể công bố đề thi.', 'error');
     }
   };
+
+  /*Tính tổng số trang */
+  const totalPages = Math.ceil(quizzes.length / QUIZZES_PER_PAGE);
+
+  const paginatedQuizzes = useMemo(() => {
+    const start = (currentPage - 1) * QUIZZES_PER_PAGE;
+    return quizzes.slice(start, start + QUIZZES_PER_PAGE);
+  }, [quizzes, currentPage]);
+/* Tính toán các chỉ số hiển thị cho phân trang*/
+  const startItem =
+    quizzes.length === 0
+      ? 0
+      : (currentPage - 1) * QUIZZES_PER_PAGE + 1;
+
+  const endItem = Math.min(
+    currentPage * QUIZZES_PER_PAGE,
+    quizzes.length
+  );
 
   return (
     <div className="dash-shell">
@@ -562,7 +602,7 @@ const showToast = (text, type = "success") => {
                     <h3 className="panel-title">{editingQuestionId ? 'Chỉnh sửa câu hỏi' : 'Tạo câu hỏi mới'}</h3>
                     <p className="panel-subtitle">Nhập câu hỏi trực tiếp trên giao diện, sau đó lưu hoặc chọn vào đề thi.</p>
                   </div>
-                  <button className="btn-outline btn-small" type="button" onClick={resetQuestionEditor}>Đóng</button>
+                  <button className="btn-outline btn-small" type="button" onClick={resetQuestionEditor}> <FiX size={18} /></button>
                 </div>
 
                 <label className="field-label">Nội dung câu hỏi</label>
@@ -643,8 +683,8 @@ const showToast = (text, type = "success") => {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button type="button" className="btn-outline btn-small" onClick={() => handleAddQuestion(item)}>Thêm</button>
-                      <button type="button" className="btn-outline btn-small" onClick={() => openQuestionEditor(item)}>Chỉnh sửa</button>
+                      <button type="button" className="btn-outline btn-small" onClick={() => handleAddQuestion(item)}><HiOutlinePlus size={16} /></button>
+                      <button type="button" className="btn-outline btn-small" onClick={() => openQuestionEditor(item)}><HiOutlinePencilSquare size={16} /></button>
                     </div>
                   </div>
                 ))
@@ -689,8 +729,8 @@ const showToast = (text, type = "success") => {
                       <p className="question-title">{item.content}</p>
                       <p className="question-detail">Điểm: {item.score}</p>
                       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                          <button type="button" className="btn-outline btn-small" onClick={() => handleRemoveQuestion(item._id)}>Xóa</button>
-                        <button type="button" className="btn-outline btn-small" onClick={() => openQuestionEditor(item)}>Chỉnh sửa</button>
+                          <button type="button" className="btn-outline btn-small" onClick={() => handleRemoveQuestion(item._id)}><RiDeleteBin3Line size={16} /></button>
+                        <button type="button" className="btn-outline btn-small" onClick={() => openQuestionEditor(item)}><HiOutlinePencilSquare size={16} /></button>
                       </div>
                     </div>
                   </div>
@@ -720,7 +760,7 @@ const showToast = (text, type = "success") => {
                 </tr>
               </thead>
               <tbody>
-                {quizzes.map((item) => (
+                {paginatedQuizzes.map((item) => (
                   <tr key={item._id || item.id}>
                     <td>{item.title}</td>
                     <td>{item.description || 'Không có mô tả'}</td>
@@ -732,17 +772,57 @@ const showToast = (text, type = "success") => {
                     <td>{item.questions?.length || 0}</td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}>Sửa</button>
+                        <button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}><HiOutlinePencilSquare size={16} /></button>
                         {!item.isPublished && (
                           <button className="btn-outline btn-small" type="button" onClick={() => handlePublishQuiz(item._id || item.id)}>Công bố</button>
                         )}
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleDeleteQuiz(item._id || item.id)}>Xóa</button>
+                        <button className="btn-outline btn-small" type="button" onClick={() => handleDeleteQuiz(item._id || item.id)}><RiDeleteBin3Line size={16} /></button>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            {/* Thanh phân trang */}
+            <div className="pagination-wrapper">
+                <div className="pagination-info">
+                    Hiển thị từ {quizzes.length === 0 ? 0 : (currentPage - 1) * QUIZZES_PER_PAGE + 1}
+                    -
+                    {Math.min(currentPage * QUIZZES_PER_PAGE, quizzes.length)}
+                     trong tổng số {quizzes.length} đề thi
+                </div>
+
+                <div className="pagination">
+                    <button
+                        className="btn-outline btn-small"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage((p) => p - 1)}
+                    >
+                        ← Trước
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => (
+                        <button
+                            key={i}
+                            className={`page-btn ${
+                                currentPage === i + 1 ? "page-btn--active" : ""
+                            }`}
+                            onClick={() => setCurrentPage(i + 1)}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+
+                    <button
+                        className="btn-outline btn-small"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                    >
+                        Sau →
+                    </button>
+                </div>
+            </div>
           </div>
         </section>
       </main>

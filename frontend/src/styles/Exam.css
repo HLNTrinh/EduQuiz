@@ -884,3 +884,98 @@ textarea.form-input{
         transform:translateX(40px);   /* trượt ra bên phải */
     }
 }
+
+/*Phân trang danh sách đề thi*/
+/* ==========================
+        PAGINATION
+========================== */
+.pagination-wrapper{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:22px;
+    gap:16px;
+    flex-wrap:wrap;
+}
+
+.pagination-info{
+    font-size:14px;
+    color:#64748b;
+}
+
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    width: 28px;
+    height: 28px;
+
+    border: 1px solid #dbe6f6;
+    border-radius: 6px;
+
+    background: #fff;
+    color: #5b6880;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    /* Thêm */
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;    
+}
+
+.page-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 55%;
+    height: 100%;
+    background: rgba(255,255,255,.35);
+    transform: skewX(-25deg);
+    transition: left .45s ease;
+}
+
+.page-btn:hover::before {
+    left: 140%;
+}
+
+/* Hover */
+.page-btn:hover {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+}
+
+/* Khi nhấn */
+.page-btn:active {
+    transform: translateY(0) scale(0.96);
+}
+
+/* Trang hiện tại */
+.page-btn--active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+}
+
+.pagination button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
