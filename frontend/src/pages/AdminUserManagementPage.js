@@ -10,6 +10,7 @@ import {
   Edit, 
   Lock, 
   Unlock, 
+  Trash2,
   ChevronLeft, 
   ChevronRight, 
   X, 
@@ -21,6 +22,7 @@ import {
   getUsers,
   createUser,
   updateUser,
+  deleteUser,
   toggleLockUser,
 } from '../services/adminService';
 import Avatar from '../components/common/Avatar';
@@ -138,8 +140,16 @@ export default function AdminUserManagementPage() {
   // Add User
   const handleAddUser = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) {
-      showToast('Vui lòng điền đầy đủ Họ tên và Email!');
+    if (!formData.name) {
+      showToast('Vui lòng điền Họ tên!');
+      return;
+    }
+    if (!formData.userCode || !formData.userCode.trim()) {
+      showToast('Mã người dùng không được để trống!');
+      return;
+    }
+    if (!formData.email || !formData.email.trim()) {
+      showToast('Email không được để trống!');
       return;
     }
 
@@ -180,8 +190,16 @@ export default function AdminUserManagementPage() {
   // Save Edit User
   const handleEditUser = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) {
-      showToast('Vui lòng điền đầy đủ Họ tên và Email!');
+    if (!formData.name) {
+      showToast('Vui lòng điền Họ tên!');
+      return;
+    }
+    if (!formData.userCode || !formData.userCode.trim()) {
+      showToast('Mã người dùng không được để trống!');
+      return;
+    }
+    if (!formData.email || !formData.email.trim()) {
+      showToast('Email không được để trống!');
       return;
     }
 
@@ -204,6 +222,23 @@ export default function AdminUserManagementPage() {
       fetchUsers();
     } catch (error) {
       showToast(error.message || 'Lỗi khi cập nhật người dùng');
+    }
+  };
+
+  // Delete User
+  const handleDeleteUser = async (user) => {
+    // Không cho phép admin xóa chính mình
+    if (currentAdmin?._id === user._id) {
+      showToast('Bạn không thể xóa tài khoản của chính mình!', 'error');
+      return;
+    }
+    if (!window.confirm(`Bạn có chắc muốn xóa người dùng ${user.name}?`)) return;
+    try {
+      await deleteUser(user._id);
+      showToast(`Đã xóa người dùng ${user.name}!`);
+      fetchUsers();
+    } catch (error) {
+      showToast(error.message || 'Lỗi khi xóa người dùng');
     }
   };
 
@@ -422,6 +457,10 @@ export default function AdminUserManagementPage() {
                           onClick={() => handleToggleLock(user)}>
                           {user.status === 'active' ? <Lock size={16} /> : <Unlock size={16} />}
                         </button>
+                        <button className="table-action-btn delete" title="Xóa người dùng"
+                          onClick={() => handleDeleteUser(user)}>
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -482,11 +521,10 @@ export default function AdminUserManagementPage() {
               <div className="modal-body">
                 <div className="modal-form">
                   <div className="form-field">
-                    <label className="form-label">Mã người dùng</label>
+                    <label className="form-label">Mã người dùng *</label>
                     <input type="text" name="userCode" value={formData.userCode}
                       onChange={handleInputChange} placeholder="Nhập mã người dùng (VD: GV001, HS001, ADMIN001)"
-                      className="admin-user-form-input" />
-                    <small style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>Để trống nếu không muốn đặt mã</small>
+                      className="admin-user-form-input" required />
                   </div>
                   <div className="form-field">
                     <label className="form-label">Họ và tên *</label>
@@ -545,11 +583,10 @@ export default function AdminUserManagementPage() {
               <div className="modal-body">
                 <div className="modal-form">
                   <div className="form-field">
-                    <label className="form-label">Mã người dùng</label>
+                    <label className="form-label">Mã người dùng *</label>
                     <input type="text" name="userCode" value={formData.userCode}
                       onChange={handleInputChange} placeholder="Nhập mã người dùng (VD: GV001, HS001, ADMIN001)"
-                      className="admin-user-form-input" />
-                    <small style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>Để trống nếu không muốn đặt mã</small>
+                      className="admin-user-form-input" required />
                   </div>
                   <div className="form-field">
                     <label className="form-label">Họ và tên *</label>

@@ -12,6 +12,28 @@ function escapeRegex(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Utility: convert exceljs cell value to string safely
+// - string/number → String(value)
+// - object with .text (hyperlink) → .text
+// - object with .richText (rich text) → concatenated text
+// - null/undefined → ''
+function getCellValue(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'object') {
+    if (value.text !== undefined && value.text !== null) return String(value.text);
+    if (Array.isArray(value.richText) && value.richText.length > 0) {
+      return value.richText.map((t) => (t && t.text != null ? t.text : '')).join('');
+    }
+    return '';
+  }
+  return String(value);
+}
+
+// Utility: validate email format
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 /* =========================
    GET /api/admin/classes
    Lấy danh sách lớp học (có tìm kiếm, phân trang)
@@ -284,22 +306,39 @@ const importStudents = async (req, res) => {
 
     // Đọc tất cả dòng thành mảng
     const rows = [];
+    const skippedRecords = []; // Danh sách record bị bỏ qua kèm lý do
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return; // bỏ qua header
       const values = row.values;
       // values[1] = Mã số học sinh, values[2] = Họ tên, values[3] = Email, values[4] = SĐT, values[5] = Mật khẩu
-      const userCode = (values[1] || '').toString().trim();
-      const name = (values[2] || '').toString().trim();
-      const email = (values[3] || '').toString().trim().toLowerCase();
-      const phone = (values[4] || '').toString().trim();
-      const password = (values[5] || '').toString().trim();
-      if (name && email) {
-        rows.push({ userCode, name, email, phone, password });
+      const userCode = getCellValue(values[1]).trim();
+      const name = getCellValue(values[2]).trim();
+      const email = getCellValue(values[3]).trim().toLowerCase();
+      const phone = getCellValue(values[4]).trim();
+      const password = getCellValue(values[5]).trim();
+
+      // Bỏ qua record thiếu userCode hoặc email
+      if (!userCode) {
+        skippedRecords.push({ row: rowNumber, userCode, name, email, reason: 'Thiếu mã số học sinh (userCode)' });
+        return;
       }
+      if (!email) {
+        skippedRecords.push({ row: rowNumber, userCode, name, email, reason: 'Thiếu email' });
+        return;
+      }
+      if (!isValidEmail(email)) {
+        skippedRecords.push({ row: rowNumber, userCode, name, email, reason: 'Email không hợp lệ' });
+        return;
+      }
+      if (!name) {
+        skippedRecords.push({ row: rowNumber, userCode, name, email, reason: 'Thiếu họ tên' });
+        return;
+      }
+      rows.push({ userCode, name, email, phone, password });
     });
 
     if (rows.length === 0) {
-      return res.status(400).json({ success: false, message: 'File không có dòng dữ liệu hợp lệ (cần Họ tên và Email)' });
+      return res.status(400).json({ success: false, message: 'File không có dòng dữ liệu hợp lệ (cần Mã số học sinh, Họ tên và Email hợp lệ)' });
     }
 
     // Bước 1: Loại bỏ email trùng trong file (giữ dòng đầu tiên)
@@ -309,6 +348,7 @@ const importStudents = async (req, res) => {
     rows.forEach((row) => {
       if (seenEmails.has(row.email)) {
         duplicateInFile.push(row.email);
+        skippedRecords.push({ row: 'file', userCode: row.userCode, name: row.name, email: row.email, reason: 'Email trùng trong file' });
       } else {
         seenEmails.add(row.email);
         uniqueRows.push(row);
@@ -320,35 +360,41 @@ const importStudents = async (req, res) => {
     const existingUsers = await User.find({ email: { $in: emails } }).select('email userCode').lean();
     const existingByEmail = new Map(existingUsers.map((u) => [u.email, u._id]));
 
-    // Kiểm tra userCode trùng (trong file và với DB)
-    const userCodesInFile = uniqueRows.filter(r => r.userCode).map(r => r.userCode);
+    // Kiểm tra userCode trùng (trong file và với DB) - chỉ bỏ qua record trùng, không fail cả file
+    const userCodesInFile = uniqueRows.map(r => r.userCode);
     const existingCodes = userCodesInFile.length > 0
-      ? await User.find({ userCode: { $in: userCodesInFile } }).select('userCode').lean()
+      ? await User.find({ userCode: { $in: userCodesInFile } }).select('userCode email').lean()
       : [];
-    const existingCodesSet = new Set(existingCodes.map(u => u.userCode));
+    const existingByCode = new Map(existingCodes.map(u => [u.userCode, u.email]));
     const seenCodesInFile = new Set();
-    const duplicateCodesInFile = [];
+    const validRows = [];
     uniqueRows.forEach((row) => {
-      if (row.userCode) {
-        if (seenCodesInFile.has(row.userCode) || existingCodesSet.has(row.userCode)) {
-          duplicateCodesInFile.push(row.userCode);
-        }
-        seenCodesInFile.add(row.userCode);
+      // Trùng userCode trong file → bỏ qua dòng sau
+      if (seenCodesInFile.has(row.userCode)) {
+        skippedRecords.push({ row: 'file', userCode: row.userCode, name: row.name, email: row.email, reason: 'Mã số học sinh trùng trong file' });
+        return;
       }
+      seenCodesInFile.add(row.userCode);
+
+      // userCode đã tồn tại trong DB
+      if (existingByCode.has(row.userCode)) {
+        const existingEmail = existingByCode.get(row.userCode);
+        // Cùng email → cùng 1 người → cho phép gắn vào lớp (không tạo mới)
+        // Email khác → userCode thuộc tài khoản khác → bỏ qua
+        if (existingEmail !== row.email) {
+          skippedRecords.push({ row: 'file', userCode: row.userCode, name: row.name, email: row.email, reason: 'Mã số học sinh đã thuộc tài khoản khác' });
+          return;
+        }
+      }
+      validRows.push(row);
     });
-    if (duplicateCodesInFile.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Mã số học sinh trùng (trong file hoặc đã tồn tại): ${[...new Set(duplicateCodesInFile)].join(', ')}`,
-      });
-    }
 
     // Bước 3: Tách dòng
     // - toCreate: email chưa tồn tại → tạo tài khoản mới
     // - toAddToClass: email đã tồn tại → không tạo mới, chỉ gắn vào lớp
     const toCreate = [];
     const toAddToClass = [];
-    uniqueRows.forEach((row) => {
+    validRows.forEach((row) => {
       if (existingByEmail.has(row.email)) {
         toAddToClass.push({ row, userId: existingByEmail.get(row.email) });
       } else {
@@ -366,7 +412,7 @@ const importStudents = async (req, res) => {
         const hashedPassword = await bcrypt.hash(row.password || defaultPassword, 12);
         const user = await User.create({
           name: row.name,
-          userCode: row.userCode || null,
+          userCode: row.userCode,
           email: row.email,
           password: hashedPassword,
           role: 'student',
@@ -408,7 +454,7 @@ const importStudents = async (req, res) => {
     }
 
     // Bước 6: Trả về báo cáo
-    const skipped = duplicateInFile.length + alreadyInClass.length;
+    const skipped = duplicateInFile.length + alreadyInClass.length + skippedRecords.length;
     res.json({
       success: true,
       message: `Import thành công ${createdUsers.length} học sinh mới, thêm ${addedToClass.length} học sinh vào lớp`,
@@ -417,6 +463,7 @@ const importStudents = async (req, res) => {
       skipped,
       duplicateInFile,
       alreadyInClass,
+      skippedRecords,
       errors,
     });
   } catch (error) {

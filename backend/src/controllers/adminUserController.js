@@ -80,26 +80,35 @@ const createUser = async (req, res) => {
   try {
     const { name, userCode, email, password, role, status, phone, gender, schoolClass } = req.body;
 
+    // Kiểm tra bắt buộc: userCode và email không được trống
+    if (!userCode || !userCode.trim()) {
+      return res.status(400).json({ success: false, message: 'Mã người dùng không được để trống' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email không được để trống' });
+    }
+
+    const trimmedUserCode = userCode.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+
     // Kiểm tra email tồn tại
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: trimmedEmail });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
     }
 
-    // Kiểm tra userCode trùng nếu có
-    if (userCode) {
-      const existingCode = await User.findOne({ userCode });
-      if (existingCode) {
-        return res.status(400).json({ success: false, message: 'Mã người dùng đã tồn tại' });
-      }
+    // Kiểm tra userCode trùng
+    const existingCode = await User.findOne({ userCode: trimmedUserCode });
+    if (existingCode) {
+      return res.status(400).json({ success: false, message: 'Mã người dùng đã tồn tại' });
     }
 
     const hashedPassword = await bcrypt.hash(password || '123456', 12);
 
     const user = await User.create({
       name,
-      userCode: userCode || null,
-      email,
+      userCode: trimmedUserCode,
+      email: trimmedEmail,
       password: hashedPassword,
       role: role || 'student',
       status: status || 'active',
@@ -138,26 +147,33 @@ const updateUser = async (req, res) => {
   try {
     const { name, userCode, email, role, status, phone } = req.body;
 
-    // Kiểm tra email trùng (loại trừ chính user đang sửa)
-    if (email) {
-      const existingEmail = await User.findOne({ email, _id: { $ne: req.params.id } });
-      if (existingEmail) {
-        return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
-      }
+    // Kiểm tra bắt buộc: userCode và email không được trống
+    if (!userCode || !userCode.trim()) {
+      return res.status(400).json({ success: false, message: 'Mã người dùng không được để trống' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email không được để trống' });
     }
 
-    // Kiểm tra userCode trùng nếu có (loại trừ chính user đang sửa)
-    if (userCode) {
-      const existingCode = await User.findOne({ userCode, _id: { $ne: req.params.id } });
-      if (existingCode) {
-        return res.status(400).json({ success: false, message: 'Mã người dùng đã tồn tại' });
-      }
+    const trimmedUserCode = userCode.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // Kiểm tra email trùng (loại trừ chính user đang sửa)
+    const existingEmail = await User.findOne({ email: trimmedEmail, _id: { $ne: req.params.id } });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
+    }
+
+    // Kiểm tra userCode trùng (loại trừ chính user đang sửa)
+    const existingCode = await User.findOne({ userCode: trimmedUserCode, _id: { $ne: req.params.id } });
+    if (existingCode) {
+      return res.status(400).json({ success: false, message: 'Mã người dùng đã tồn tại' });
     }
 
     const updateData = {};
     if (name) updateData.name = name;
-    if (userCode !== undefined) updateData.userCode = userCode || null;
-    if (email) updateData.email = email;
+    updateData.userCode = trimmedUserCode;
+    updateData.email = trimmedEmail;
     if (role) updateData.role = role;
     if (status) updateData.status = status;
     if (phone !== undefined) updateData.phone = phone;

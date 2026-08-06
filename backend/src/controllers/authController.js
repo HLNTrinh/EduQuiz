@@ -9,6 +9,18 @@ if (!process.env.JWT_SECRET) {
 /* =========================
    Register
 ========================= */
+// Utility: sinh userCode duy nhất
+async function generateUniqueUserCode(base = 'USER') {
+  const cleanBase = base.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 8) || 'USER';
+  let userCode = cleanBase;
+  let counter = 1;
+  while (await User.findOne({ userCode })) {
+    userCode = `${cleanBase}${counter}`;
+    counter += 1;
+  }
+  return userCode;
+}
+
 const register = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
@@ -21,8 +33,12 @@ const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 12); // Tăng lên 12 là an toàn hơn
 
+    // Tự sinh userCode duy nhất từ email
+    const userCode = await generateUniqueUserCode((email || '').split('@')[0]);
+
     const user = await User.create({
       name,
+      userCode,
       email,
       password: hashedPassword,
       phone: phone || null,
