@@ -334,7 +334,7 @@ const [quizzes, setQuizzes] = useState([]);
           {/* Profile card */}
           <div className="profile-card">
             <div className="profile-card-top">
-              <AvatarInitials name={user?.name} size={80} />
+              <AvatarInitials user={user} size={80} />
             </div>
 
             <div className="profile-card-body">

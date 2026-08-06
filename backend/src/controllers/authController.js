@@ -28,7 +28,7 @@ const register = async (req, res) => {
       phone: phone || null,
       role: 'student',           // Luôn hardcode, không tin client
       joinDate: new Date(),
-      avatar: `https://i.pravatar.cc/200?img=${Math.floor(Math.random() * 70)}`,
+      avatar: null,              // Avatar mặc định do frontend tạo (màu + chữ đầu/cuối)
     });
 
     const { password: _, ...safeUser } = user.toObject();

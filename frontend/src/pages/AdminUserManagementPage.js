@@ -23,6 +23,7 @@ import {
   updateUser,
   toggleLockUser,
 } from '../services/adminService';
+import Avatar from '../components/common/Avatar';
 
 export default function AdminUserManagementPage() {
   const { user: currentAdmin } = useAuth();
@@ -381,9 +382,7 @@ export default function AdminUserManagementPage() {
                     <td className="user-id-cell">{user.userCode || '---'}</td>
                     <td>
                       <div className="user-profile-cell">
-                        <div className="table-user-avatar-text" style={{ background: getColorFromName(user.name) }}>
-                          {getInitial(user.name)}
-                        </div>
+                        <Avatar user={user} size={40} className="table-user-avatar-text" />
                         <div className="user-profile-info">
                           <p className="user-full-name">{user.name}</p>
                           <p className="user-email">{user.email}</p>
@@ -633,9 +632,7 @@ export default function AdminUserManagementPage() {
             </div>
             <div className="modal-body">
               <div className="detail-profile-header">
-                <div className="detail-avatar-large-text" style={{ background: getColorFromName(selectedUser.name) }}>
-                  {getInitial(selectedUser.name)}
-                </div>
+                <Avatar user={selectedUser} size={90} className="detail-avatar-large-text" />
                 <h4>{selectedUser.name}</h4>
                 <p>{selectedUser.email}</p>
                 <span className={`badge-role ${

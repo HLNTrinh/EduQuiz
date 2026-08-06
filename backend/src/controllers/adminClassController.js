@@ -373,7 +373,7 @@ const importStudents = async (req, res) => {
           status: 'active',
           phone: row.phone || null,
           joinDate: new Date(),
-          avatar: `https://i.pravatar.cc/200?img=${Math.floor(Math.random() * 70)}`,
+          avatar: null,              // Avatar mặc định do frontend tạo (màu + chữ đầu/cuối)
         });
         createdUsers.push(user._id);
       } catch (err) {

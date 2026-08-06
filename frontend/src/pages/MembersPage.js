@@ -6,6 +6,7 @@ import { classService } from '../services/authService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import TeacherAvatar from "../components/teacher/TeacherAvatar";
 import NotificationDropdown from "../components/teacher/NotificationDropdown";
+import Avatar from "../components/common/Avatar";
 import '../styles/Members.css';
 
 export const MembersPage = () => {
@@ -175,11 +176,7 @@ const filteredStudents = students;
                   <td>{student._id}</td>
                   <td>
                     <div className="member-profile-cell">
-                      <img
-                        src={student.avatar || `https://i.pravatar.cc/40?u=${student._id}`}
-                        alt={student.name}
-                        className="member-avatar"
-                      />
+                      <Avatar user={student} size={40} className="member-avatar" />
                       <span>{student.name}</span>
                     </div>
                   </td>

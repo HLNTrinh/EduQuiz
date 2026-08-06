@@ -1,15 +1,45 @@
 import React from 'react';
 
 /**
- * AvatarInitials - Hiển thị avatar dạng chữ cái viết tắt của tên
- * 
+ * AvatarInitials - Hiển thị avatar:
+ * - Nếu user đã đổi avatar (khác pravatar mặc định) -> hiển thị ảnh
+ * - Nếu chưa đổi -> text avatar: hình tròn màu ngẫu nhiên + chữ cái đầu & cuối của tên
+ *
  * @param {string} name - Tên người dùng
+ * @param {string} avatar - URL avatar người dùng (nếu đã đổi)
+ * @param {object} user - Đối tượng user (tùy chọn, chứa name & avatar)
  * @param {number} size - Kích thước avatar (px)
  * @param {string} className - Class CSS bổ sung
  */
-export default function AvatarInitials({ name = '', size = 40, className = '' }) {
+export default function AvatarInitials({ name = '', avatar = '', user = null, size = 40, className = '' }) {
+  const displayName = user?.name || name || '';
+  const displayAvatar = user?.avatar || avatar || '';
+
+  // Avatar mặc định của hệ thống là pravatar -> coi như chưa đổi
+  const isDefaultAvatar = !displayAvatar || displayAvatar.includes('pravatar.cc');
+
+  // Đã đổi avatar -> hiển thị ảnh
+  if (!isDefaultAvatar) {
+    return (
+      <img
+        src={displayAvatar}
+        alt={displayName}
+        className={`avatar-initials ${className}`}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0,
+          userSelect: 'none',
+        }}
+        title={displayName || 'User'}
+      />
+    );
+  }
+
   const getInitials = (fullName) => {
-if (!fullName || typeof fullName !== 'string') return '';
+    if (!fullName || typeof fullName !== 'string') return '';
     const parts = fullName.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
@@ -30,8 +60,8 @@ if (!fullName || typeof fullName !== 'string') return '';
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const initials = getInitials(name);
-  const bgColor = getColorFromName(name);
+  const initials = getInitials(displayName);
+  const bgColor = getColorFromName(displayName);
   const fontSize = Math.max(size * 0.38, 12);
 
   return (
@@ -52,7 +82,7 @@ if (!fullName || typeof fullName !== 'string') return '';
         userSelect: 'none',
         flexShrink: 0,
       }}
-      title={name || 'User'}
+      title={displayName || 'User'}
     >
       {initials}
     </div>

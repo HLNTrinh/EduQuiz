@@ -66,7 +66,7 @@ export default function Profile() {
         const userData = data?.user || data;
         setProfileData({
           name: userData.name || '',
-          avatar: userData.avatar || 'https://i.pravatar.cc/200?img=33',
+          avatar: userData.avatar || '',
           email: userData.email || '',
           phone: userData.phone || '',
           role: ROLE_LABELS[userData.role] || '',
@@ -83,7 +83,7 @@ export default function Profile() {
         console.error('Lỗi tải profile:', error);
         setProfileData({
           name: user?.name || '',
-          avatar: user?.avatar || 'https://i.pravatar.cc/200?img=33',
+          avatar: user?.avatar || '',
           email: user?.email || '',
           phone: user?.phone || '',
           role: ROLE_LABELS[user?.role] || '',
@@ -178,7 +178,7 @@ return (
         <div className="card profile-info-card">
           <div className="profile-info-top">
 <div className="avatar-wrap">
-              <AvatarInitials name={profileData.name} size={96} />
+              <AvatarInitials user={user} size={96} />
               <button className="avatar-edit" onClick={handleAvatarUpload} title="Thay đổi ảnh đại diện">
                 <CameraIcon />
               </button>

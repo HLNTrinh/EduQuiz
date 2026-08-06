@@ -37,13 +37,13 @@ export default function UserMenu({ size = 36 }) {
         onClick={() => setOpen(!open)}
         style={{ cursor: 'pointer' }}
       >
-        <AvatarInitials name={user?.name} size={size} />
+        <AvatarInitials user={user} size={size} />
       </div>
 
       {open && (
         <div className="user-menu-dropdown">
           <div className="user-menu-header">
-            <AvatarInitials name={user?.name} size={44} />
+            <AvatarInitials user={user} size={44} />
             <div className="user-menu-info">
               <strong className="user-menu-name">{user?.name || 'Người dùng'}</strong>
               <span className="user-menu-role">{roleLabel}</span>

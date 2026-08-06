@@ -9,11 +9,7 @@ import {
   FaMoon
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
-
-const AVATAR_COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
-  '#ec4899', '#06b6d4', '#6366f1', '#f97316'
-];
+import Avatar from '../common/Avatar';
 
 // Xác định buổi trong ngày dựa trên giờ thực tế
 const getGreeting = () => {
@@ -57,28 +53,6 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
   const adminName = currentUser?.name || 'Quản trị viên';
   const greeting = getGreeting();
 
-  // Lấy chữ cái đầu tiên của từ cuối cùng trong tên (Ví dụ: "Duy" -> "D")
-  const getInitialLetter = (name) => {
-    if (!name) return 'A';
-    const parts = name.trim().split(' ').filter(Boolean);
-    const lastWord = parts[parts.length - 1];
-    return lastWord ? lastWord[0].toUpperCase() : 'A';
-  };
-
-  // Tạo màu nền cố định/ngẫu nhiên theo tên
-  const getAvatarBgColor = (name) => {
-    if (!name) return AVATAR_COLORS[0];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash) % AVATAR_COLORS.length;
-    return AVATAR_COLORS[index];
-  };
-
-  const initialLetter = getInitialLetter(adminName);
-  const bgColor = getAvatarBgColor(adminName);
-
   const handleLogout = () => {
     if (logout) logout();
   };
@@ -108,23 +82,13 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
             className="asm-avatar-btn"
             onClick={() => setOpen(!open)}
           >
-            <div
-              className="asm-avatar asm-avatar-text"
-              style={{ backgroundColor: bgColor }}
-            >
-              {initialLetter}
-            </div>
+            <Avatar user={currentUser} size={34} className="asm-avatar asm-avatar-text" />
           </button>
 
           {open && (
             <div className="asm-user-menu">
               <div className="asm-user-menu-header">
-                <div
-                  className="asm-user-menu-avatar"
-                  style={{ backgroundColor: bgColor }}
-                >
-                  {initialLetter}
-                </div>
+                <Avatar user={currentUser} size={40} className="asm-user-menu-avatar" />
                 <div>
                   <h3>{adminName}</h3>
                   <span>Quản trị viên</span>
