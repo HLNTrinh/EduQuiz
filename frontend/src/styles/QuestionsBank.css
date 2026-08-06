@@ -186,12 +186,80 @@
   margin-bottom: 20px;
   padding: 13px 15px 11px;
 }
+/*Thanh cuộn*/
+/* ==========================
+   THANH CUỘN DANH SÁCH MÔN HỌC
+========================== */
 
-.dash-shell .question-filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.dash-shell .question-filter-scroll{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+
+    padding:2px 0 10px;
+
+    /* Firefox */
+    scrollbar-width:thin;
+    scrollbar-color:#9fbef5 #f5f7fb;
+
+    scroll-behavior:smooth;
 }
+
+/* Hàng các nút */
+.dash-shell .question-filter-row{
+    display:inline-flex;
+    gap:10px;
+
+    flex-wrap:nowrap;
+    min-width:max-content;
+}
+
+/* ==========================
+        Chrome / Edge
+========================== */
+
+.dash-shell .question-filter-scroll::-webkit-scrollbar{
+    height:8px;
+}
+
+.dash-shell .question-filter-scroll::-webkit-scrollbar-track{
+    background:#f5f7fb;
+    border-radius:999px;
+    margin:0 8px;
+}
+
+.dash-shell .question-filter-scroll::-webkit-scrollbar-thumb{
+    border-radius:999px;
+
+    background:linear-gradient(
+        90deg,
+        #8ec5ff 0%,
+        #5f9eff 50%,
+        #2563eb 100%
+    );
+
+    border:2px solid #f5f7fb;
+
+    transition:all .25s ease;
+}
+
+.dash-shell .question-filter-scroll::-webkit-scrollbar-thumb:hover{
+    background:linear-gradient(
+        90deg,
+        #6fb0ff 0%,
+        #3d82ff 50%,
+        #1d4ed8 100%
+    );
+}
+
+.dash-shell .question-filter-scroll::-webkit-scrollbar-thumb:active{
+    background:#1d4ed8;
+}
+
+.dash-shell .question-filter-scroll::-webkit-scrollbar-corner{
+    background:transparent;
+}
+
 /*Bộ lọc*/
 .dash-shell .filter-pill {
   min-height: 26px;
