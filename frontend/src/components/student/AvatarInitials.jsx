@@ -1,19 +1,6 @@
 import React from 'react';
 
 /**
-<<<<<<< HEAD
- * AvatarInitials - Hiển thị avatar đại diện (ảnh) hoặc chữ cái viết tắt của tên
- *
- * @param {string} name - Tên người dùng
- * @param {string} avatar - URL ảnh đại diện (nếu có)
- * @param {number} size - Kích thước avatar (px)
- * @param {string} className - Class CSS bổ sung
- */
-export default function AvatarInitials({ name = '', avatar = '', size = 40, className = '' }) {
-  const getInitials = (fullName) => {
-    if (!fullName || typeof fullName !== 'string') return '';
-    const parts = fullName.trim().split(/\s+/);
-=======
  * AvatarInitials - Hiển thị avatar:
  * - Nếu user đã đổi avatar (khác pravatar mặc định) → hiển thị ảnh
  * - Nếu chưa đổi → text avatar: hình tròn màu ngẫu nhiên + chữ cái đầu & cuối của tên
@@ -42,7 +29,6 @@ export default function AvatarInitials({
     if (!fullName || typeof fullName !== 'string') return '';
     const parts = fullName.trim().split(/\s+/).filter(Boolean);
     if (parts.length === 0) return '';
->>>>>>> thuyduy
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return (
       parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
@@ -89,46 +75,10 @@ export default function AvatarInitials({
   const bgColor = getColorFromName(displayName);
   const fontSize = Math.max(size * 0.38, 12);
 
-  const baseStyle = {
-    width: size,
-    height: size,
-    borderRadius: '50%',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    overflow: 'hidden',
-  };
-
-  // Nếu có avatar, hiển thị ảnh đại diện
-  if (avatar) {
-    return (
-      <div className={`avatar-initials ${className}`} style={baseStyle} title={name || 'User'}>
-        <img
-          src={avatar}
-          alt={name || 'avatar'}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block',
-          }}
-          onError={(e) => {
-            e.currentTarget.style.display = 'none';
-          }}
-        />
-      </div>
-    );
-  }
-
-  // Không có avatar → hiển thị chữ cái viết tắt
   return (
     <div
       className={`avatar-initials ${className}`}
       style={{
-<<<<<<< HEAD
-        ...baseStyle,
-=======
         width: size,
         height: size,
         borderRadius: '50%',
@@ -137,7 +87,6 @@ export default function AvatarInitials({
         justifyContent: 'center',
         flexShrink: 0,
         overflow: 'hidden',
->>>>>>> thuyduy
         backgroundColor: bgColor,
         color: '#fff',
         fontWeight: 700,
