@@ -259,7 +259,7 @@ exports.getTeacherAttempts = async (req, res) => {
     const matchQuizIds = filterQuizId ? [filterQuizId] : quizIds;
 
     const attempts = await QuizAttempt.find({ quizId: { $in: matchQuizIds } })
-      .populate('quizId', 'title')
+      .populate('quizId', 'title assignedClass')
       .populate('studentId', 'name email')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))

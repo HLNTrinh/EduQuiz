@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FiCheckCircle, FiXCircle,} from "react-icons/fi";
 import { FiX } from "react-icons/fi";
+import { HiOutlinePencilSquare } from "react-icons/hi2";
+import { RiDeleteBin3Line } from "react-icons/ri";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { questionService, subjectService } from '../services/authService';
@@ -57,6 +59,10 @@ export const QuestionManager = () => {
   const [subjectList, setSubjectList] = useState([]);
   const [subjects, setSubjects] = useState([]);
 
+  /* phân trang ngân hàng câu hỏi */
+  const QUESTIONS_PER_PAGE = 50;
+  const [questionPage, setQuestionPage] = useState(1); 
+
   const tabs = useMemo(() => {
     return ['Tất cả', ...subjectList.map((s) => s._id)];
   }, [subjectList]);
@@ -108,6 +114,10 @@ export const QuestionManager = () => {
     loadQuestions();
     loadCategories();
   }, []);
+  /* Khi searchQuery thay đổi, reset questionPage về 1 */
+  useEffect(() => {
+    setQuestionPage(1);
+  }, [searchQuery]);
 
   const getSubjectName = (id) => {
     const found = subjectList.find((s) => s._id === id);
@@ -129,12 +139,24 @@ export const QuestionManager = () => {
       .sort((a, b) => {
         const aTime = new Date(a.createdAt || 0).getTime();
         const bTime = new Date(b.createdAt || 0).getTime();
-if (sortOrder === 'Mới nhất') {
+      if (sortOrder === 'Mới nhất') {
           return bTime - aTime;
         }
         return aTime - bTime;
       });
   }, [questions, searchQuery, selectedSubject, difficulty, sortOrder]);
+
+  const totalQuestionPages = Math.ceil(
+  filteredQuestions.length / QUESTIONS_PER_PAGE
+);
+  /* Lấy danh sách câu hỏi theo trang hiện tại */
+  const paginatedQuestions = useMemo(() => {
+    const start = (questionPage - 1) * QUESTIONS_PER_PAGE;
+    return filteredQuestions.slice(
+      start,
+      start + QUESTIONS_PER_PAGE
+    );
+  }, [filteredQuestions, questionPage]);
 
   const handleOpenForm = (question = null) => {
     setShowEditModal(false);
@@ -527,22 +549,25 @@ if (sortOrder === 'Mới nhất') {
         </section>
 
         <section className="question-bank-toolbar question-filter-panel">
-          <div className="question-filter-row">
-            <button
-              className={`filter-pill ${selectedSubject === 'Tất cả' ? 'active' : ''}`}
-              onClick={() => setSelectedSubject('Tất cả')}
-            >
-              Tất cả
-            </button>
-            {subjectList.map((sub) => (
+          <div className="question-filter-scroll">
+            <div className="question-filter-row">
               <button
-                key={sub._id}
-                className={`filter-pill ${selectedSubject === sub._id ? 'active' : ''}`}
-                onClick={() => setSelectedSubject(sub._id)}
+                className={`filter-pill ${selectedSubject === 'Tất cả' ? 'active' : ''}`}
+                onClick={() => setSelectedSubject('Tất cả')}
               >
-                {sub.name}
+                Tất cả
               </button>
-            ))}
+
+              {subjectList.map((sub) => (
+                <button
+                  key={sub._id}
+                  className={`filter-pill ${selectedSubject === sub._id ? 'active' : ''}`}
+                  onClick={() => setSelectedSubject(sub._id)}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="table-header-actions">
             <p className="table-header-note">Hiển thị 1-{filteredQuestions.length} trong số {questions.length} câu hỏi</p>
@@ -564,7 +589,7 @@ if (sortOrder === 'Mới nhất') {
                 </tr>
               </thead>
               <tbody>
-                {filteredQuestions.map((item) => (
+                {paginatedQuestions.map((item) => (
                   <tr key={item._id || item.id}>
                     <td className="question-bank-row-title">
                       <div>{item.content}</div>
@@ -580,8 +605,8 @@ if (sortOrder === 'Mới nhất') {
                     <td>{item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : '—'}</td>
                     <td>
                       <div className="question-card-actions">
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleOpenEditModal(item)}>Sửa</button>
-                        <button className="btn-outline btn-small" type="button" onClick={() => handleDelete(item._id)}>Xóa</button>
+                        <button className="btn-outline btn-small" type="button" onClick={() => handleOpenEditModal(item)}><HiOutlinePencilSquare size={16} /></button>
+                        <button className="btn-outline btn-small" type="button" onClick={() => handleDelete(item._id)}><RiDeleteBin3Line size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -589,6 +614,45 @@ if (sortOrder === 'Mới nhất') {
               </tbody>
             </table>
           )}
+        </div>
+
+        {/* Phân trang */}
+        <div className="pagination">
+          <button
+            className="btn-outline btn-small"
+            disabled={questionPage === 1}
+            onClick={() => setQuestionPage((p) => p - 1)}
+          >
+            ← Trước
+          </button>
+
+          {Array.from(
+            { length: totalQuestionPages },
+            (_, i) => (
+              <button
+                key={i}
+                className={`page-btn ${
+                  questionPage === i + 1
+                    ? "page-btn--active"
+                    : ""
+                }`}
+                onClick={() => setQuestionPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            )
+          )}
+
+          <button
+            className="btn-outline btn-small"
+            disabled={
+              questionPage === totalQuestionPages ||
+              totalQuestionPages === 0
+            }
+            onClick={() => setQuestionPage((p) => p + 1)}
+          >
+            Sau →
+          </button>
         </div>
       </main>
     </div>

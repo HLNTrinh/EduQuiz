@@ -199,11 +199,9 @@ export const TeacherDashboardPage = () => {
 
     const classStudentMap = new Map();
     attempts.forEach((attempt) => {
-      if (attempt.status !== 'submitted') return;
-
       const quiz = attempt.quizId;
       const quizId = quiz?._id?.toString();
-      const classId = quizClassMap.get(quizId) || quiz?.assignedClass?._id?.toString() || quiz?.assignedClass?.toString();
+      const classId = quizClassMap.get(quizId);
       if (!classId) return;
 
       const studentId = attempt.studentId?._id?.toString();
@@ -211,20 +209,18 @@ export const TeacherDashboardPage = () => {
 
       const score = Number(attempt.score || 0);
       const studentMap = classStudentMap.get(classId) || new Map();
-      const existing = studentMap.get(studentId) || { totalScore: 0, count: 0 };
-      existing.totalScore += score;
-      existing.count += 1;
-      studentMap.set(studentId, existing);
+      const existing = studentMap.get(studentId);
+      if (!existing || score > existing.score) {
+        studentMap.set(studentId, { score });
+      }
       classStudentMap.set(classId, studentMap);
     });
 
     
     const summaries = Array.from(classStudentMap.entries()).map(([classId, studentMap]) => {
-      const studentAverages = Array.from(studentMap.values()).map((item) =>
-        item.count ? item.totalScore / item.count : 0
-      );
-      const averageScore = studentAverages.length
-        ? Number((studentAverages.reduce((sum, avg) => sum + avg, 0) / studentAverages.length).toFixed(1))
+      const studentScores = Array.from(studentMap.values()).map((item) => item.score);
+      const averageScore = studentScores.length
+        ? Number((studentScores.reduce((sum, score) => sum + score, 0) / studentScores.length).toFixed(1))
         : 0;
       return {
         label: classNameMap.get(classId) || 'Lớp học',
@@ -266,6 +262,9 @@ export const TeacherDashboardPage = () => {
               Chào mừng trở lại, {user?.name || "Giáo viên"}! 🌞
             </h1>
 
+            <p className="dashboard-subtitle">
+              Chúc bạn một ngày làm việc hiệu quả.
+            </p>
           </div>
 
           <div className="dashboard-header-right">
@@ -383,22 +382,22 @@ export const TeacherDashboardPage = () => {
 
               <div className="summary-bar-container">
                 {chartItems.map((item, index) => {
-                  const values = chartItems.map(i => Number(i.value || 0));
+                  const maxValue = Math.max(
+                    ...chartItems.map(i => Number(i.value || 0)),
+                    1
+                  );
 
-                  const maxValue = Math.max(...values);
-                  const minValue = Math.min(...values);
-
-                  const heightPercent =
-                    maxValue === minValue
-                      ? 70
-                      : ((Number(item.value) - minValue) / (maxValue - minValue)) * 80 + 20;
+                 const heightPercent =
+                  maxValue > 0
+                    ? (Number(item.value || 0) / maxValue) * 100
+                    : 0;
 
                   return (
                     <div className="summary-bar-column" key={index}>
                         <div
                           className="summary-bar-fill"
                           style={{
-                            height: `${Math.max(heightPercent, 10)}%`,
+                            height: `${Math.max(heightPercent, 45)}%`,
                             background: "linear-gradient(180deg, #66A8FF 0%, #2563EB 100%)",
                           }}
                         >

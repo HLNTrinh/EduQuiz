@@ -49,14 +49,18 @@ body{
 
 /*==================================================
 MAIN
-=================================================*/
+==================================================*/
 
 .dash-main{
 
     margin-left:238px;          /* đẩy sang phải bằng đúng chiều rộng menu */
+
     width:calc(100% - 238px);
+
     min-height:100vh;
+
     padding:24px 32px;
+
     box-sizing:border-box;
     overflow:auto;
 }
