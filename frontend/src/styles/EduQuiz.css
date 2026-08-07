@@ -1357,33 +1357,8 @@
   animation: stepHeartbeat 1.6s ease-in-out infinite;
 }
 
-/* Mũi tên giữa các bước (trừ bước cuối) */
-.workflow-step:not(:last-child)::after {
-  content: '→';
-  position: absolute;
-  top: 28px; /* căn giữa vòng số bước */
-  left: calc(100% + 8px);
-  transform: translateX(0);
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--color-primary);
-  z-index: 3;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  line-height: 1;
-}
-
-.workflow-step.visible:not(:last-child)::after {
-  opacity: 1;
-  animation: arrowDash 1.6s ease-in-out infinite;
-}
-
-.workflow-step.visible:not(:last-child):hover::after {
-  animation-play-state: paused;
-}
-
 .workflow-step.visible .workflow-step-card {
-  animation: cardFloat 4s ease-in-out infinite;
+  animation: cardFloat 1.6s ease-in-out infinite;
 }
 
 /* Hiệu ứng hover riêng cho từng bước khi đã visible */
@@ -1401,13 +1376,12 @@
 }
 
 /* Nhịp xuất hiện tuần tự: delay tăng dần theo thứ tự bước */
-.workflow-step.visible:nth-child(1) .step-number { animation-delay: 0s; }
-.workflow-step.visible:nth-child(2) .step-number { animation-delay: 0.15s; }
-.workflow-step.visible:nth-child(3) .step-number { animation-delay: 0.3s; }
-
-.workflow-step.visible:nth-child(1) .workflow-step-card { animation-delay: 0.2s; }
-.workflow-step.visible:nth-child(2) .workflow-step-card { animation-delay: 0.35s; }
-.workflow-step.visible:nth-child(3) .workflow-step-card { animation-delay: 0.5s; }
+.workflow-step.visible:nth-child(1) .step-number,
+.workflow-step.visible:nth-child(1) .workflow-step-card { animation-delay: 0s; }
+.workflow-step.visible:nth-child(2) .step-number,
+.workflow-step.visible:nth-child(2) .workflow-step-card { animation-delay: 0.15s; }
+.workflow-step.visible:nth-child(3) .step-number,
+.workflow-step.visible:nth-child(3) .workflow-step-card { animation-delay: 0.3s; }
 
 .step-number {
   width: 72px;
@@ -1511,23 +1485,25 @@
   }
 }
 
-/* Mũi tên nhấp nháy chạy giữa các bước */
-@keyframes arrowDash {
+/* Thẻ nội dung chuyển động đồng bộ với nhịp nhảy của số bước */
+@keyframes cardFloat {
   0%,
   100% {
-    transform: translateX(-4px);
-    opacity: 0.4;
+    transform: translateY(0);
   }
-  50% {
-    transform: translateX(4px);
-    opacity: 1;
+  14% {
+    transform: translateY(-8px);
   }
-}
-
-/* Thẻ nội dung nổi lên nhẹ nhàng */
-@keyframes cardFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  28% {
+    transform: translateY(0);
+  }
+  42% {
+    transform: translateY(-5px);
+  }
+  56%,
+  100% {
+    transform: translateY(0);
+  }
 }
 
 /* --- Giảm chuyển động cho người dùng có nhu cầu --- */
