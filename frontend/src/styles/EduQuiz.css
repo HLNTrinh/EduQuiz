@@ -1347,41 +1347,23 @@
   transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Scroll reveal: từng bước hiện ra lần lượt */
+/* Scroll reveal: từng bước hiện ra lần lượt từ 1 → 2 → 3 */
 .workflow-step.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.workflow-step.visible .step-number {
-  animation: stepHeartbeat 1.6s ease-in-out infinite;
-}
-
-.workflow-step.visible .workflow-step-card {
-  animation: cardFloat 1.6s ease-in-out infinite;
-}
-
 /* Hiệu ứng hover riêng cho từng bước khi đã visible */
 .workflow-step.visible:hover .step-number {
-  animation-play-state: paused;
   transform: scale(1.12);
   box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.15), 0 12px 28px rgba(99, 102, 241, 0.4);
 }
 
 .workflow-step.visible:hover .workflow-step-card {
-  animation-play-state: paused;
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
   border-color: rgba(99, 102, 241, 0.35);
 }
-
-/* Nhịp xuất hiện tuần tự: delay tăng dần theo thứ tự bước */
-.workflow-step.visible:nth-child(1) .step-number,
-.workflow-step.visible:nth-child(1) .workflow-step-card { animation-delay: 0s; }
-.workflow-step.visible:nth-child(2) .step-number,
-.workflow-step.visible:nth-child(2) .workflow-step-card { animation-delay: 0.15s; }
-.workflow-step.visible:nth-child(3) .step-number,
-.workflow-step.visible:nth-child(3) .workflow-step-card { animation-delay: 0.3s; }
 
 .step-number {
   width: 72px;
@@ -1442,68 +1424,9 @@
   margin-bottom: 8px;
 }
 
-.workflow-step-card p {
+ .workflow-step-card p {
   font-size: 13px;
   color: var(--color-text-muted);
-}
-
-/* --- Keyframes --- */
-/* Đường nối gradient chạy liên tục */
-@keyframes flowDash {
-  0% { background-position: 0% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Vòng sáng xoay quanh số bước */
-@keyframes stepSpin {
-  to { transform: rotate(360deg); }
-}
-
-/* Số bước phát sáng nhịp nhàng như nhịp tim */
-@keyframes stepHeartbeat {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
-  }
-  14% {
-    transform: scale(1.12);
-    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0.16), 0 10px 30px rgba(99, 102, 241, 0.5);
-  }
-  28% {
-    transform: scale(1);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
-  }
-  42% {
-    transform: scale(1.08);
-    box-shadow: 0 0 0 7px rgba(139, 92, 246, 0.14), 0 10px 28px rgba(139, 92, 246, 0.45);
-  }
-  56%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
-  }
-}
-
-/* Thẻ nội dung chuyển động đồng bộ với nhịp nhảy của số bước */
-@keyframes cardFloat {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  14% {
-    transform: translateY(-8px);
-  }
-  28% {
-    transform: translateY(0);
-  }
-  42% {
-    transform: translateY(-5px);
-  }
-  56%,
-  100% {
-    transform: translateY(0);
-  }
 }
 
 /* --- Giảm chuyển động cho người dùng có nhu cầu --- */
@@ -1520,6 +1443,18 @@
   .workflow-step.visible:hover .workflow-step-card {
     transform: none;
   }
+}
+
+/* --- Keyframes --- */
+/* Đường nối gradient chạy liên tục */
+@keyframes flowDash {
+  0% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Vòng sáng xoay quanh số bước */
+@keyframes stepSpin {
+  to { transform: rotate(360deg); }
 }
 
 /* --- Testimonials Section --- */
