@@ -624,11 +624,11 @@
   text-decoration: underline;
 }
 
-.email-details-modal {
+.admin-class-email-details-modal {
   max-width: 440px;
 }
 
-.full-student-email {
+.admin-class-full-student-email {
   overflow-wrap: anywhere;
   color: #004ac6;
   font-size: 15px;
@@ -845,8 +845,8 @@
   margin: 0 auto;
 }
 
-/* Modals layout styling */
-.modal-overlay {
+/* ===== Admin Class Modals layout styling (prefixed to avoid conflicts) ===== */
+.admin-class-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -861,7 +861,7 @@
   animation: fadeIn 0.2s ease;
 }
 
-.modal-card {
+.admin-class-modal-card {
   background-color: #ffffff;
   border-radius: 16px;
   width: 100%;
@@ -871,22 +871,24 @@
   animation: slideUp 0.25s ease;
 }
 
-.modal-header {
+.admin-class-modal-header {
   padding: 20px 24px;
   border-bottom: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #ffffff;
+  margin: 0;
 }
 
-.modal-title {
+.admin-class-modal-title {
   font-size: 18px;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
 }
 
-.modal-close-btn {
+.admin-class-modal-close-btn {
   background: none;
   border: none;
   color: #94a3b8;
@@ -897,14 +899,16 @@
   padding: 4px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  width: auto;
+  height: auto;
 }
 
-.modal-close-btn:hover {
+.admin-class-modal-close-btn:hover {
   background-color: #f1f5f9;
   color: #0f172a;
 }
 
-.modal-body {
+.admin-class-modal-body {
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -913,23 +917,23 @@
   overflow-y: auto;
 }
 
-.form-group {
+.admin-class-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.form-label {
+.admin-class-form-label {
   font-size: 13px;
   font-weight: 600;
   color: #475569;
 }
 
-.required {
+.admin-class-required {
   color: #ef4444;
 }
 
-.form-input {
+.admin-class-form-input {
   padding: 10px 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -940,12 +944,12 @@
   transition: all 0.2s ease;
 }
 
-.form-input:focus {
+.admin-class-form-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-.modal-footer {
+.admin-class-modal-footer {
   padding: 16px 24px;
   background-color: #f8fafc;
   border-top: 1px solid #f1f5f9;
@@ -954,7 +958,7 @@
   gap: 12px;
 }
 
-.btn-modal-cancel {
+.admin-class-btn-modal-cancel {
   padding: 10px 18px;
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
@@ -966,11 +970,11 @@
   transition: all 0.2s ease;
 }
 
-.btn-modal-cancel:hover {
+.admin-class-btn-modal-cancel:hover {
   background-color: #f1f5f9;
 }
 
-.btn-modal-submit {
+.admin-class-btn-modal-submit {
   padding: 10px 18px;
   background-color: #004ac6;
   color: #ffffff;
@@ -982,7 +986,7 @@
   transition: all 0.2s ease;
 }
 
-.btn-modal-submit:hover {
+.admin-class-btn-modal-submit:hover {
   background-color: #023ca1;
 }
 
@@ -1041,7 +1045,7 @@
 }
 
 /* ===== Import students from file ===== */
-.form-divider {
+.admin-class-form-divider {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1051,8 +1055,8 @@
   font-weight: 500;
 }
 
-.form-divider::before,
-.form-divider::after {
+.admin-class-form-divider::before,
+.admin-class-form-divider::after {
   content: '';
   flex: 1;
   height: 1px;

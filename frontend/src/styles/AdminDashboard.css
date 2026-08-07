@@ -489,6 +489,8 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--db-text-muted);
+  white-space: nowrap;
+  text-align: center;
 }
 
 .db-donut-wrapper {

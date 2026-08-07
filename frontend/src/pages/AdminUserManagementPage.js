@@ -110,7 +110,7 @@ export default function AdminUserManagementPage() {
   // Map role từ API (en) sang UI (vi)
   const mapRoleToUI = (role) => {
     const map = { admin: 'Quản trị viên', teacher: 'Giáo viên', student: 'Học sinh' };
-    return map[role] || role;
+    return map[role] || 'Học sinh';
   };
 
   const mapRoleToAPI = (roleUI) => {
@@ -165,7 +165,7 @@ export default function AdminUserManagementPage() {
     setFormData({
       name: user.name || '',
       email: user.email || '',
-      role: mapRoleToUI(user.role),
+      role: user.role || 'student',
       status: mapStatusToUI(user.status),
       phone: user.phone || '',
       password: ''
@@ -275,7 +275,7 @@ export default function AdminUserManagementPage() {
   };
 
   return (
-    <AdminLayout pageTitle="Quản lý người dùng" pageSubtitle="Xem, tìm kiếm và quản lý phân quyền cho tất cả thành viên trong hệ thống.">
+    <AdminLayout>
       {/* Header */}
       <div className="page-intro-section">
         <button className="add-user-primary-btn" onClick={() => { resetForm(); setIsAddModalOpen(true); }}>
@@ -468,7 +468,7 @@ export default function AdminUserManagementPage() {
       {isAddModalOpen && (
         <div className="modal-overlay-backdrop" onClick={() => setIsAddModalOpen(false)}>
           <div className="modal-content-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+            <div className="admin-user-modal-header">
               <h3>Thêm người dùng mới</h3>
               <button className="close-modal-btn" onClick={() => setIsAddModalOpen(false)}>
                 <X size={18} />
@@ -481,19 +481,19 @@ export default function AdminUserManagementPage() {
                     <label className="form-label">Họ và tên *</label>
                     <input type="text" name="name" value={formData.name}
                       onChange={handleInputChange} placeholder="Nhập họ và tên" 
-                      className="form-input" required />
+                      className="admin-user-form-input" required />
                   </div>
                   <div className="form-field">
                     <label className="form-label">Địa chỉ Email *</label>
                     <input type="email" name="email" value={formData.email}
                       onChange={handleInputChange} placeholder="Nhập địa chỉ email" 
-                      className="form-input" required />
+                      className="admin-user-form-input" required />
                   </div>
                   <div className="form-field">
                     <label className="form-label">Số điện thoại</label>
                     <input type="text" name="phone" value={formData.phone}
                       onChange={handleInputChange} placeholder="Nhập số điện thoại" 
-                      className="form-input" />
+                      className="admin-user-form-input" />
                   </div>
                   <div className="form-field">
                     <label className="form-label">Vai trò</label>
@@ -506,7 +506,7 @@ export default function AdminUserManagementPage() {
                   <div className="form-field">
                     <label className="form-label">Mật khẩu</label>
                     <input type="password" name="password" value={formData.password}
-                      onChange={handleInputChange} className="form-input"
+                      onChange={handleInputChange} className="admin-user-form-input"
                       placeholder="Nhập mật khẩu (mặc định: 123456)" />
                   </div>
                 </div>
@@ -524,7 +524,7 @@ export default function AdminUserManagementPage() {
       {isEditModalOpen && (
         <div className="modal-overlay-backdrop" onClick={() => setIsEditModalOpen(false)}>
           <div className="modal-content-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+            <div className="admin-user-modal-header">
               <h3>Chỉnh sửa tài khoản</h3>
               <button className="close-modal-btn" onClick={() => setIsEditModalOpen(false)}>
                 <X size={18} />
@@ -537,33 +537,45 @@ export default function AdminUserManagementPage() {
                     <label className="form-label">Họ và tên *</label>
                     <input type="text" name="name" value={formData.name}
                       onChange={handleInputChange} placeholder="Nhập họ và tên" 
-                      className="form-input" required />
+                      className="admin-user-form-input" required />
                   </div>
                   <div className="form-field">
                     <label className="form-label">Địa chỉ Email *</label>
                     <input type="email" name="email" value={formData.email}
                       onChange={handleInputChange} placeholder="Nhập địa chỉ email" 
-                      className="form-input" required />
+                      className="admin-user-form-input" required />
                   </div>
                   <div className="form-field">
                     <label className="form-label">Số điện thoại</label>
                     <input type="text" name="phone" value={formData.phone}
                       onChange={handleInputChange} placeholder="Nhập số điện thoại" 
-                      className="form-input" />
+                      className="admin-user-form-input" />
                   </div>
                   <div className="form-field">
                     <label className="form-label">Vai trò</label>
-                    <select name="role" value={formData.role} onChange={handleInputChange} className="form-select">
+                    <select 
+                      name="role" 
+                      value={formData.role} 
+                      onChange={handleInputChange} 
+                      className="form-select"
+                      disabled={selectedUser?._id === currentAdmin?._id}
+                      style={selectedUser?._id === currentAdmin?._id ? { backgroundColor: '#f1f5f9', cursor: 'not-allowed', opacity: 0.7 } : {}}
+                    >
                       <option value="student">Học sinh</option>
                       <option value="teacher">Giáo viên</option>
                       <option value="admin">Quản trị viên</option>
                     </select>
+                    {selectedUser?._id === currentAdmin?._id && (
+                      <small style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                        Bạn không thể thay đổi vai trò của chính mình.
+                      </small>
+                    )}
                   </div>
                   <div className="form-field">
                     <label className="form-label">Mật khẩu hiện tại</label>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
                       <input type={showCurrentPassword ? 'text' : 'password'}
-                        className="form-input" value={showCurrentPassword ? (selectedUser?.password || selectedUser?._id) : '●●●●●●●●'}
+                        className="admin-user-form-input" value={showCurrentPassword ? (selectedUser?.password || selectedUser?._id) : '●●●●●●●●'}
                         style={{ flex: 1 }} disabled />
                       <button type="button" className="btn-icon-eye"
                         onClick={() => setShowCurrentPassword(!showCurrentPassword)}
@@ -577,7 +589,7 @@ export default function AdminUserManagementPage() {
                     <label className="form-label">Mật khẩu mới</label>
                     <input type="password" name="password" value={formData.password}
                       onChange={handleInputChange} placeholder="Để trống nếu không đổi" 
-                      className="form-input" />
+                      className="admin-user-form-input" />
                   </div>
                 </div>
               </div>
@@ -594,7 +606,7 @@ export default function AdminUserManagementPage() {
       {isDetailModalOpen && selectedUser && (
         <div className="modal-overlay-backdrop" onClick={() => setIsDetailModalOpen(false)}>
           <div className="modal-content-card detail-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+            <div className="admin-user-modal-header">
               <h3>Chi tiết người dùng</h3>
               <button className="close-modal-btn" onClick={() => setIsDetailModalOpen(false)}>
                 <X size={18} />

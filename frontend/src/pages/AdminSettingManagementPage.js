@@ -120,7 +120,7 @@ export default function AdminSettingManagementPage() {
   };
 
   return (
-    <AdminLayout pageTitle="Cấu hình hệ thống" pageSubtitle="Quản lý các thiết lập mặc định và bảo mật cho toàn bộ nền tảng giáo dục.">
+    <AdminLayout>
       <div className="asm-content-grid">
         {/* Left Tabs Menu Column */}
         <div className="asm-tabs-menu">

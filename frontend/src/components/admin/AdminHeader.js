@@ -1,9 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FaSearch,
   FaBell,
-  FaQuestionCircle
+  FaQuestionCircle,
+  FaSignOutAlt,
+  FaSun,
+  FaCloudSun,
+  FaMoon
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
@@ -12,9 +15,32 @@ const AVATAR_COLORS = [
   '#ec4899', '#06b6d4', '#6366f1', '#f97316'
 ];
 
+// Xác định buổi trong ngày dựa trên giờ thực tế
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 11) return { text: 'Chào buổi sáng', icon: <FaSun /> };
+  if (hour >= 11 && hour < 13) return { text: 'Chào buổi trưa', icon: <FaSun /> };
+  if (hour >= 13 && hour < 18) return { text: 'Chào buổi chiều', icon: <FaCloudSun /> };
+  return { text: 'Chào buổi tối', icon: <FaMoon /> };
+};
+
 export default function AdminHeader({ searchQuery, setSearchQuery, showToastMessage }) {
   const navigate = useNavigate();
-  const { user } = useAuth() || {};
+  const { user, logout } = useAuth() || {};
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+
+  useEffect(() => {
+    const close = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', close);
+
+    return () => document.removeEventListener('mousedown', close);
+  }, []);
 
   // Lấy thông tin user từ AuthContext hoặc localStorage/sessionStorage
   const currentUser = useMemo(() => {
@@ -29,6 +55,7 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
   }, [user]);
 
   const adminName = currentUser?.name || 'Quản trị viên';
+  const greeting = getGreeting();
 
   // Lấy chữ cái đầu tiên của từ cuối cùng trong tên (Ví dụ: "Duy" -> "D")
   const getInitialLetter = (name) => {
@@ -52,17 +79,15 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
   const initialLetter = getInitialLetter(adminName);
   const bgColor = getAvatarBgColor(adminName);
 
+  const handleLogout = () => {
+    if (logout) logout();
+  };
+
   return (
     <header className="asm-header">
-      <div className="asm-search-container">
-        <FaSearch className="asm-search-icon" />
-        <input
-          type="text"
-          className="asm-search-input"
-          placeholder="Tìm kiếm..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="asm-greeting">
+        <span className="asm-greeting-icon">{greeting.icon}</span>
+        <span className="asm-greeting-text">{greeting.text}, {adminName}!</span>
       </div>
 
       <div className="asm-header-right">
@@ -75,16 +100,46 @@ export default function AdminHeader({ searchQuery, setSearchQuery, showToastMess
         </button>
         <div className="asm-v-divider" />
 
-        <div className="asm-user-profile">
+        <div className="asm-user-profile" ref={ref}>
           <div className="asm-user-info">
             <p className="asm-user-name">{adminName}</p>
           </div>
-          <div
-            className="asm-avatar asm-avatar-text"
-            style={{ backgroundColor: bgColor }}
+          <button
+            className="asm-avatar-btn"
+            onClick={() => setOpen(!open)}
           >
-            {initialLetter}
-          </div>
+            <div
+              className="asm-avatar asm-avatar-text"
+              style={{ backgroundColor: bgColor }}
+            >
+              {initialLetter}
+            </div>
+          </button>
+
+          {open && (
+            <div className="asm-user-menu">
+              <div className="asm-user-menu-header">
+                <div
+                  className="asm-user-menu-avatar"
+                  style={{ backgroundColor: bgColor }}
+                >
+                  {initialLetter}
+                </div>
+                <div>
+                  <h3>{adminName}</h3>
+                  <span>Quản trị viên</span>
+                </div>
+              </div>
+
+              <button
+                className="asm-menu-item logout"
+                onClick={handleLogout}
+              >
+                <FaSignOutAlt />
+                Đăng xuất
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

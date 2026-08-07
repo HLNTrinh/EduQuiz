@@ -1,33 +1,37 @@
-
-// const express = require('express');
-// const { authenticate, authorize } = require('../middlewares/auth');
-// const { getTeacherClasses, getStudentClasses, getClassMembers } = require('../controllers/classController');
-
-// const router = express.Router();
-
-// router.get('/teacher', authenticate, authorize('teacher', 'admin'), getTeacherClasses);
-// router.get('/student', authenticate, authorize('student', 'admin'), getStudentClasses);
-// router.get('/:id/members', authenticate, getClassMembers);
-
-// module.exports = router;
-
-//của yk
-//Tạo API ở backend
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const Class = require("../models/Class");
-
 const User = require("../models/User");
-
 const { authenticate } = require('../middlewares/auth');
 
+// Helper: kiểm tra ObjectId hợp lệ
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-// lấy tất cả lớp của giáo viên
-router.get("/teacher/:teacherId", async (req, res) => {
+// Helper: escape regex (chống ReDoS)
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * GET /teacher/:teacherId
+ * Chỉ cho phép giáo viên xem lớp của chính mình (hoặc admin)
+ */
+router.get("/teacher/:teacherId", authenticate, async (req, res) => {
   try {
-    const classes = await Class.find({
-      teacher: req.params.teacherId,
-    }).select('name subject students studentCount progress')
+    const { teacherId } = req.params;
+    const currentUserId = req.user.id || req.user.userId;
+    const currentUserRole = req.user.role;
+
+    if (!isValidObjectId(teacherId)) {
+      return res.status(400).json({ success: false, message: "teacherId không hợp lệ" });
+    }
+
+    // Chỉ cho phép xem lớp của chính mình (trừ admin)
+    if (currentUserRole !== "admin" && currentUserId.toString() !== teacherId) {
+      return res.status(403).json({ success: false, message: "Bạn không có quyền xem dữ liệu này" });
+    }
+
+    const classes = await Class.find({ teacher: teacherId })
+      .select("name subject students studentCount progress")
       .lean();
 
     res.json({
@@ -37,28 +41,46 @@ router.get("/teacher/:teacherId", async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err.message,
+      message: "Lỗi server",
     });
   }
 });
 
-
-// lấy danh sách học sinh của lớp theo trang
-router.get("/:classId/members", async (req, res) => {
+/**
+ * GET /:classId/members
+ * Chỉ giáo viên của lớp hoặc học sinh trong lớp mới được xem
+ */
+router.get("/:classId/members", authenticate, async (req, res) => {
   try {
     const { classId } = req.params;
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const search = (req.query.search || '').trim();
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10)); // giới hạn limit
+    const search = (req.query.search || "").trim();
+
+    if (!isValidObjectId(classId)) {
+      return res.status(400).json({ success: false, message: "classId không hợp lệ" });
+    }
 
     const classItem = await Class.findById(classId).lean();
     if (!classItem) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
+      return res.status(404).json({ success: false, message: "Không tìm thấy lớp học" });
+    }
+
+    const currentUserId = (req.user.id || req.user.userId).toString();
+    const currentUserRole = req.user.role;
+
+    // Kiểm tra quyền: admin || giáo viên của lớp || học sinh trong lớp
+    const isTeacher = classItem.teacher?.toString() === currentUserId;
+    const isStudent = classItem.students?.some((id) => id.toString() === currentUserId);
+
+    if (currentUserRole !== "admin" && !isTeacher && !isStudent) {
+      return res.status(403).json({ success: false, message: "Bạn không có quyền xem danh sách thành viên lớp này" });
     }
 
     const filter = { _id: { $in: classItem.students } };
+
     if (search) {
-      const regex = new RegExp(search, 'i');
+      const regex = new RegExp(escapeRegex(search), "i");
       filter.$or = [
         { name: regex },
         { email: regex },
@@ -68,7 +90,7 @@ router.get("/:classId/members", async (req, res) => {
 
     const total = await User.countDocuments(filter);
     const students = await User.find(filter)
-      .select('name email avatar role status')
+      .select("name email avatar role status")
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
@@ -86,22 +108,30 @@ router.get("/:classId/members", async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err.message,
+      message: "Lỗi server",
     });
   }
 });
-// Lấy danh sách lớp của học sinh (dùng token)
+
+/**
+ * GET /student
+ * Lấy danh sách lớp của học sinh đang đăng nhập
+ */
 router.get("/student", authenticate, async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId;
+
     const classes = await Class.find({ students: userId })
-      .populate('teacher', 'name email avatar')
+      .populate("teacher", "name email avatar")
       .sort({ createdAt: -1 })
       .lean();
 
     res.json({ success: true, data: classes });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server",
+    });
   }
 });
 

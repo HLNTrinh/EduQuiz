@@ -15,16 +15,11 @@
 
     border-radius:50%;
 
-    background:#6d4df6;
-
-    color:white;
-
     display:flex;
     justify-content:center;
     align-items:center;
 
-    font-size:20px;
-    font-weight:700;
+    overflow:hidden;
 }
 
 .teacher-avatar-menu{
@@ -64,22 +59,12 @@
 
 .teacher-avatar-large{
 
-    width:48px;
-    height:48px;
-
-    border-radius:50%;
-
-    background:#6d4df6;
-
-    color:white;
-
     display:flex;
 
     justify-content:center;
     align-items:center;
 
-    font-size:20px;
-    font-weight:600;
+    overflow:hidden;
 }
 
 .teacher-avatar-header h3{
