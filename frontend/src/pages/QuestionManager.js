@@ -22,6 +22,18 @@ const emptyForm = {
     { text: '', isCorrect: false },
   ],
 };
+const createEmptyQuestion = (category = '') => ({
+  content: '',
+  category,
+  difficulty: 'medium',
+  explanation: '',
+  options: [
+    { text: '', isCorrect: false },
+    { text: '', isCorrect: false },
+    { text: '', isCorrect: false },
+    { text: '', isCorrect: false },
+  ],
+});
 
 export const QuestionManager = () => {
   const { user, logout } = useAuth();
@@ -33,6 +45,8 @@ export const QuestionManager = () => {
   const [showForm, setShowForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState(emptyForm);
+ // Danh sách các câu hỏi đang nhập trong form "Thêm câu hỏi mới"
+  const [questionForms, setQuestionForms] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   //const [message, setMessage] = useState('');
@@ -159,25 +173,37 @@ export const QuestionManager = () => {
   }, [filteredQuestions, questionPage]);
 
   const handleOpenForm = (question = null) => {
-    setShowEditModal(false);
-
+    // Nếu mở chế độ chỉnh sửa
     if (question) {
+      setShowForm(false);
+
       setFormData({
         ...question,
         explanation: question.explanation || '',
-        options: question.options?.map((option) => ({
-          text: option.text || '',
-          isCorrect: Boolean(option.isCorrect),
-        })) || emptyForm.options,
+        options:
+          question.options?.map((option) => ({
+            text: option.text || '',
+            isCorrect: Boolean(option.isCorrect),
+          })) || createEmptyQuestion().options,
       });
-    } else {
-      setFormData({
-        ...emptyForm,
-        category: subjects.length > 1 ? subjects[1] : '',
-      });
+
+      setToast((prev) => ({ ...prev, show: false }));
+      setShowEditModal(true);
+      return;
     }
-   //setMessage('');
-    setToast(prev => ({ ...prev, show: false }));
+
+    // Nếu mở form thêm mới
+    const defaultCategory =
+      subjectList.length > 0 ? subjectList[0]._id : '';
+
+    setQuestionForms([
+      createEmptyQuestion(defaultCategory)
+    ]);
+
+    setFormData(createEmptyQuestion(defaultCategory));
+
+    setShowEditModal(false);
+    setToast((prev) => ({ ...prev, show: false }));
     setShowForm(true);
   };
 
@@ -201,6 +227,87 @@ export const QuestionManager = () => {
     nextOptions[index] = { ...nextOptions[index], [field]: value };
     setFormData({ ...formData, options: nextOptions });
   };
+
+// Thay đổi nội dung / môn học / độ khó / giải thích
+const handleQuestionChange = (questionIndex, field, value) => {
+  setQuestionForms((prev) =>
+    prev.map((question, index) =>
+      index === questionIndex
+        ? {
+            ...question,
+            [field]: value,
+          }
+        : question
+    )
+  );
+};
+
+{/**/}
+  // Thay đổi nội dung đáp án A/B/C/D
+  const handleQuestionOptionChange = (
+    questionIndex,
+    optionIndex,
+    value
+  ) => {
+    setQuestionForms((prev) =>
+      prev.map((question, index) => {
+        if (index !== questionIndex) return question;
+
+        const options = [...question.options];
+
+        options[optionIndex] = {
+          ...options[optionIndex],
+          text: value,
+        };
+
+        return {
+          ...question,
+          options,
+        };
+      })
+    );
+  };
+
+
+  // Chọn đáp án đúng
+  const handleQuestionCorrectChange = (
+    questionIndex,
+    optionIndex
+  ) => {
+    setQuestionForms((prev) =>
+      prev.map((question, index) => {
+        if (index !== questionIndex) return question;
+
+        return {
+          ...question,
+          options: question.options.map((option, idx) => ({
+            ...option,
+            isCorrect: idx === optionIndex,
+          })),
+        };
+      })
+    );
+  };
+
+
+  // Thêm câu hỏi tiếp theo
+  const handleAddNextQuestion = () => {
+    const defaultCategory =
+      subjectList.length > 0 ? subjectList[0]._id : '';
+
+    setQuestionForms((prev) => [
+      ...prev,
+      createEmptyQuestion(defaultCategory),
+    ]);
+  };
+
+
+  // Xóa một câu hỏi khỏi form
+  const handleRemoveQuestionForm = (questionIndex) => {
+    setQuestionForms((prev) =>
+      prev.filter((_, index) => index !== questionIndex)
+    );
+  };  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -265,6 +372,124 @@ export const QuestionManager = () => {
       showToast(error.message || 'Không thể lưu câu hỏi.', 'error');
     }
   };
+  /*hàm lưu nhiều câu hỏi*/
+  const handleSubmitQuestions = async (event) => {
+    event.preventDefault();
+
+    if (questionForms.length === 0) {
+      showToast('Vui lòng thêm ít nhất một câu hỏi.', 'error');
+      return;
+    }
+
+    // Kiểm tra tất cả câu hỏi trước khi gửi API
+    for (let i = 0; i < questionForms.length; i++) {
+      const question = questionForms[i];
+
+      const content = (question.content || '').trim();
+
+      const options = question.options.map((option) => ({
+        text: (option.text || '').trim(),
+        isCorrect: Boolean(option.isCorrect),
+      }));
+
+      const correctCount = options.filter(
+        (option) => option.isCorrect
+      ).length;
+
+      if (!content) {
+        showToast(
+          `Vui lòng nhập nội dung Câu hỏi số ${i + 1}.`,
+          'error'
+        );
+        return;
+      }
+
+      if (
+        options.length !== 4 ||
+        options.some((option) => !option.text)
+      ) {
+        showToast(
+          `Vui lòng nhập đủ 4 đáp án cho Câu hỏi số ${i + 1}.`,
+          'error'
+        );
+        return;
+      }
+
+      if (correctCount !== 1) {
+        showToast(
+          `Vui lòng chọn đúng một đáp án cho Câu hỏi số ${i + 1}.`,
+          'error'
+        );
+        return;
+      }
+
+      if (!question.category) {
+        showToast(
+          `Vui lòng chọn môn học cho Câu hỏi số ${i + 1}.`,
+          'error'
+        );
+        return;
+      }
+    }
+
+    try {
+      const savedQuestions = [];
+
+      // Lưu lần lượt từng câu hỏi
+      for (const question of questionForms) {
+        const payload = {
+          content: question.content.trim(),
+
+          options: question.options.map((option) => ({
+            text: option.text.trim(),
+            isCorrect: Boolean(option.isCorrect),
+          })),
+
+          category: question.category,
+
+          difficulty: question.difficulty,
+
+          explanation: (question.explanation || '').trim(),
+        };
+
+        const response =
+          await questionService.createQuestion(payload);
+
+        const savedQuestion =
+          response?.data || response;
+
+        savedQuestions.push(savedQuestion);
+      }
+
+      // Thêm toàn bộ câu hỏi mới vào danh sách
+      setQuestions((prev) => [
+        ...savedQuestions,
+        ...prev,
+      ]);
+
+      showToast(
+        `Đã lưu ${savedQuestions.length} câu hỏi thành công.`,
+        'success'
+      );
+
+      // Reset form về câu hỏi số 1
+      const defaultCategory =
+        subjectList.length > 0
+          ? subjectList[0]._id
+          : '';
+
+      setQuestionForms([
+        createEmptyQuestion(defaultCategory),
+      ]);
+
+    } catch (error) {
+      showToast(
+        error.message || 'Không thể lưu câu hỏi.',
+        'error'
+      );
+    }
+  };
+
 
   const handleDelete = async (questionId) => {
     if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return;
@@ -306,111 +531,349 @@ export const QuestionManager = () => {
 
         {showForm ? (
           <section className="question-form-panel">
+
+            {/* HEADER */}
             <div className="question-form-header">
               <div>
-                <h3>{formData._id ? 'Chỉnh sửa câu hỏi' : 'Thêm câu hỏi mới'}</h3>
-                <p className="panel-subtitle">Nhập câu hỏi trực tiếp lên giao diện, không cần bật hộp thoại.</p>
+                <h3>Thêm câu hỏi mới</h3>
+
+                <p className="panel-subtitle">
+                  Nhập câu hỏi trực tiếp lên giao diện, không cần bật hộp thoại.
+                </p>
               </div>
+
               <button
-                  className="btn-outline btn-small"
-                  type="button"
-                  onClick={() => {
-                      setShowForm(false);
-                      setFormData(emptyForm);
-                  }}
+                className="btn-outline btn-small"
+                type="button"
+                onClick={() => {
+                  setShowForm(false);
+                  setQuestionForms([]);
+                }}
               >
-                  <FiX size={20} />
+                <FiX size={20} />
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
-              <label className="field-label">Nội dung câu hỏi</label>
-              <textarea
-                className="form-input"
-                rows="3"
-                value={formData.content}
-                onChange={(event) => setFormData({ ...formData, content: event.target.value })}
-                required
-              />
 
-              <div className="question-form-row">
 
-                <div className="question-form-group">
-                  <label className="field-label">Môn học</label>
+            {/* FORM NHIỀU CÂU HỎI */}
+            <form onSubmit={handleSubmitQuestions}>
 
-                  <select
-                    className="form-input"
-                    value={formData.category}
+              {questionForms.map((question, questionIndex) => (
+
+                <div
+                  className="question-create-card"
+                  key={questionIndex}
+                >
+
+                  {/* TIÊU ĐỀ */}
+                  <div className="question-create-title">
+                    Câu hỏi số {questionIndex + 1} *
+                  </div>
+
+
+                  {/* NỘI DUNG CÂU HỎI */}
+                  <textarea
+                    className="question-create-content"
+                    placeholder="Nhập câu hỏi của bạn tại đây..."
+                    value={question.content}
                     onChange={(event) =>
-                      setFormData({ ...formData, category: event.target.value })
+                      handleQuestionChange(
+                        questionIndex,
+                        'content',
+                        event.target.value
+                      )
                     }
-                  >
-                    <option value="">-- Chọn môn học --</option>
-
-                    {subjectList.map((sub) => (
-                      <option key={sub._id} value={sub._id}>
-                        {sub.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="question-form-group">
-                  <label className="field-label">Độ khó</label>
-
-                  <select
-                    className="form-input"
-                    value={formData.difficulty}
-                    onChange={(event) =>
-                      setFormData({ ...formData, difficulty: event.target.value })
-                    }
-                  >
-                    <option value="easy">Dễ</option>
-                    <option value="medium">Trung bình</option>
-                    <option value="hard">Khó</option>
-                  </select>
-                </div>
-
-              </div>
-
-              <label className="field-label">Đáp án</label>
-              {formData.options.map((option, index) => (
-                <div key={index} className="question-answer-row">
-                  <input
-                    className="form-input"
-                    type="text"
-                    placeholder={`Đáp án ${index + 1}`}
-                    value={option.text}
-                    onChange={(event) => handleOptionChange(index, 'text', event.target.value)}
                     required
                   />
-                  <label className="radio-label">
-                    <input
-                      type="radio"
-                      name="correctOption"
-                      checked={Boolean(option.isCorrect)}
-                      onChange={() => {
-                        const nextOptions = formData.options.map((item, idx) => ({ ...item, isCorrect: idx === index }));
-                        setFormData({ ...formData, options: nextOptions });
-                      }}
-                    />
-                    Đúng
-                  </label>
+
+                  {/* MÔN HỌC + ĐỘ KHÓ */}
+                  <div className="question-create-info-row">
+
+                    {/* MÔN HỌC */}
+                    <div className="question-create-field">
+                      <label>Môn học</label>
+
+                      <select
+                        className="form-input"
+                        value={question.category}
+                        onChange={(event) =>
+                          handleQuestionChange(
+                            questionIndex,
+                            'category',
+                            event.target.value
+                          )
+                        }
+                        required
+                      >
+                        <option value="">
+                          -- Chọn môn học --
+                        </option>
+
+                        {subjectList.map((sub) => (
+                          <option
+                            key={sub._id}
+                            value={sub._id}
+                          >
+                            {sub.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+
+                    {/* ĐỘ KHÓ */}
+                    <div className="question-create-field">
+                      <label>Độ khó</label>
+
+                      <select
+                        className="form-input"
+                        value={question.difficulty}
+                        onChange={(event) =>
+                          handleQuestionChange(
+                            questionIndex,
+                            'difficulty',
+                            event.target.value
+                          )
+                        }
+                      >
+                        <option value="easy">
+                          Dễ
+                        </option>
+
+                        <option value="medium">
+                          Trung bình
+                        </option>
+
+                        <option value="hard">
+                          Khó
+                        </option>
+                      </select>
+                    </div>
+
+                  </div>                  
+
+
+                  {/* ĐÁP ÁN A + B */}
+                  <div className="question-create-grid">
+
+                    {/* A */}
+                    <div className="question-create-field">
+                      <label>
+                        Đáp án A *
+                      </label>
+
+                      <input
+                        className="form-input"
+                        type="text"
+                        placeholder="Phương án A"
+                        value={question.options[0].text}
+                        onChange={(event) =>
+                          handleQuestionOptionChange(
+                            questionIndex,
+                            0,
+                            event.target.value
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+
+                    {/* B */}
+                    <div className="question-create-field">
+                      <label>
+                        Đáp án B *
+                      </label>
+
+                      <input
+                        className="form-input"
+                        type="text"
+                        placeholder="Phương án B"
+                        value={question.options[1].text}
+                        onChange={(event) =>
+                          handleQuestionOptionChange(
+                            questionIndex,
+                            1,
+                            event.target.value
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+
+                    {/* C */}
+                    <div className="question-create-field">
+                      <label>
+                        Đáp án C *
+                      </label>
+
+                      <input
+                        className="form-input"
+                        type="text"
+                        placeholder="Phương án C"
+                        value={question.options[2].text}
+                        onChange={(event) =>
+                          handleQuestionOptionChange(
+                            questionIndex,
+                            2,
+                            event.target.value
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+
+                    {/* D */}
+                    <div className="question-create-field">
+                      <label>
+                        Đáp án D *
+                      </label>
+
+                      <input
+                        className="form-input"
+                        type="text"
+                        placeholder="Phương án D"
+                        value={question.options[3].text}
+                        onChange={(event) =>
+                          handleQuestionOptionChange(
+                            questionIndex,
+                            3,
+                            event.target.value
+                          )
+                        }
+                        required
+                      />
+                    </div>
+
+
+                    {/* ĐÁP ÁN ĐÚNG */}
+                    <div className="question-create-field">
+                      <label>
+                        Đáp án đúng nhất
+                      </label>
+
+                      <select
+                        className="form-input"
+                        value={
+                          question.options.findIndex(
+                            (option) => option.isCorrect
+                          ) >= 0
+                            ? question.options.findIndex(
+                                (option) => option.isCorrect
+                              )
+                            : ''
+                        }
+                        onChange={(event) =>
+                          handleQuestionCorrectChange(
+                            questionIndex,
+                            Number(event.target.value)
+                          )
+                        }
+                      >
+                        <option value="">
+                          Chọn đáp án đúng
+                        </option>
+
+                        <option value="0">
+                          Đáp án A
+                        </option>
+
+                        <option value="1">
+                          Đáp án B
+                        </option>
+
+                        <option value="2">
+                          Đáp án C
+                        </option>
+
+                        <option value="3">
+                          Đáp án D
+                        </option>
+                      </select>
+                    </div>
+
+
+                    {/* GIẢI THÍCH */}
+                    <div className="question-create-field">
+                      <label>
+                        Lời giải thích chi tiết
+                      </label>
+
+                      <input
+                        className="form-input"
+                        type="text"
+                        placeholder="Nhập giải thích sau khi hoàn thành thi..."
+                        value={question.explanation}
+                        onChange={(event) =>
+                          handleQuestionChange(
+                            questionIndex,
+                            'explanation',
+                            event.target.value
+                          )
+                        }
+                      />
+                    </div>
+
+                  </div>
+
+
+                  {/* NẾU CÓ NHIỀU CÂU THÌ CHO XÓA */}
+                  {questionForms.length > 1 && (
+                    <button
+                      type="button"
+                      className="remove-question-btn"
+                      onClick={() =>
+                        handleRemoveQuestionForm(questionIndex)
+                      }
+                    >
+                      <RxCross2 size={16} />
+                      Xóa câu hỏi này
+                    </button>
+                  )}
+
                 </div>
+
               ))}
 
-              <label className="field-label">Giải thích</label>
-              <textarea
-                className="form-input"
-                rows="1"
-                value={formData.explanation}
-                onChange={(event) => setFormData({ ...formData, explanation: event.target.value })}
-              />
 
+              {/* THÊM CÂU HỎI TIẾP THEO */}
+              <button
+                type="button"
+                className="add-next-question-btn"
+                onClick={handleAddNextQuestion}
+              >
+                <span>+</span>
+                Thêm câu hỏi tiếp theo
+              </button>
+
+
+              {/* NÚT CUỐI FORM */}
               <div className="question-form-actions">
-                <button className="btn-outline" type="button" onClick={() => { setFormData(emptyForm); setShowForm(false); }}>Hủy</button>
-                <button className="btn-start" type="submit">{formData._id ? 'Cập nhật' : 'Lưu câu hỏi'}</button>
+
+                <button
+                  className="btn-outline"
+                  type="button"
+                  onClick={() => {
+                    setQuestionForms([]);
+                    setShowForm(false);
+                  }}
+                >
+                  Hủy
+                </button>
+
+                <button
+                  className="btn-start"
+                  type="submit"
+                >
+                  Lưu câu hỏi
+                </button>
+
               </div>
+
             </form>
+
           </section>
         ) : null}
 

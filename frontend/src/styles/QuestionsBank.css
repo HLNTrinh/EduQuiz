@@ -535,6 +535,14 @@
 
     padding-top: 64px;
   }
+
+  .question-create-info-row {
+      grid-template-columns: 1fr;
+  }
+
+  .question-create-grid {
+    grid-template-columns: 1fr;
+  }  
 }
 
 @media (max-width: 480px) {
@@ -1058,4 +1066,301 @@
   .dash-shell .dash-main {
     padding-top: 52px;
   }
+}
+
+/**/
+/* =====================================================
+   FORM THÊM NHIỀU CÂU HỎI
+===================================================== */
+
+.question-create-card {
+    position: relative;
+
+    padding: 30px;
+
+    margin-bottom: 24px;
+
+    background: #f8fafc;
+
+    border: 1px solid #dfe7f1;
+
+    border-radius: 20px;
+}
+
+
+/* Tiêu đề câu hỏi */
+
+.question-create-title {
+    margin-bottom: 22px;
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    color: #111827;
+}
+
+
+/* Nội dung câu hỏi */
+
+.question-create-content {
+    width: 100%;
+
+    min-height: 78px;
+
+    padding: 16px 20px;
+
+    resize: vertical;
+
+    box-sizing: border-box;
+
+    border: 1px solid #dce4ef;
+
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 16px;
+
+    color: #111827;
+
+    outline: none;
+
+    transition: 0.2s;
+}
+
+.question-create-content::placeholder {
+    color: #8a94a6;
+}
+
+.question-create-content:focus {
+    border-color: #2563eb;
+
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+
+/* =====================================================
+   GRID ĐÁP ÁN
+===================================================== */
+
+.question-create-grid {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 22px 20px;
+
+    margin-top: 26px;
+}
+
+
+.question-create-field {
+    min-width: 0;
+}
+
+
+.question-create-field label {
+    display: block;
+
+    margin-bottom: 10px;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: #111827;
+}
+
+
+.question-create-field .form-input {
+    width: 100%;
+
+    height: 50px;
+
+    box-sizing: border-box;
+
+    padding: 0 16px;
+
+    border: 1px solid #dce4ef;
+
+    border-radius: 11px;
+
+    background: #ffffff;
+
+    font-size: 16px;
+
+    color: #172033;
+
+    outline: none;
+
+    transition: 0.2s;
+}
+
+
+.question-create-field .form-input::placeholder {
+    color: #8a94a6;
+}
+
+
+.question-create-field .form-input:focus {
+    border-color: #2563eb;
+
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+
+/* =====================================================
+   NÚT XÓA CÂU HỎI
+===================================================== */
+
+.remove-question-btn {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-top: 20px;
+
+    padding: 8px 12px;
+
+    border: 1px solid #f0caca;
+
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: #dc2626;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+.remove-question-btn:hover {
+    background: #fff5f5;
+}
+
+
+/* =====================================================
+   THÊM CÂU HỎI TIẾP THEO
+===================================================== */
+
+.add-next-question-btn {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    min-height: 50px;
+
+    padding: 0 18px;
+
+    border: 1px solid #d8e1ed;
+
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    color: #111827;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+
+.add-next-question-btn span {
+    font-size: 25px;
+
+    line-height: 1;
+
+    font-weight: 700;
+}
+
+
+.add-next-question-btn:hover {
+    border-color: #2563eb;
+
+    color: #2563eb;
+
+    background: #f8fbff;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .question-create-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .question-create-card {
+        padding: 18px;
+
+        border-radius: 14px;
+    }
+
+    .question-create-title {
+        font-size: 16px;
+    }
+
+    .question-create-field label {
+        font-size: 14px;
+    }
+
+    .question-create-field .form-input {
+        height: 46px;
+
+        font-size: 14px;
+    }
+
+    .question-create-content {
+        font-size: 14px;
+    }
+
+    .add-next-question-btn {
+        width: 100%;
+
+        justify-content: center;
+    }
+
+}
+
+/* =====================================================
+   MÔN HỌC + ĐỘ KHÓ
+===================================================== */
+
+.question-create-info-row {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 20px;
+
+    margin-top: 24px;
+
+    margin-bottom: 26px;
+}
+
+.question-create-info-row .question-create-field {
+    min-width: 0;
 }
