@@ -31,7 +31,12 @@ export default function TeacherAvatar() {
                 onClick={() => setOpen(!open)}
             >
 <div className="teacher-avatar-circle">
+<<<<<<< HEAD
                     <AvatarInitials name={user?.name} avatar={user?.avatar} size={46} />
+=======
+                    <AvatarInitials user={user} size={46} />
+                <AvatarInitials name={user?.name} avatar={user?.avatar} size={46} />
+>>>>>>> thuyduy
                 </div>
             </button>
 
@@ -41,6 +46,11 @@ export default function TeacherAvatar() {
                     <div className="teacher-avatar-header">
 
 <div className="teacher-avatar-large">
+<<<<<<< HEAD
+=======
+
+                            <AvatarInitials user={user} size={48} />
+>>>>>>> thuyduy
                             <AvatarInitials name={user?.name} avatar={user?.avatar} size={48} />
                         </div>
 

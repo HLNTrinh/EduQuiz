@@ -1,6 +1,7 @@
 import React from 'react';
 
 /**
+<<<<<<< HEAD
  * AvatarInitials - Hiển thị avatar đại diện (ảnh) hoặc chữ cái viết tắt của tên
  *
  * @param {string} name - Tên người dùng
@@ -12,8 +13,40 @@ export default function AvatarInitials({ name = '', avatar = '', size = 40, clas
   const getInitials = (fullName) => {
     if (!fullName || typeof fullName !== 'string') return '';
     const parts = fullName.trim().split(/\s+/);
+=======
+ * AvatarInitials - Hiển thị avatar:
+ * - Nếu user đã đổi avatar (khác pravatar mặc định) → hiển thị ảnh
+ * - Nếu chưa đổi → text avatar: hình tròn màu ngẫu nhiên + chữ cái đầu & cuối của tên
+ *
+ * @param {string} name - Tên người dùng
+ * @param {string} avatar - URL avatar người dùng (nếu đã đổi)
+ * @param {object} user - Đối tượng user (tùy chọn, chứa name & avatar)
+ * @param {number} size - Kích thước avatar (px)
+ * @param {string} className - Class CSS bổ sung
+ */
+export default function AvatarInitials({
+  name = '',
+  avatar = '',
+  user = null,
+  size = 40,
+  className = '',
+}) {
+  const displayName = user?.name || name || '';
+  const displayAvatar = user?.avatar || avatar || '';
+
+  // Avatar mặc định của hệ thống là pravatar → coi như chưa đổi
+  const isDefaultAvatar =
+    !displayAvatar || displayAvatar.includes('pravatar.cc');
+
+  const getInitials = (fullName) => {
+    if (!fullName || typeof fullName !== 'string') return '';
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '';
+>>>>>>> thuyduy
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    return (
+      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   const getColorFromName = (fullName) => {
@@ -31,8 +64,29 @@ export default function AvatarInitials({ name = '', avatar = '', size = 40, clas
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const initials = getInitials(name);
-  const bgColor = getColorFromName(name);
+  // Đã đổi avatar → hiển thị ảnh
+  if (!isDefaultAvatar) {
+    return (
+      <img
+        src={displayAvatar}
+        alt={displayName || 'User'}
+        className={`avatar-initials ${className}`}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '50%',
+          objectFit: 'cover',
+          flexShrink: 0,
+          userSelect: 'none',
+        }}
+        title={displayName || 'User'}
+      />
+    );
+  }
+
+  // Chưa đổi avatar → hiển thị chữ cái viết tắt
+  const initials = getInitials(displayName);
+  const bgColor = getColorFromName(displayName);
   const fontSize = Math.max(size * 0.38, 12);
 
   const baseStyle = {
@@ -72,7 +126,18 @@ export default function AvatarInitials({ name = '', avatar = '', size = 40, clas
     <div
       className={`avatar-initials ${className}`}
       style={{
+<<<<<<< HEAD
         ...baseStyle,
+=======
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        overflow: 'hidden',
+>>>>>>> thuyduy
         backgroundColor: bgColor,
         color: '#fff',
         fontWeight: 700,
@@ -80,7 +145,7 @@ export default function AvatarInitials({ name = '', avatar = '', size = 40, clas
         lineHeight: 1,
         userSelect: 'none',
       }}
-      title={name || 'User'}
+      title={displayName || 'User'}
     >
       {initials}
     </div>

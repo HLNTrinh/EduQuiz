@@ -26,6 +26,7 @@ import {
   updateClass,
 } from '../services/adminService';
 import TeacherAutocomplete from '../components/admin/TeacherAutocomplete';
+import Avatar from '../components/common/Avatar';
 import '../styles/AdminClassManagementContent.css';
 
 const STATUS_LABELS = { active: 'Đang hoạt động', inactive: 'Tạm dừng' };
@@ -34,8 +35,6 @@ const USER_STATUS_LABELS = { active: 'Hoạt động', inactive: 'Ngừng hoạt
 
 const getInitials = (name = '') =>
   name.split(' ').filter(Boolean).slice(-2).map((part) => part[0]).join('').toUpperCase() || 'HS';
-
-const getShortId = (id = '') => `#${id.slice(-6).toUpperCase()}`;
 
 export default function AdminClassManagementPage() {
   const [classes, setClasses] = useState([]);
@@ -66,6 +65,8 @@ export default function AdminClassManagementPage() {
   const [importFile, setImportFile] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [classPage, setClassPage] = useState(1);
+  const classesPerPage = 4;
 
   const showToast = useCallback((message, type = 'success') => setToast({ message, type }), []);
 
@@ -101,13 +102,25 @@ export default function AdminClassManagementPage() {
     setCurrentPage(1);
   }, [selectedClassId, studentSearchQuery]);
 
+  // Reset classPage về 1 khi tìm kiếm
+  useEffect(() => {
+    setClassPage(1);
+  }, [searchQuery]);
+
   const activeClass = classes.find((item) => item._id === selectedClassId) || null;
   const students = activeClass?.students || [];
   const filteredStudents = students.filter((student) =>
     `${student.name || ''} ${student.email || ''}`.toLowerCase().includes(studentSearchQuery.toLowerCase())
   );
 
-  // Pagination calculations
+  // Pagination cho danh sách lớp (4 lớp/trang)
+  const classTotalPages = Math.max(1, Math.ceil(classes.length / classesPerPage));
+  const safeClassPage = Math.min(classPage, classTotalPages);
+  const classStartIndex = (safeClassPage - 1) * classesPerPage;
+  const classEndIndex = Math.min(classStartIndex + classesPerPage, classes.length);
+  const paginatedClasses = classes.slice(classStartIndex, classEndIndex);
+
+  // Pagination calculations cho học sinh
   const totalPages = Math.max(1, Math.ceil(filteredStudents.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const startIndex = (safeCurrentPage - 1) * itemsPerPage;
@@ -193,6 +206,10 @@ export default function AdminClassManagementPage() {
         const res = await importStudentsToClass(activeClass._id, importFile);
         const data = res?.data || res;
         messages.push(data.message || 'Import danh sách học sinh thành công.');
+        if (data.skippedRecords && data.skippedRecords.length > 0) {
+          const reasons = [...new Set(data.skippedRecords.map((r) => r.reason))];
+          messages.push(`Bỏ qua ${data.skippedRecords.length} dòng: ${reasons.join('; ')}.`);
+        }
       }
       setStudentId('');
       setImportFile(null);
@@ -237,54 +254,182 @@ export default function AdminClassManagementPage() {
     <AdminLayout>
       {toast && <div className={`toast ${toast.type}`} style={{ position: 'fixed', top: 24, right: 24, zIndex: 2000 }}>{toast.message}</div>}
       <div className="dashboard-content" id="dashboard-content-area">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
-          <button className="btn-primary" onClick={() => setShowAddClass(true)} disabled={saving}><Plus size={18} /><span>Tạo lớp học mới</span></button>
-        </div>
-        <div className="dashboard-grid" id="dashboard-grid-layout">
-          <div className="class-list-column" id="class-list-sidebar">
-            <div className="column-header"><h3 className="column-title">Danh sách lớp</h3><span className="counter-badge">{classes.length} lớp</span></div>
-            <div className="table-search-box" style={{ margin: '0 16px 12px' }}><Search size={14} className="table-search-icon" /><input type="text" placeholder="Tìm lớp hoặc giáo viên..." className="table-search-input" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
-            <div className="class-cards-container" id="class-cards-list">
-              {loading ? <div className="empty-state">Đang tải dữ liệu...</div> : classes.length === 0 ? <div className="empty-state">Không tìm thấy lớp học phù hợp</div> : classes.map((item) => {
-                const isSelected = item._id === selectedClassId;
-                return <div key={item._id} className={`class-card ${isSelected ? 'selected' : ''}`} onClick={() => setSelectedClassId(item._id)}>
-                  {isSelected && <div className="selected-indicator"><CheckCircle size={14} className="check-icon" /></div>}
-                  <h4 className="class-card-name">{item.name}</h4>
-                  <div className="class-card-meta"><div className="meta-item"><User size={14} /><span>GV: {item.teacherName || item.teacher?.name || 'Chưa phân công'}</span></div><div className="meta-item"><Users size={14} /><span>{item.studentCount || 0} học sinh</span></div></div>
-                </div>;
-              })}
-            </div>
+        {/* Danh sách lớp: gộp tìm kiếm + nút tạo + list + phân trang */}
+        <div className="class-list-section" id="classListSection">
+          <div className="class-list-header">
+            <h3 className="class-list-title">Danh sách lớp</h3>
+            <span className="counter-badge">{classes.length} lớp</span>
           </div>
-          <div className="class-details-column" id="class-details-panel">
-            {activeClass ? <>
-              <div className="active-class-hero">
-                <div className="hero-main-info"><div className="hero-left-block"><div className="hero-icon-container"><Users size={28} className="hero-icon-blue" /></div><div className="hero-text-details"><div className="hero-title-badge-row"><h2 className="hero-class-name">{activeClass.name}</h2><span className={`badge-status ${activeClass.status === 'active' ? 'active' : 'paused'}`}>{STATUS_LABELS[activeClass.status] || activeClass.status}</span></div><div className="hero-meta-row"><div className="hero-meta-col"><User size={16} /><span>GV: {activeClass.teacherName || activeClass.teacher?.name || 'Chưa phân công'}</span></div><div className="hero-meta-col"><Calendar size={16} /><span>Năm học: {activeClass.year || '---'}</span></div></div></div></div><div className="hero-actions-container"><button className="btn-outline-sm" onClick={handleOpenEditClass} disabled={saving}>Sửa lớp</button><button className="btn-icon-danger" onClick={handleDeleteClass} disabled={saving}><Trash2 size={16} /></button></div></div>
-                <div className="stats-dashboard-grid"><div className="stats-chip chip-blue"><span className="stats-chip-title">Tổng học sinh</span><span className="stats-chip-value">{activeClass.studentCount || 0}</span></div></div>
-              </div>
-              <div className="students-table-container"><div className="table-header-row"><h3 className="table-header-title">Danh sách học sinh</h3><div className="table-filter-actions"><div className="table-search-box"><Search size={14} className="table-search-icon" /><input type="text" placeholder="Tìm học sinh..." className="table-search-input" value={studentSearchQuery} onChange={(e) => setStudentSearchQuery(e.target.value)} /></div><button className="btn-primary-sm" onClick={openAddStudentModal} disabled={saving || studentsLoading}><UserPlus size={16} /><span>{studentsLoading ? 'Đang tải...' : 'Thêm học sinh'}</span></button></div></div>
-                <div className="table-scroller"><table className="students-data-table"><thead><tr><th>ID tài khoản</th><th>Họ và tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th className="text-right-aligned">Thao tác</th></tr></thead><tbody>{filteredStudents.length === 0 ? <tr><td colSpan="6" className="table-empty-cell">Chưa có học sinh trong lớp này</td></tr> : paginatedStudents.map((student) => <tr key={student._id}><td className="student-code-cell" title={student._id}>{getShortId(student._id)}</td><td><div className="student-profile-cell"><div className="student-avatar-initial bg-blue">{getInitials(student.name)}</div><span className="student-fullname" title={student.name}>{student.name}</span></div></td><td><button type="button" className="student-email student-email-button" title="Bấm để xem email đầy đủ" onClick={() => setEmailDetails({ name: student.name, email: student.email })}>{student.email || '---'}</button></td><td>{USER_ROLE_LABELS[student.role] || student.role || '---'}</td><td><span className={`status-pill ${student.status === 'active' ? 'online' : 'offline'}`}>{USER_STATUS_LABELS[student.status] || '---'}</span></td><td className="text-right-aligned actions-cell-container"><button className="action-menu-btn" onClick={() => setActiveMenuStudentId(activeMenuStudentId === student._id ? null : student._id)}><MoreVertical size={16} /></button>{activeMenuStudentId === student._id && <div className="student-action-dropdown"><button className="dropdown-delete-btn" onClick={() => handleDeleteStudent(student._id)}>Xoá khỏi lớp</button></div>}</td></tr>)}</tbody></table></div>
-                {filteredStudents.length > 0 && (
-                  <div className="table-footer-pagination">
-                    <p className="footer-stats-text">Hiển thị <span className="pagination-highlight">{startIndex + 1} - {endIndex}</span> trên tổng số <span className="pagination-highlight">{filteredStudents.length}</span> học sinh</p>
-                    <div className="pagination-controls">
-                      <button className="pagination-nav-btn" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={safeCurrentPage === 1} title="Trang trước"><ChevronLeft size={16} /></button>
-                      <div className="pagination-pages">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <button key={page} className={`page-number-btn ${safeCurrentPage === page ? 'active' : ''}`} onClick={() => setCurrentPage(page)}>{page}</button>
-                        ))}
-                      </div>
-                      <button className="pagination-nav-btn" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={safeCurrentPage === totalPages} title="Trang sau"><ChevronRight size={16} /></button>
+
+          {/* Gộp tìm kiếm + nút tạo vào đầu danh sách lớp */}
+          <div className="class-list-toolbar">
+            <div className="class-filter-search-box">
+              <Search className="class-filter-search-icon" />
+              <input
+                type="text"
+                placeholder="Tìm lớp hoặc giáo viên..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button className="btn-primary" onClick={() => setShowAddClass(true)} disabled={saving}>
+              <Plus size={18} />
+              <span>Tạo lớp học mới</span>
+            </button>
+          </div>
+
+          <div className="class-cards-grid" id="class-cards-list">
+            {loading ? (
+              <div className="empty-state">Đang tải dữ liệu...</div>
+            ) : classes.length === 0 ? (
+              <div className="empty-state">Không tìm thấy lớp học phù hợp</div>
+            ) : (
+              paginatedClasses.map((item) => {
+                const isSelected = item._id === selectedClassId;
+                return (
+                  <div key={item._id} className={`class-card ${isSelected ? 'selected' : ''}`} onClick={() => setSelectedClassId(item._id)}>
+                    {isSelected && <div className="selected-indicator"><CheckCircle size={14} className="check-icon" /></div>}
+                    <h4 className="class-card-name">{item.name}</h4>
+                    <div className="class-card-meta">
+                      <div className="meta-item"><User size={14} /><span>GV: {item.teacherName || item.teacher?.name || 'Chưa phân công'}</span></div>
+                      <div className="meta-item"><Users size={14} /><span>{item.studentCount || 0} học sinh</span></div>
                     </div>
                   </div>
-                )}
-              </div>
-            </> : <div className="no-class-selected-state"><School size={48} className="empty-state-icon" /><h3>Chưa có lớp học</h3><p>Hãy tạo một lớp học mới để bắt đầu quản lý.</p></div>}
+                );
+              })
+            )}
           </div>
+
+          {/* Phân trang danh sách lớp */}
+          {classes.length > classesPerPage && (
+            <div className="class-list-pagination">
+              <p className="footer-stats-text">Hiển thị <span className="pagination-highlight">{classStartIndex + 1} - {classEndIndex}</span> trên tổng số <span className="pagination-highlight">{classes.length}</span> lớp</p>
+              <div className="pagination-controls">
+                <button className="pagination-nav-btn" onClick={() => setClassPage(prev => Math.max(prev - 1, 1))} disabled={safeClassPage === 1} title="Trang trước"><ChevronLeft size={16} /></button>
+                <div className="pagination-pages">
+                  {Array.from({ length: classTotalPages }, (_, i) => i + 1).map((page) => (
+                    <button key={page} className={`page-number-btn ${safeClassPage === page ? 'active' : ''}`} onClick={() => setClassPage(page)}>{page}</button>
+                  ))}
+                </div>
+                <button className="pagination-nav-btn" onClick={() => setClassPage(prev => Math.min(prev + 1, classTotalPages))} disabled={safeClassPage === classTotalPages} title="Trang sau"><ChevronRight size={16} /></button>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Chi tiết lớp khi đã chọn */}
+        {activeClass ? (
+          <div className="class-details-section" id="class-details-panel">
+            <div className="active-class-hero">
+              <div className="hero-main-info">
+                <div className="hero-left-block">
+                  <div className="hero-icon-container"><Users size={28} className="hero-icon-blue" /></div>
+                  <div className="hero-text-details">
+                    <div className="hero-title-badge-row">
+                      <h2 className="hero-class-name">{activeClass.name}</h2>
+                      <span className={`badge-status ${activeClass.status === 'active' ? 'active' : 'paused'}`}>{STATUS_LABELS[activeClass.status] || activeClass.status}</span>
+                    </div>
+                    <div className="hero-meta-row">
+                      <div className="hero-meta-col"><User size={16} /><span>GV: {activeClass.teacherName || activeClass.teacher?.name || 'Chưa phân công'}</span></div>
+                      <div className="hero-meta-col"><Calendar size={16} /><span>Năm học: {activeClass.year || '---'}</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="hero-actions-container">
+                  <button className="btn-outline-sm" onClick={handleOpenEditClass} disabled={saving}>Sửa lớp</button>
+                  <button className="btn-icon-danger" onClick={handleDeleteClass} disabled={saving}><Trash2 size={16} /></button>
+                </div>
+              </div>
+              <div className="stats-dashboard-grid">
+                <div className="stats-chip chip-blue"><span className="stats-chip-title">Tổng học sinh</span><span className="stats-chip-value">{activeClass.studentCount || 0}</span></div>
+              </div>
+            </div>
+
+            <div className="students-table-container">
+              <div className="table-header-row">
+                <h3 className="table-header-title">Danh sách học sinh</h3>
+                <div className="table-filter-actions">
+                  <div className="table-search-box">
+                    <Search size={14} className="table-search-icon" />
+                    <input type="text" placeholder="Tìm học sinh..." className="table-search-input" value={studentSearchQuery} onChange={(e) => setStudentSearchQuery(e.target.value)} />
+                  </div>
+                  <button className="btn-primary-sm" onClick={openAddStudentModal} disabled={saving || studentsLoading}>
+                    <UserPlus size={16} />
+                    <span>{studentsLoading ? 'Đang tải...' : 'Thêm học sinh'}</span>
+                  </button>
+                </div>
+              </div>
+              <div className="table-scroller">
+                <table className="students-data-table">
+                  <thead>
+                    <tr>
+                      <th>Mã học sinh</th>
+                      <th>Họ và tên</th>
+                      <th>Email</th>
+                      <th>Vai trò</th>
+                      <th>Trạng thái</th>
+                      <th className="text-right-aligned">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredStudents.length === 0 ? (
+                      <tr><td colSpan="6" className="table-empty-cell">Chưa có học sinh trong lớp này</td></tr>
+                    ) : (
+                      paginatedStudents.map((student) => (
+                        <tr key={student._id}>
+                          <td className="student-code-cell" title={student.userCode || student._id}>{student.userCode || '---'}</td>
+                          <td>
+                            <div className="student-profile-cell">
+                              <Avatar user={student} size={36} className="student-avatar-initial" />
+                              <span className="student-fullname" title={student.name}>{student.name}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <button type="button" className="student-email student-email-button" title="Bấm để xem email đầy đủ" onClick={() => setEmailDetails({ name: student.name, email: student.email })}>{student.email || '---'}</button>
+                          </td>
+                          <td>{USER_ROLE_LABELS[student.role] || student.role || '---'}</td>
+                          <td><span className={`status-pill ${student.status === 'active' ? 'online' : 'offline'}`}>{USER_STATUS_LABELS[student.status] || '---'}</span></td>
+                          <td className="text-right-aligned actions-cell-container">
+                            <button className="action-menu-btn" onClick={() => setActiveMenuStudentId(activeMenuStudentId === student._id ? null : student._id)}><MoreVertical size={16} /></button>
+                            {activeMenuStudentId === student._id && (
+                              <div className="student-action-dropdown">
+                                <button className="dropdown-delete-btn" onClick={() => handleDeleteStudent(student._id)}>Xoá khỏi lớp</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {filteredStudents.length > 0 && (
+                <div className="table-footer-pagination">
+                  <p className="footer-stats-text">Hiển thị <span className="pagination-highlight">{startIndex + 1} - {endIndex}</span> trên tổng số <span className="pagination-highlight">{filteredStudents.length}</span> học sinh</p>
+                  <div className="pagination-controls">
+                    <button className="pagination-nav-btn" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={safeCurrentPage === 1} title="Trang trước"><ChevronLeft size={16} /></button>
+                    <div className="pagination-pages">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button key={page} className={`page-number-btn ${safeCurrentPage === page ? 'active' : ''}`} onClick={() => setCurrentPage(page)}>{page}</button>
+                      ))}
+                    </div>
+                    <button className="pagination-nav-btn" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={safeCurrentPage === totalPages} title="Trang sau"><ChevronRight size={16} /></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="no-class-selected-state">
+            <School size={48} className="empty-state-icon" />
+            <h3>Chưa có lớp học</h3>
+            <p>Hãy tạo một lớp học mới để bắt đầu quản lý.</p>
+          </div>
+        )}
       </div>
       {showAddClass && <ClassModal title="Tạo lớp học mới" onClose={() => setShowAddClass(false)} onSubmit={handleAddClass} saving={saving}><ClassFields name={newClassName} setName={setNewClassName} teacher={newClassTeacher} setTeacher={setNewClassTeacher} teacherId={newClassTeacherId} setTeacherId={setNewClassTeacherId} year={newClassYear} setYear={setNewClassYear} /></ClassModal>}
       {showEditClass && <ClassModal title="Sửa thông tin lớp học" onClose={() => setShowEditClass(false)} onSubmit={handleEditClassSubmit} saving={saving}><ClassFields name={editClassName} setName={setEditClassName} teacher={editClassTeacher} setTeacher={setEditClassTeacher} teacherId={editClassTeacherId} setTeacherId={setEditClassTeacherId} year={editClassYear} setYear={setEditClassYear} status={editClassStatus} setStatus={setEditClassStatus} /></ClassModal>}
-      {showAddStudent && <ClassModal title="Thêm học sinh vào lớp" onClose={() => setShowAddStudent(false)} onSubmit={handleAddStudent} saving={saving}><div className="admin-class-form-group"><label className="admin-class-form-label">Chọn học sinh</label><select className="admin-class-form-input" value={studentId} onChange={(e) => setStudentId(e.target.value)}><option value="">-- Chọn tài khoản học sinh --</option>{availableStudents.map((student) => <option key={student._id} value={student._id}>{student.name} — {student.email}</option>)}</select>{availableStudents.length === 0 && <small>Không còn học sinh đang hoạt động để thêm vào lớp này.</small>}</div><div className="admin-class-form-divider"><span>hoặc import từ file</span></div><div className="admin-class-form-group"><label className="admin-class-form-label">Tải file danh sách học sinh</label><input type="file" accept=".csv,.xlsx,.xls" className="admin-class-form-input" onChange={(e) => setImportFile(e.target.files[0] || null)} /><small>File CSV hoặc Excel gồm các cột: Họ tên, Email, Số điện thoại, Mật khẩu (mật khẩu trống sẽ dùng mặc định EduQuiz@123). Học sinh đã có tài khoản sẽ được gắn vào lớp mà không tạo tài khoản mới.</small></div></ClassModal>}
+      {showAddStudent && <ClassModal title="Thêm học sinh vào lớp" onClose={() => setShowAddStudent(false)} onSubmit={handleAddStudent} saving={saving}><div className="admin-class-form-group"><label className="admin-class-form-label">Chọn học sinh</label><select className="admin-class-form-input" value={studentId} onChange={(e) => setStudentId(e.target.value)}><option value="">-- Chọn tài khoản học sinh --</option>{availableStudents.map((student) => <option key={student._id} value={student._id}>{student.name} — {student.email}</option>)}</select>{availableStudents.length === 0 && <small>Không còn học sinh đang hoạt động để thêm vào lớp này.</small>}</div><div className="admin-class-form-divider"><span>hoặc import từ file</span></div><div className="admin-class-form-group"><label className="admin-class-form-label">Tải file danh sách học sinh</label><input type="file" accept=".csv,.xlsx,.xls" className="admin-class-form-input" onChange={(e) => setImportFile(e.target.files[0] || null)} /><small>File CSV hoặc Excel gồm các cột: Mã số học sinh, Họ tên, Email, Số điện thoại, Mật khẩu (mật khẩu trống sẽ dùng mặc định EduQuiz@123). Mã số học sinh VÀ Email là BẮT BUỘC</small></div></ClassModal>}
       {emailDetails && <div className="admin-class-modal-overlay" onClick={() => setEmailDetails(null)}><div className="admin-class-modal-card admin-class-email-details-modal" onClick={(event) => event.stopPropagation()}><div className="admin-class-modal-header"><h3 className="admin-class-modal-title">Email tài khoản</h3><button className="admin-class-modal-close-btn" type="button" onClick={() => setEmailDetails(null)}><X size={20} /></button></div><div className="admin-class-modal-body"><strong>{emailDetails.name}</strong><span className="admin-class-full-student-email">{emailDetails.email}</span></div><div className="admin-class-modal-footer"><button type="button" className="admin-class-btn-modal-submit" onClick={() => setEmailDetails(null)}>Đóng</button></div></div></div>}
     </AdminLayout>
   );

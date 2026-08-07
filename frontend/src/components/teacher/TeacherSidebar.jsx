@@ -136,7 +136,7 @@ export default function TeacherSidebar() {
           <span className="sidebar-icon">
             <FcLibrary size={22} />
           </span>
-          Ngân hàng câu hỏi
+          Câu hỏi
         </a>
 
         <a

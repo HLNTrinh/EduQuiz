@@ -47,10 +47,20 @@ async function run() {
     return;
   }
 
+  // Tự sinh userCode duy nhất từ email
+  const base = (email.split('@')[0] || 'USER').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 8) || 'USER';
+  let userCode = base;
+  let counter = 1;
+  while (await User.findOne({ userCode })) {
+    userCode = `${base}${counter}`;
+    counter += 1;
+  }
+
   const hashed = await bcrypt.hash(password, 10);
 
   const user = await User.create({
     name,
+    userCode,
     email,
     password: hashed,
     role: 'student',

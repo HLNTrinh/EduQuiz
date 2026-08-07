@@ -12,6 +12,7 @@ import {
   getRoleDistribution,
   getRecentActivities,
 } from '../services/adminService';
+import Avatar from '../components/common/Avatar';
 import '../styles/AdminDashboard.css';
 
 export default function AdminDashboardPage() {
@@ -342,20 +343,13 @@ export default function AdminDashboardPage() {
                     <tr key={activity.id}>
                       <td>
                         <div className="db-user-cell">
-                          <div 
+                          <Avatar 
+                            user={activity.user} 
+                            name={activity.user?.name} 
+                            avatar={activity.user?.avatar} 
+                            size={36} 
                             className="db-user-avatar" 
-                            style={{ 
-                              background: getColorFromName(activity.user?.name),
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center',
-                              fontSize: '12px',
-                              fontWeight: 700,
-                              color: '#ffffff'
-                            }}
-                          >
-                            {getInitials(activity.user?.name)}
-                          </div>
+                          />
                           <span className="db-user-name">{activity.user?.name || 'Người dùng'}</span>
                         </div>
                       </td>

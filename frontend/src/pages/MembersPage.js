@@ -6,6 +6,7 @@ import { classService } from '../services/authService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import TeacherAvatar from "../components/teacher/TeacherAvatar";
 import NotificationDropdown from "../components/teacher/NotificationDropdown";
+import Avatar from "../components/common/Avatar";
 import '../styles/Members.css';
 
 export const MembersPage = () => {
@@ -175,11 +176,7 @@ const filteredStudents = students;
                   <td>{student._id}</td>
                   <td>
                     <div className="member-profile-cell">
-                      <img
-                        src={student.avatar || `https://i.pravatar.cc/40?u=${student._id}`}
-                        alt={student.name}
-                        className="member-avatar"
-                      />
+                      <Avatar user={student} size={40} className="member-avatar" />
                       <span>{student.name}</span>
                     </div>
                   </td>
@@ -196,7 +193,7 @@ const filteredStudents = students;
               ))}
             </tbody>
           </table>
-
+{/*  
           <div className="members-table-footer">
             <span>Hiển thị {students.length > 0 ? `${(page - 1) * limit + 1} - ${Math.min(page * limit, totalStudents)}` : '0'} trong số {totalStudents} học sinh</span>
             <div>
@@ -211,6 +208,51 @@ const filteredStudents = students;
               ))}
             </div>
           </div>
+          */}
+
+          <div className="members-table-footer">
+            <span>
+              Hiển thị{" "}
+              {students.length > 0
+                ? `${(page - 1) * limit + 1} - ${Math.min(
+                    page * limit,
+                    totalStudents
+                  )}`
+                : "0"}{" "}
+              trong số {totalStudents} học sinh
+            </span>
+
+            <div className="pagination">
+              <button
+                className="btn-outline btn-small"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                ← Trước
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  className={`page-btn ${
+                    page === i + 1 ? "page-btn--active" : ""
+                  }`}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                className="btn-outline btn-small"
+                disabled={page === totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Sau →
+              </button>
+            </div>
+          </div>
+
         </section>
       </main>
     </div>

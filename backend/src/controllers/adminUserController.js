@@ -23,6 +23,7 @@ const getUsers = async (req, res) => {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
+        { userCode: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -77,25 +78,43 @@ const getUserById = async (req, res) => {
 ========================= */
 const createUser = async (req, res) => {
   try {
-    const { name, email, password, role, status, phone, gender, schoolClass } = req.body;
+    const { name, userCode, email, password, role, status, phone, gender, schoolClass } = req.body;
+
+    // Kiểm tra bắt buộc: userCode và email không được trống
+    if (!userCode || !userCode.trim()) {
+      return res.status(400).json({ success: false, message: 'Mã người dùng không được để trống' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email không được để trống' });
+    }
+
+    const trimmedUserCode = userCode.trim();
+    const trimmedEmail = email.trim().toLowerCase();
 
     // Kiểm tra email tồn tại
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: trimmedEmail });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
+    }
+
+    // Kiểm tra userCode trùng
+    const existingCode = await User.findOne({ userCode: trimmedUserCode });
+    if (existingCode) {
+      return res.status(400).json({ success: false, message: 'Mã người dùng đã tồn tại' });
     }
 
     const hashedPassword = await bcrypt.hash(password || '123456', 12);
 
     const user = await User.create({
       name,
-      email,
+      userCode: trimmedUserCode,
+      email: trimmedEmail,
       password: hashedPassword,
       role: role || 'student',
       status: status || 'active',
       phone: phone || null,
       joinDate: new Date(),
-      avatar: `https://i.pravatar.cc/200?img=${Math.floor(Math.random() * 70)}`,
+      avatar: null,              // Avatar mặc định do frontend tạo (màu + chữ đầu/cuối)
     });
 
     const { password: _, ...safeUser } = user.toObject();
@@ -106,6 +125,16 @@ const createUser = async (req, res) => {
       user: safeUser,
     });
   } catch (error) {
+    // Bắt lỗi trùng khóa (email/userCode) từ unique index của MongoDB
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+      const message = field === 'email'
+        ? 'Email đã tồn tại'
+        : field === 'userCode'
+          ? 'Mã người dùng đã tồn tại'
+          : 'Dữ liệu đã tồn tại';
+      return res.status(400).json({ success: false, message });
+    }
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
 };
@@ -116,11 +145,35 @@ const createUser = async (req, res) => {
 ========================= */
 const updateUser = async (req, res) => {
   try {
-    const { name, email, role, status, phone } = req.body;
+    const { name, userCode, email, role, status, phone } = req.body;
+
+    // Kiểm tra bắt buộc: userCode và email không được trống
+    if (!userCode || !userCode.trim()) {
+      return res.status(400).json({ success: false, message: 'Mã người dùng không được để trống' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ success: false, message: 'Email không được để trống' });
+    }
+
+    const trimmedUserCode = userCode.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // Kiểm tra email trùng (loại trừ chính user đang sửa)
+    const existingEmail = await User.findOne({ email: trimmedEmail, _id: { $ne: req.params.id } });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: 'Email đã tồn tại' });
+    }
+
+    // Kiểm tra userCode trùng (loại trừ chính user đang sửa)
+    const existingCode = await User.findOne({ userCode: trimmedUserCode, _id: { $ne: req.params.id } });
+    if (existingCode) {
+      return res.status(400).json({ success: false, message: 'Mã người dùng đã tồn tại' });
+    }
 
     const updateData = {};
     if (name) updateData.name = name;
-    if (email) updateData.email = email;
+    updateData.userCode = trimmedUserCode;
+    updateData.email = trimmedEmail;
     if (role) updateData.role = role;
     if (status) updateData.status = status;
     if (phone !== undefined) updateData.phone = phone;
@@ -145,6 +198,16 @@ const updateUser = async (req, res) => {
       user,
     });
   } catch (error) {
+    // Bắt lỗi trùng khóa (email/userCode) từ unique index của MongoDB
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+      const message = field === 'email'
+        ? 'Email đã tồn tại'
+        : field === 'userCode'
+          ? 'Mã người dùng đã tồn tại'
+          : 'Dữ liệu đã tồn tại';
+      return res.status(400).json({ success: false, message });
+    }
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
 };
@@ -224,6 +287,7 @@ const getTeachers = async (req, res) => {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
+        { userCode: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -232,7 +296,7 @@ const getTeachers = async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
 
     const [users, total] = await Promise.all([
-      User.find(filter).select('name email avatar').sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
+      User.find(filter).select('name email avatar userCode').sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
       User.countDocuments(filter),
     ]);
 

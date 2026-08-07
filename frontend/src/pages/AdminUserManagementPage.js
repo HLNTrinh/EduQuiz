@@ -10,6 +10,7 @@ import {
   Edit, 
   Lock, 
   Unlock, 
+  Trash2,
   ChevronLeft, 
   ChevronRight, 
   X, 
@@ -21,8 +22,10 @@ import {
   getUsers,
   createUser,
   updateUser,
+  deleteUser,
   toggleLockUser,
 } from '../services/adminService';
+import Avatar from '../components/common/Avatar';
 
 export default function AdminUserManagementPage() {
   const { user: currentAdmin } = useAuth();
@@ -49,6 +52,7 @@ export default function AdminUserManagementPage() {
   // Form input state
   const [formData, setFormData] = useState({
     name: '',
+    userCode: '',
     email: '',
     role: 'student',
     status: 'active',
@@ -136,14 +140,23 @@ export default function AdminUserManagementPage() {
   // Add User
   const handleAddUser = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) {
-      showToast('Vui lòng điền đầy đủ Họ tên và Email!');
+    if (!formData.name) {
+      showToast('Vui lòng điền Họ tên!');
+      return;
+    }
+    if (!formData.userCode || !formData.userCode.trim()) {
+      showToast('Mã người dùng không được để trống!');
+      return;
+    }
+    if (!formData.email || !formData.email.trim()) {
+      showToast('Email không được để trống!');
       return;
     }
 
     try {
       const payload = {
         name: formData.name,
+        userCode: formData.userCode || '',
         email: formData.email,
         password: formData.password || '123456',
         role: mapRoleToAPI(formData.role),
@@ -164,8 +177,9 @@ export default function AdminUserManagementPage() {
     setSelectedUser(user);
     setFormData({
       name: user.name || '',
+      userCode: user.userCode || '',
       email: user.email || '',
-      role: user.role || 'student',
+      role: mapRoleToUI(user.role),
       status: mapStatusToUI(user.status),
       phone: user.phone || '',
       password: ''
@@ -176,14 +190,23 @@ export default function AdminUserManagementPage() {
   // Save Edit User
   const handleEditUser = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) {
-      showToast('Vui lòng điền đầy đủ Họ tên và Email!');
+    if (!formData.name) {
+      showToast('Vui lòng điền Họ tên!');
+      return;
+    }
+    if (!formData.userCode || !formData.userCode.trim()) {
+      showToast('Mã người dùng không được để trống!');
+      return;
+    }
+    if (!formData.email || !formData.email.trim()) {
+      showToast('Email không được để trống!');
       return;
     }
 
     try {
       const payload = {
         name: formData.name,
+        userCode: formData.userCode || '',
         email: formData.email,
         role: mapRoleToAPI(formData.role),
         status: mapStatusToAPI(formData.status),
@@ -199,6 +222,23 @@ export default function AdminUserManagementPage() {
       fetchUsers();
     } catch (error) {
       showToast(error.message || 'Lỗi khi cập nhật người dùng');
+    }
+  };
+
+  // Delete User
+  const handleDeleteUser = async (user) => {
+    // Không cho phép admin xóa chính mình
+    if (currentAdmin?._id === user._id) {
+      showToast('Bạn không thể xóa tài khoản của chính mình!', 'error');
+      return;
+    }
+    if (!window.confirm(`Bạn có chắc muốn xóa người dùng ${user.name}?`)) return;
+    try {
+      await deleteUser(user._id);
+      showToast(`Đã xóa người dùng ${user.name}!`);
+      fetchUsers();
+    } catch (error) {
+      showToast(error.message || 'Lỗi khi xóa người dùng');
     }
   };
 
@@ -227,6 +267,7 @@ export default function AdminUserManagementPage() {
   const resetForm = () => {
     setFormData({
       name: '',
+      userCode: '',
       email: '',
       role: 'student',
       status: 'active',
@@ -355,7 +396,7 @@ export default function AdminUserManagementPage() {
           <table className="users-list-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Mã người dùng</th>
                 <th>Họ tên & Email</th>
                 <th>Vai trò</th>
                 <th>Trạng thái</th>
@@ -373,12 +414,10 @@ export default function AdminUserManagementPage() {
               ) : users.length > 0 ? (
                 users.map((user, index) => (
                   <tr key={user._id || index}>
-                    <td className="user-id-cell">#{user._id?.slice(-6)?.toUpperCase() || '---'}</td>
+                    <td className="user-id-cell">{user.userCode || '---'}</td>
                     <td>
                       <div className="user-profile-cell">
-                        <div className="table-user-avatar-text" style={{ background: getColorFromName(user.name) }}>
-                          {getInitial(user.name)}
-                        </div>
+                        <Avatar user={user} size={40} className="table-user-avatar-text" />
                         <div className="user-profile-info">
                           <p className="user-full-name">{user.name}</p>
                           <p className="user-email">{user.email}</p>
@@ -417,6 +456,10 @@ export default function AdminUserManagementPage() {
                           title={user.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
                           onClick={() => handleToggleLock(user)}>
                           {user.status === 'active' ? <Lock size={16} /> : <Unlock size={16} />}
+                        </button>
+                        <button className="table-action-btn delete" title="Xóa người dùng"
+                          onClick={() => handleDeleteUser(user)}>
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -478,6 +521,12 @@ export default function AdminUserManagementPage() {
               <div className="modal-body">
                 <div className="modal-form">
                   <div className="form-field">
+                    <label className="form-label">Mã người dùng *</label>
+                    <input type="text" name="userCode" value={formData.userCode}
+                      onChange={handleInputChange} placeholder="Nhập mã người dùng (VD: GV001, HS001, ADMIN001)"
+                      className="admin-user-form-input" required />
+                  </div>
+                  <div className="form-field">
                     <label className="form-label">Họ và tên *</label>
                     <input type="text" name="name" value={formData.name}
                       onChange={handleInputChange} placeholder="Nhập họ và tên" 
@@ -533,6 +582,12 @@ export default function AdminUserManagementPage() {
             <form onSubmit={handleEditUser}>
               <div className="modal-body">
                 <div className="modal-form">
+                  <div className="form-field">
+                    <label className="form-label">Mã người dùng *</label>
+                    <input type="text" name="userCode" value={formData.userCode}
+                      onChange={handleInputChange} placeholder="Nhập mã người dùng (VD: GV001, HS001, ADMIN001)"
+                      className="admin-user-form-input" required />
+                  </div>
                   <div className="form-field">
                     <label className="form-label">Họ và tên *</label>
                     <input type="text" name="name" value={formData.name}
@@ -614,9 +669,7 @@ export default function AdminUserManagementPage() {
             </div>
             <div className="modal-body">
               <div className="detail-profile-header">
-                <div className="detail-avatar-large-text" style={{ background: getColorFromName(selectedUser.name) }}>
-                  {getInitial(selectedUser.name)}
-                </div>
+                <Avatar user={selectedUser} size={90} className="detail-avatar-large-text" />
                 <h4>{selectedUser.name}</h4>
                 <p>{selectedUser.email}</p>
                 <span className={`badge-role ${
@@ -629,7 +682,7 @@ export default function AdminUserManagementPage() {
               <div className="info-grid">
                 <div className="info-item">
                   <span className="info-label">Mã số tài khoản:</span>
-                  <span className="info-value">#{selectedUser._id?.slice(-6)?.toUpperCase() || '---'}</span>
+                  <span className="info-value">{selectedUser.userCode || '---'}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Số điện thoại:</span>

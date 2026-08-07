@@ -37,13 +37,25 @@ export default function UserMenu({ size = 36 }) {
         onClick={() => setOpen(!open)}
         style={{ cursor: 'pointer' }}
       >
+<<<<<<< HEAD
         <AvatarInitials name={user?.name} avatar={user?.avatar} size={size} />
+=======
+
+        <AvatarInitials user={user} size={size} />
+        <AvatarInitials name={user?.name} avatar={user?.avatar} size={size} />
+
+>>>>>>> thuyduy
       </div>
 
 
       {open && (
         <div className="user-menu-dropdown">
           <div className="user-menu-header">
+<<<<<<< HEAD
+=======
+
+            <AvatarInitials user={user} size={44} />
+>>>>>>> thuyduy
 <AvatarInitials name={user?.name} avatar={user?.avatar} size={44} />
             <div className="user-menu-info">
               <strong className="user-menu-name">{user?.name || 'Người dùng'}</strong>

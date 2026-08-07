@@ -232,7 +232,6 @@
   font-size: 16px;
 }
 
-/**/
 .question-form-row{
     display:flex;
     gap:20px;
@@ -244,6 +243,7 @@
     display:flex;
     flex-direction:column;
 }
+
 
 .question-form-group .field-label{
     margin-bottom:8px;
@@ -353,13 +353,12 @@
   align-items: center;
   gap: 7px;
 }
-
 .dash-shell .question-form-panel {
   margin-bottom: 16px;
   padding: 16px;
   background: #fbfdff;
 }
-
+/*Form thêm câu hỏi*/
 .dash-shell .question-form-header {
   display: flex;
   align-items: flex-start;
@@ -380,6 +379,11 @@
   font-size: 15px;
 }
 
+.question-form-header .panel-subtitle{
+    margin-top:4px;
+    font-size:13px;
+    color:#64748b;
+}
 .dash-shell .question-form-panel form {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -410,9 +414,18 @@
   align-items: center;
   gap: 10px;
 }
+.question-answer-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+}
 
 .dash-shell .question-answer-row .form-input {
   flex: 1;
+}
+.question-answer-row .form-input{
+    flex:1;
 }
 
 .dash-shell .radio-label {
@@ -429,6 +442,13 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 4px;
+}
+.question-form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+
+    margin-top:20px;
 }
 
 @media (max-width: 1050px) {
@@ -558,7 +578,7 @@
 /******************************
         HỘP THOẠI
 ******************************/
-
+/*
 .modal-content {
     width: 850px;
     max-height: 90vh;
@@ -572,7 +592,18 @@
 
     overflow-y: auto;
 }
+*/
+.modal-content{
+    width: 680px;          /* trước là 850px */
+    max-width: 90%;
+    max-height: 88vh;
 
+    background:#fff;
+    border-radius:16px;
+    padding:20px;
+
+    overflow-y:auto;
+}
 
 /* Thanh cuộn */
 
@@ -598,7 +629,20 @@
 /******************************
             HEADER
 ******************************/
+.modal-header{
+    margin:-20px -20px 20px -20px;
+    padding:16px 20px;
 
+    background:#2563eb;
+    border-radius:16px 16px 0 0;
+}
+
+.modal-header h3{
+    font-size:20px;
+    font-weight:600;
+    color:#fff;
+}
+/*
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -609,9 +653,10 @@
 
     border-bottom: 2px solid #dbeafe;
 }
-
+*/
 
 /* Tiêu đề */
+/*
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -626,13 +671,11 @@
         #60a5fa 100%
     );
 
-    /*border-radius: 22px 22px 0 0;*/
-
     margin: -28px -28px 28px -28px;
 
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
 }
-
+*/
 /******************************
             NÚT X
 ******************************/
@@ -667,7 +710,7 @@
 /******************************
             LABEL
 ******************************/
-
+/*
 .modal-content label {
     display: block;
 
@@ -679,7 +722,14 @@
 
     color: #334155;
 }
+*/
+.modal-content label{
+    margin-top:12px;
+    margin-bottom:6px;
 
+    font-size:13px;
+    font-weight:600;
+}
 
 /******************************
     MÔN HỌC + ĐỘ KHÓ
@@ -699,7 +749,7 @@
 /******************************
             INPUT
 ******************************/
-
+/*
 .modal-content .form-input {
     width: 100%;
 
@@ -714,6 +764,14 @@
     color: #1e293b;
 
     transition: all .2s ease;
+}*/
+.modal-content .form-input{
+    padding:8px 12px;
+    min-height:38px;
+
+    font-size:14px;
+
+    border-radius:8px;
 }
 
 .modal-content .form-input:focus {
@@ -729,16 +787,19 @@
 /******************************
             TEXTAREA
 ******************************/
-
+/*
 .modal-content textarea {
     resize: none;
 }
-
+*/
+.modal-content textarea{
+    min-height:70px;
+}
 
 /******************************
         ĐÁP ÁN
 ******************************/
-
+/*
 .question-answer-row {
     display: flex;
     align-items: center;
@@ -746,7 +807,11 @@
 
     margin-bottom: 12px;
 }
-
+*/
+.question-answer-row{
+    gap:8px;
+    margin-bottom:8px;
+}
 .question-answer-row input[type="text"] {
     flex: 1;
 }
@@ -759,7 +824,7 @@
 
 
 /* Chữ "Đúng" */
-
+/*
 .radio-label {
     display: flex;
     align-items: center;
@@ -770,12 +835,15 @@
     font-size: 14px;
     color: #475569;
 }
-
+*/
+.radio-label{
+    font-size:13px;
+}
 
 /******************************
             FOOTER
 ******************************/
-
+/*
 .modal-actions {
     margin-top: 28px;
     padding-top: 20px;
@@ -786,12 +854,17 @@
     justify-content: flex-end;
     gap: 15px;
 }
+*/
+.modal-actions{
+    margin-top:18px;
+    padding-top:14px;
+}
 
 
 /******************************
             BUTTON
 ******************************/
-
+/*
 .modal-actions button {
     padding: 11px 24px;
 
@@ -802,6 +875,11 @@
 
     cursor: pointer;
     transition: all .25s ease;
+}*/
+.modal-actions button{
+    padding:8px 18px;
+    font-size:14px;
+    border-radius:8px;
 }
 
 

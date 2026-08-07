@@ -9,6 +9,18 @@ if (!process.env.JWT_SECRET) {
 /* =========================
    Register
 ========================= */
+// Utility: sinh userCode duy nhất
+async function generateUniqueUserCode(base = 'USER') {
+  const cleanBase = base.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 8) || 'USER';
+  let userCode = cleanBase;
+  let counter = 1;
+  while (await User.findOne({ userCode })) {
+    userCode = `${cleanBase}${counter}`;
+    counter += 1;
+  }
+  return userCode;
+}
+
 const register = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
@@ -21,14 +33,18 @@ const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 12); // Tăng lên 12 là an toàn hơn
 
+    // Tự sinh userCode duy nhất từ email
+    const userCode = await generateUniqueUserCode((email || '').split('@')[0]);
+
     const user = await User.create({
       name,
+      userCode,
       email,
       password: hashedPassword,
       phone: phone || null,
       role: 'student',           // Luôn hardcode, không tin client
       joinDate: new Date(),
-      avatar: `https://i.pravatar.cc/200?img=${Math.floor(Math.random() * 70)}`,
+      avatar: null,              // Avatar mặc định do frontend tạo (màu + chữ đầu/cuối)
     });
 
     const { password: _, ...safeUser } = user.toObject();
@@ -49,10 +65,75 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const identifier = (email || '').toString().trim();
 
-    const user = await User.findOne({ email }).select('+password');
+    // Cho phép đăng nhập bằng email HOẶC mã userCode
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { userCode: identifier },
+      ],
+    }).select('+password');
+
     if (!user) {
       return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
+    }
+
+    // 🔒 Chặn admin đăng nhập từ trang người dùng
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Tài khoản admin không được đăng nhập từ trang này. Vui lòng dùng trang quản trị.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
+    }
+
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        role: user.role,
+        email: user.email 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    const { password: _, ...safeUser } = user.toObject();
+
+    res.json({
+      message: 'Đăng nhập thành công',
+      token,
+      user: safeUser
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
+/* =========================
+   Admin Login (chỉ dành cho trang /admin)
+========================= */
+const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const identifier = (email || '').toString().trim();
+
+    // Cho phép đăng nhập bằng email HOẶC mã userCode
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { userCode: identifier },
+      ],
+    }).select('+password');
+
+    if (!user) {
+      return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng' });
+    }
+
+    // 🔒 Chỉ cho phép admin đăng nhập từ trang quản trị
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Tài khoản này không có quyền admin' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -185,6 +266,7 @@ const updateSettings = async (req, res) => {
 module.exports = { 
   register, 
   login, 
+  adminLogin, 
   getMe, 
   updateProfile, 
   changePassword, 

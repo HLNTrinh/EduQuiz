@@ -3,12 +3,8 @@ import { FaBars, FaGraduationCap, FaCheckCircle } from 'react-icons/fa';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
 import { useAuth } from '../../context/AuthContext';
+import Avatar from '../common/Avatar';
 import '../../styles/AdminSettingManagement.css';
-
-const AVATAR_COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
-  '#ec4899', '#06b6d4', '#6366f1', '#f97316'
-];
 
 export default function AdminLayout({ children, pageTitle, pageSubtitle }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -29,14 +25,6 @@ export default function AdminLayout({ children, pageTitle, pageSubtitle }) {
   }, [user]);
 
   const adminName = currentUser?.name || 'Quản trị viên';
-  const lastWord = adminName.trim().split(' ').filter(Boolean).pop();
-  const initialLetter = lastWord ? lastWord[0].toUpperCase() : 'A';
-
-  let hash = 0;
-  for (let i = 0; i < adminName.length; i++) {
-    hash = adminName.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const bgColor = AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 
   // Auto-hide toast notification after 3 seconds
   useEffect(() => {
@@ -66,12 +54,7 @@ export default function AdminLayout({ children, pageTitle, pageSubtitle }) {
           </div>
           <span className="asm-mobile-brand-text">EduQuiz</span>
         </div>
-        <div
-          className="asm-mobile-avatar-text"
-          style={{ backgroundColor: bgColor }}
-        >
-          {initialLetter}
-        </div>
+        <Avatar user={currentUser} size={32} className="asm-mobile-avatar-text" />
       </div>
 
       {/* Sidebar Overlay for Mobile */}
