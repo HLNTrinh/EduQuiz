@@ -186,7 +186,42 @@
   margin-bottom: 20px;
   padding: 13px 15px 11px;
 }
-/*Thanh cuộn*/
+/*nút thêm file csv*/
+.btn-import-csv {
+    height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 0 16px;
+
+    border: 1px solid #2563eb;
+    border-radius: 10px;
+
+    background: #2563eb;
+    color: #fff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-import-csv:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+.btn-import-csv:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* ==========================
    THANH CUỘN DANH SÁCH MÔN HỌC
 ========================== */

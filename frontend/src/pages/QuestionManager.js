@@ -1,14 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
+
 import { FiCheckCircle, FiXCircle,} from "react-icons/fi";
 import { FiX } from "react-icons/fi";
 import { HiOutlinePencilSquare } from "react-icons/hi2";
 import { RiDeleteBin3Line } from "react-icons/ri";
+import { FiUpload } from "react-icons/fi";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { questionService, subjectService } from '../services/authService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
-import '../styles/QuestionsBank.css';
+import Papa from "papaparse";
 import { RxCross2 } from "react-icons/rx";
+import '../styles/QuestionsBank.css';
+
 
 const emptyForm = {
   content: '',
@@ -47,6 +51,10 @@ export const QuestionManager = () => {
   const [formData, setFormData] = useState(emptyForm);
  // Danh sách các câu hỏi đang nhập trong form "Thêm câu hỏi mới"
   const [questionForms, setQuestionForms] = useState([]);
+  //Thêm state cho CSV
+  const [isImportingCSV, setIsImportingCSV] = useState(false);
+  const [csvFileName, setCsvFileName] = useState('');
+  
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   //const [message, setMessage] = useState('');
@@ -502,6 +510,509 @@ const handleQuestionChange = (questionIndex, field, value) => {
       //setMessage(error.message || 'Không thể xóa câu hỏi.');
       showToast(error.message || 'Không thể xóa câu hỏi.', 'error');
     }
+  };
+
+//Thêm input file ẩn
+  const handleCSVButtonClick = () => {
+    document.getElementById('question-csv-input')?.click();
+  };
+
+  // ==========================================
+  // TẢI FILE CSV MẪU
+  // ==========================================
+  const handleDownloadTemplate = () => {
+    const headers = [
+      'content',
+      'category',
+      'difficulty',
+      'optionA',
+      'optionB',
+      'optionC',
+      'optionD',
+      'correctAnswer',
+      'explanation',
+    ];
+
+    const sampleRows = [
+      [
+        'Thủ đô của Việt Nam là gì?',
+        'Toán',
+        'medium',
+        'Hà Nội',
+        'TP.HCM',
+        'Đà Nẵng',
+        'Hải Phòng',
+        'A',
+        'Đây là một câu hỏi ví dụ.',
+      ],
+    ];
+
+    // BOM để Excel đọc đúng tiếng Việt
+    const csvContent =
+      '\uFEFF' +
+      [headers.join(','), ...sampleRows.map((r) => r.join(','))].join(
+        '\n'
+      );
+
+    const blob = new Blob([csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'cau_hoi_mau.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast(
+      'Đã tải file CSV mẫu. Vui lòng giữ đúng tên cột như trong file mẫu.',
+      'success'
+    );
+  };
+
+  // ==========================================
+  // CHUYỂN ĐỔI ENCODING (FileReader + TextDecoder)
+  // ==========================================
+  const decodeFile = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onerror = () =>
+        reject(new Error('Không thể đọc file CSV.'));
+
+      reader.onload = (e) => {
+        try {
+          const buffer = e.target.result;
+          const bytes = new Uint8Array(buffer);
+
+          let text = '';
+
+          // Kiểm tra BOM UTF-8: EF BB BF
+          if (
+            bytes[0] === 0xef &&
+            bytes[1] === 0xbb &&
+            bytes[2] === 0xbf
+          ) {
+            text = new TextDecoder('utf-8').decode(
+              bytes.subarray(3)
+            );
+          }
+          // Kiểm tra BOM UTF-16 LE: FF FE
+          else if (
+            bytes[0] === 0xff &&
+            bytes[1] === 0xfe
+          ) {
+            text = new TextDecoder('utf-16le').decode(
+              bytes.subarray(2)
+            );
+          }
+          // Kiểm tra BOM UTF-16 BE: FE FF
+          else if (
+            bytes[0] === 0xfe &&
+            bytes[1] === 0xff
+          ) {
+            text = new TextDecoder('utf-16be').decode(
+              bytes.subarray(2)
+            );
+          }
+          // Không có BOM -> thử UTF-8, nếu lỗi thì thử Windows-1258/1252
+          else {
+            try {
+              text = new TextDecoder('utf-8', {
+                fatal: true,
+              }).decode(bytes);
+            } catch (e) {
+              // UTF-8 lỗi -> nhiều khả năng là ANSI (Windows-1258 cho tiếng Việt)
+              text = decodeWindows1258(bytes);
+            }
+          }
+
+          resolve(text);
+        } catch (err) {
+          reject(err);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Giải mã mã Windows-1258 (ANSI tiếng Việt) sang Unicode
+  const decodeWindows1258 = (bytes) => {
+    const bytes1 = Array.from(bytes);
+
+    return bytes1
+      .map((byte) => {
+        // Bản đồ các ký tự tiếng Việt đặc biệt trong Windows-1258
+        const map = {
+          0x80: '€', 0x82: '‚', 0x83: 'ƒ', 0x84: '„',
+          0x85: '…', 0x86: '†', 0x87: '‡', 0x88: 'ˆ',
+          0x89: '‰', 0x8a: 'Š', 0x8b: '‹', 0x8c: 'Œ',
+          0x8e: 'Ž', 0x91: '‘', 0x92: '’', 0x93: '“',
+          0x94: '”', 0x95: '•', 0x96: '–', 0x97: '—',
+          0x98: '˜', 0x99: '™', 0x9a: 'š', 0x9b: '›',
+          0x9c: 'œ', 0x9e: 'ž', 0x9f: 'Ÿ',
+          0xa0: '\u00a0', 0xa1: '¡', 0xa2: '¢', 0xa3: '£',
+          0xa4: '¤', 0xa5: '¥', 0xa6: '¦', 0xa7: '§',
+          0xa8: '¨', 0xa9: '©', 0xaa: 'ª', 0xab: '«',
+          0xac: '¬', 0xad: '\u00ad', 0xae: '®', 0xaf: '¯',
+          0xb0: '°', 0xb1: '±', 0xb2: '²', 0xb3: '³',
+          0xb4: '´', 0xb5: 'µ', 0xb6: '¶', 0xb7: '·',
+          0xb8: '¸', 0xb9: '¹', 0xba: 'º', 0xbb: '»',
+          0xbc: '¼', 0xbd: '½', 0xbe: '¾', 0xbf: '¿',
+          // Các ký tự tiếng Việt Windows-1258
+          0xd0: 'Đ', 0xd1: 'đ', 0xd2: 'Ỳ', 0xd3: 'Ý',
+          0xd4: 'Ỵ', 0xd5: 'Ỷ', 0xd6: 'Ỹ', 0xd7: '×',
+          0xf0: 'ð', 0xf1: 'ð', 0xf2: 'ò', 0xf3: 'ó',
+          0xf4: 'ô', 0xf5: 'õ', 0xf6: 'ö', 0xf7: '÷',
+          0xf8: 'ø', 0xf9: 'ù', 0xfa: 'ú', 0xfb: 'û',
+          0xfc: 'ü', 0xfd: 'ý', 0xfe: 'þ', 0xff: 'ÿ',
+        };
+
+        // Nếu byte < 128 => giữ nguyên ký tự ASCII
+        if (byte < 128) return String.fromCharCode(byte);
+
+        // Nếu có trong bản đồ đặc biệt
+        if (byte in map) return map[byte];
+
+        // Fallback: dùng Latin-1
+        return String.fromCharCode(byte);
+      })
+      .join('');
+  };
+
+  const handleCSVImport = (event) => {
+      const file = event.target.files?.[0];
+
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+          showToast('Vui lòng chọn file CSV.', 'error');
+          event.target.value = '';
+          return;
+      }
+
+      setCsvFileName(file.name);
+      setIsImportingCSV(true);
+
+      // Đọc file và tự nhận diện encoding trước khi parse
+      decodeFile(file)
+        .then((text) => {
+          Papa.parse(text, {
+            header: true,
+skipEmptyLines: true,
+            encoding: 'UTF-8',
+            delimiter: '', // để PapaParse tự dò dấu phân cách (`,` hoặc `;`)
+            transformHeader: (header) =>
+              String(header || '')
+                .replace(/^\uFEFF/, '')
+                .trim(),
+
+            complete: async (results) => {
+              try {
+                  if (
+                    results.errors &&
+                    results.errors.length > 0 &&
+                    results.errors.some(
+                      (err) => err.type === 'Delimiter'
+                    )
+                  ) {
+                      console.error('CSV errors:', results.errors);
+
+                      showToast(
+                          'File CSV có lỗi định dạng (sai dấu phân cách).',
+                          'error'
+                      );
+
+                      return;
+                  }
+
+                  const rows = results.data || [];
+
+                  if (rows.length === 0) {
+                      showToast(
+                          'File CSV không có dữ liệu. Vui lòng kiểm tra lại file (cần có dòng tiêu đề đúng chuẩn và ít nhất 1 dòng dữ liệu).',
+                          'error'
+                      );
+
+                      return;
+                  }
+
+                  // Kiểm tra các cột bắt buộc
+                  const missingColumns = [
+                    'content',
+                    'optionA',
+                    'optionB',
+                    'optionC',
+                    'optionD',
+                    'correctAnswer',
+                  ].filter((col) => {
+                    const hasColumn = rows.some(
+                      (r) =>
+                        Object.prototype.hasOwnProperty.call(r, col) &&
+                        r[col] !== undefined
+                    );
+                    return !hasColumn;
+                  });
+
+                  if (missingColumns.length > 0) {
+                      showToast(
+                          `File CSV thiếu cột bắt buộc: ${missingColumns.join(
+                            ', '
+                          )}. Vui lòng tải file mẫu để xem đúng định dạng.`,
+                          'error'
+                      );
+
+                      return;
+                  }
+
+                  console.log('CSV:', rows);
+
+                  // ==========================================
+                  // CHUYỂN CSV → QUESTION
+                  // ==========================================
+
+                  const importedQuestions = [];
+
+                  for (let i = 0; i < rows.length; i++) {
+
+                      const row = rows[i];
+
+                      const content =
+                          String(row.content || '').trim();
+
+                      const categoryName =
+                          String(row.category || '').trim();
+
+                      const difficulty =
+                          String(row.difficulty || '')
+                              .trim()
+                              .toLowerCase();
+
+                      const optionA =
+                          String(row.optionA || '').trim();
+
+                      const optionB =
+                          String(row.optionB || '').trim();
+
+                      const optionC =
+                          String(row.optionC || '').trim();
+
+                      const optionD =
+                          String(row.optionD || '').trim();
+
+                      const correctAnswer =
+                          String(row.correctAnswer || '')
+                              .trim()
+                              .toUpperCase();
+
+                      const explanation =
+                          String(row.explanation || '').trim();
+
+
+                      // ==========================================
+                      // KIỂM TRA NỘI DUNG
+                      // ==========================================
+
+                      if (!content) {
+                          throw new Error(
+                              `Dòng ${i + 2}: thiếu nội dung câu hỏi.`
+                          );
+                      }
+
+
+                      if (!categoryName) {
+                          throw new Error(
+                              `Dòng ${i + 2}: thiếu môn học.`
+                          );
+                      }
+
+
+                      if (!optionA || !optionB || !optionC || !optionD) {
+                          throw new Error(
+                              `Dòng ${i + 2}: phải có đủ 4 đáp án A, B, C, D.`
+                          );
+                      }
+
+
+                      if (!['A', 'B', 'C', 'D'].includes(correctAnswer)) {
+                          throw new Error(
+                              `Dòng ${i + 2}: đáp án đúng phải là A, B, C hoặc D.`
+                          );
+                      }
+
+
+                      // ==========================================
+                      // KIỂM TRA ĐỘ KHÓ
+                      // ==========================================
+
+                      const difficultyMap = {
+                          easy: 'easy',
+                          'dễ': 'easy',
+
+                          medium: 'medium',
+                          'trung bình': 'medium',
+
+                          hard: 'hard',
+                          'khó': 'hard',
+                      };
+
+                      const difficultyValue =
+                          difficultyMap[difficulty];
+
+                      if (!difficultyValue) {
+                          throw new Error(
+                              `Dòng ${i + 2}: độ khó không hợp lệ.`
+                          );
+                      }
+
+
+                      // ==========================================
+                      // TÌM ID MÔN HỌC
+                      // ==========================================
+
+                      const subject = subjectList.find(
+                          (item) =>
+                              item.name
+                                  ?.trim()
+                                  .toLowerCase() ===
+                              categoryName
+                                  .trim()
+                                  .toLowerCase()
+                      );
+
+                      if (!subject) {
+                          throw new Error(
+                              `Dòng ${i + 2}: không tìm thấy môn học "${categoryName}" trong hệ thống.`
+                          );
+                      }
+
+
+                      // ==========================================
+                      // TẠO OBJECT QUESTION
+                      // ==========================================
+
+                      const question = {
+                          content,
+
+                          category: subject._id,
+
+                          difficulty: difficultyValue,
+
+                          explanation,
+
+                          options: [
+                              {
+                                  text: optionA,
+                                  isCorrect: correctAnswer === 'A',
+                              },
+                              {
+                                  text: optionB,
+                                  isCorrect: correctAnswer === 'B',
+                              },
+                              {
+                                  text: optionC,
+                                  isCorrect: correctAnswer === 'C',
+                              },
+                              {
+                                  text: optionD,
+                                  isCorrect: correctAnswer === 'D',
+                              },
+                          ],
+                      };
+
+                      importedQuestions.push(question);
+                  }
+
+
+                  // ==========================================
+                  // LƯU TỪNG CÂU HỎI VÀO DATABASE
+                  // ==========================================
+
+                  const savedQuestions = [];
+
+                  for (const question of importedQuestions) {
+
+                      const response =
+                          await questionService.createQuestion(
+                              question
+                          );
+
+                      const savedQuestion =
+                          response?.data || response;
+
+                      savedQuestions.push(savedQuestion);
+                  }
+
+
+                  // ==========================================
+                  // CẬP NHẬT DANH SÁCH TRÊN GIAO DIỆN
+                  // ==========================================
+
+                  setQuestions((prev) => [
+                      ...savedQuestions,
+                      ...prev,
+                  ]);
+
+
+                  // ==========================================
+                  // THÔNG BÁO
+                  // ==========================================
+
+                  showToast(
+                      `Đã nhập thành công ${savedQuestions.length} câu hỏi từ file CSV.`,
+                      'success'
+                  );
+
+              } catch (error) {
+
+                  console.error(
+                      'Lỗi import CSV:',
+                      error
+                  );
+
+                  showToast(
+                      error.message ||
+                      'Không thể nhập câu hỏi từ file CSV.',
+                      'error'
+                  );
+
+              } finally {
+
+                  setIsImportingCSV(false);
+
+                  // Cho phép chọn lại chính file đó
+                  event.target.value = '';
+              }
+          },
+
+          error: (error) => {
+
+              console.error(
+                  'Lỗi đọc CSV:',
+                  error
+              );
+
+              setIsImportingCSV(false);
+
+              showToast(
+                  'Không thể đọc file CSV.',
+                  'error'
+              );
+
+event.target.value = '';
+          },
+      });
+      })
+      .catch((error) => {
+        console.error('Lỗi đọc file CSV:', error);
+        setIsImportingCSV(false);
+        showToast('Không thể đọc file CSV.', 'error');
+        event.target.value = '';
+      });
   };
 
   return (
@@ -993,6 +1504,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          {/*
           <div className="question-page-actions">
             <div className="filter-select">
               <select className="form-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
@@ -1008,8 +1520,87 @@ const handleQuestionChange = (questionIndex, field, value) => {
                 <option>Cũ nhất</option>
               </select>
             </div>
+          </div>*/}
+
+          <div className="question-page-actions">
+
+            {/* LỌC MỨC ĐỘ */}
+            <div className="filter-select">
+              <select
+                className="form-input"
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value)}
+              >
+                <option value="Tất cả">
+                  Tất cả mức độ
+                </option>
+
+                <option value="Dễ">
+                  Dễ
+                </option>
+
+                <option value="Trung bình">
+                  Trung bình
+                </option>
+
+                <option value="Khó">
+                  Khó
+                </option>
+              </select>
+            </div>
+
+
+            {/* SẮP XẾP */}
+            <div className="filter-select">
+              <select
+                className="form-input"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              >
+                <option value="newest">
+                  Mới nhất
+                </option>
+
+                <option value="oldest">
+                  Cũ nhất
+                </option>
+              </select>
+            </div>
+
+
+            {/* NHẬP CSV */}
+            <button
+              type="button"
+              className="btn-import-csv"
+              onClick={handleCSVButtonClick}
+              disabled={isImportingCSV}
+            >
+              <FiUpload size={17} />
+
+              {isImportingCSV
+                ? 'Đang nhập...'
+                : 'Nhập file CSV'}
+            </button>
+
+            {/* TẢI FILE MẪU */}
+            <button
+              type="button"
+              className="btn-import-csv"
+              onClick={handleDownloadTemplate}
+            >
+              Tải file mẫu
+            </button>
+
           </div>
+
         </section>
+            <input
+                id="question-csv-input"
+                type="file"
+                accept=".csv,text/csv"
+                style={{ display: 'none' }}
+                onChange={handleCSVImport}
+            />        
 
         <section className="question-bank-toolbar question-filter-panel">
           <div className="question-filter-scroll">
