@@ -270,6 +270,47 @@ export default function EduQuizPage() {
     }
   };
 
+  // Scroll reveal animation cho section "Quy trình 3 bước đơn giản"
+  useEffect(() => {
+    const section = document.querySelector('.workflow-section');
+    if (!section) return;
+
+    const steps = section.querySelectorAll('.workflow-step');
+    const grid = section.querySelector('.workflow-grid');
+    let observer;
+
+    const revealSteps = () => {
+      if (grid) grid.classList.add('run-flow');
+      steps.forEach((step, idx) => {
+        setTimeout(() => {
+          step.classList.add('visible');
+        }, idx * 200); // chạy tuần tự 1 → 2 → 3
+      });
+    };
+
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              revealSteps();
+              observer.disconnect();
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      observer.observe(section);
+    } else {
+      // Fallback cho trình duyệt cũ: hiện ngay tất cả
+      revealSteps();
+    }
+
+    return () => {
+      if (observer) observer.disconnect();
+    };
+  }, []);
+
   // Timer logic
   useEffect(() => {
     if (quizStarted && timeLeft > 0 && !quizSubmitted) {
