@@ -751,6 +751,30 @@
   }
 }
 
+/* =========================================================
+   RESPONSIVE - Sidebar thành top bar
+========================================================= */
+
+@media (max-width: 900px) {
+  .dash-shell {
+    display: block;
+  }
+
+  .dash-main {
+    width: 100%;
+
+    margin-left: 0;
+
+    padding-top: 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-main {
+    padding-top: 52px;
+  }
+}
+
 @media (max-width: 700px) {
   .result-overview-shell {
     display: block;

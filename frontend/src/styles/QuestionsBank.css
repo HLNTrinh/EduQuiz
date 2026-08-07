@@ -519,6 +519,30 @@
     margin-top:20px;
 }
 
+/* =========================================================
+   RESPONSIVE - Sidebar thành top bar
+========================================================= */
+
+@media (max-width: 900px) {
+  .dash-shell {
+    display: block;
+  }
+
+  .dash-shell .dash-main {
+    width: 100%;
+
+    margin-left: 0;
+
+    padding-top: 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-shell .dash-main {
+    padding-top: 52px;
+  }
+}
+
 @media (max-width: 1050px) {
   .dash-shell .sidebar {
     width: 185px;
@@ -1003,4 +1027,35 @@
     .modal-header h3 {
         font-size: 22px;
     }
+}
+
+/* =========================================================
+   RESPONSIVE - Đảm bảo nội dung không bị che bởi top bar
+========================================================= */
+
+@media (max-width: 900px) {
+  .dash-shell .dash-main {
+    padding-top: 64px;
+  }
+
+  .dash-shell .dash-header--overview,
+  .dash-shell .question-bank-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dash-shell .question-page-actions {
+    width: 100%;
+  }
+
+  .dash-shell .filter-select {
+    flex: 1;
+    width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-shell .dash-main {
+    padding-top: 52px;
+  }
 }

@@ -1,6 +1,4 @@
-//import { useNavigate } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 
 import { TbLayoutDashboard } from "react-icons/tb";
 import { LuBookOpenText } from "react-icons/lu";
@@ -8,32 +6,39 @@ import { FcLibrary } from "react-icons/fc";
 import { LuChartNoAxesCombined } from "react-icons/lu";
 import { FaUsers } from "react-icons/fa";
 
-import "./TeacherSidebar.css"; // nếu CSS của sidebar ở đây
-
+import "./TeacherSidebar.css";
 
 export default function TeacherSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-logo">
-        {/* Logo SVG của bạn */}
+    <aside className="sidebar-teacher">
+
+      {/* =========================
+          LOGO
+      ========================= */}
+      <div className="sidebar-logo-teacher">
+
         <svg
-          width="190"
-          height="62"
-          viewBox="0 0 220 60"
+          width="170"
+          height="48"
+          viewBox="0 0 170 48"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+
           {/* Icon */}
           <rect
-            x="0"
-            y="5"
-            width="50"
-            height="50"
-            rx="14"
+            x="4"
+            y="6"
+            width="40"
+            height="40"
+            rx="12"
             fill="url(#paint0_linear)"
           />
 
@@ -58,10 +63,10 @@ export default function TeacherSidebar() {
 
           {/* Tên EduQuiz */}
           <text
-            x="65"
-            y="37"
+            x="55"
+            y="31"
             fontFamily="Inter, sans-serif"
-            fontSize="26"
+            fontSize="21"
             fontWeight="800"
             fill="#0F172A"
           >
@@ -69,7 +74,6 @@ export default function TeacherSidebar() {
             <tspan fill="#2563EB">Quiz</tspan>
           </text>
 
-          {/* Gradient */}
           <defs>
             <linearGradient
               id="paint0_linear"
@@ -83,6 +87,7 @@ export default function TeacherSidebar() {
               <stop offset="1" stopColor="#1D4ED8" />
             </linearGradient>
           </defs>
+
         </svg>
 
         <span className="sidebar-subtitle">
@@ -91,87 +96,128 @@ export default function TeacherSidebar() {
 
       </div>
 
+
+      {/* =========================
+          MENU
+      ========================= */}
       <nav className="sidebar-nav">
+
+        {/* Tổng quan */}
         <a
-          className={`sidebar-link ${
-            location.pathname === "/teacher/dashboard" ? "sidebar-link--active" : ""
-          }`}
           href="#"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/dashboard"
+              ? "sidebar-link--active"
+              : ""
+          }`}
           onClick={(e) => {
             e.preventDefault();
-            navigate("/teacher/dashboard");
+            handleNavigate("/teacher/dashboard");
           }}
         >
           <span className="sidebar-icon">
             <TbLayoutDashboard size={22} />
           </span>
-          Tổng quan
+
+          <span className="sidebar-text">
+            Tổng quan
+          </span>
         </a>
 
+
+        {/* Đề thi */}
         <a
-          className={`sidebar-link ${
-            location.pathname === "/teacher/exams" ? "sidebar-link--active" : ""
-          }`}
           href="#"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/exams"
+              ? "sidebar-link--active"
+              : ""
+          }`}
           onClick={(e) => {
             e.preventDefault();
-            navigate("/teacher/exams");
+            handleNavigate("/teacher/exams");
           }}
         >
           <span className="sidebar-icon">
             <LuBookOpenText size={22} />
           </span>
-          Đề thi
+
+          <span className="sidebar-text">
+            Đề thi
+          </span>
         </a>
 
+
+        {/* Câu hỏi */}
         <a
-          className={`sidebar-link ${
-            location.pathname === "/teacher/questions" ? "sidebar-link--active" : ""
-          }`}
           href="#"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/questions"
+              ? "sidebar-link--active"
+              : ""
+          }`}
           onClick={(e) => {
             e.preventDefault();
-            navigate("/teacher/questions");
+            handleNavigate("/teacher/questions");
           }}
         >
           <span className="sidebar-icon">
             <FcLibrary size={22} />
           </span>
-          Câu hỏi
+
+          <span className="sidebar-text">
+            Câu hỏi
+          </span>
         </a>
 
+
+        {/* Kết quả */}
         <a
-          className={`sidebar-link ${
-            location.pathname === "/teacher/results" ? "sidebar-link--active" : ""
-          }`}
           href="#"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/results"
+              ? "sidebar-link--active"
+              : ""
+          }`}
           onClick={(e) => {
             e.preventDefault();
-            navigate("/teacher/results");
+            handleNavigate("/teacher/results");
           }}
         >
           <span className="sidebar-icon">
             <LuChartNoAxesCombined size={22} />
           </span>
-          Kết quả
+
+          <span className="sidebar-text">
+            Kết quả
+          </span>
         </a>
 
+
+        {/* Thành viên */}
         <a
-          className={`sidebar-link ${
-            location.pathname === "/teacher/members" ? "sidebar-link--active" : ""
-          }`}
           href="#"
+          className={`sidebar-link ${
+            location.pathname === "/teacher/members"
+              ? "sidebar-link--active"
+              : ""
+          }`}
           onClick={(e) => {
             e.preventDefault();
-            navigate("/teacher/members");
+            handleNavigate("/teacher/members");
           }}
         >
           <span className="sidebar-icon">
             <FaUsers size={22} />
           </span>
-          Thành viên
+
+          <span className="sidebar-text">
+            Thành viên
+          </span>
         </a>
+
       </nav>
+
     </aside>
   );
 }

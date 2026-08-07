@@ -126,3 +126,24 @@
     }
 
 }
+
+/* =====================================================
+   RESPONSIVE - Menu avatar trên mobile
+===================================================== */
+
+@media (max-width: 480px) {
+
+    .teacher-avatar-menu {
+        position: fixed;
+
+        top: 56px;
+        right: 10px;
+        left: 10px;
+
+        width: auto;
+
+        max-height: calc(100vh - 76px);
+
+        overflow-y: auto;
+    }
+}
