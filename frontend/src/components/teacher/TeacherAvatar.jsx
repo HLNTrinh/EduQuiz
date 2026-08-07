@@ -32,6 +32,7 @@ export default function TeacherAvatar() {
             >
 <div className="teacher-avatar-circle">
                     <AvatarInitials user={user} size={46} />
+                <AvatarInitials name={user?.name} avatar={user?.avatar} size={46} />
                 </div>
             </button>
 
@@ -41,7 +42,9 @@ export default function TeacherAvatar() {
                     <div className="teacher-avatar-header">
 
 <div className="teacher-avatar-large">
+
                             <AvatarInitials user={user} size={48} />
+                            <AvatarInitials name={user?.name} avatar={user?.avatar} size={48} />
                         </div>
 
                         <div>
