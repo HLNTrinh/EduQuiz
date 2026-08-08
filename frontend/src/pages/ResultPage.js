@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { quizAttemptService } from '../services/services';
+import { formatDuration } from '../utils/formatTime';
 import '../styles/Result.css';
 
 export const ResultPage = () => {
@@ -128,7 +129,9 @@ export const ResultPage = () => {
               </div>
               <div className="detail-item">
                 <span className="detail-label">Thời gian:</span>
-                <span className="detail-value">{result.timeTaken} phút</span>
+                <span className="detail-value">
+  {formatDuration(new Date(result.endTime) - new Date(result.startTime))}
+</span>
               </div>
             </div>
           </div>
