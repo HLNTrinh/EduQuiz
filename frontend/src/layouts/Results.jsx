@@ -383,9 +383,13 @@ function RadarChart({ data, size = 200 }) {
     );
   }
 
-  const cx = size / 2;
-  const cy = size / 2;
-  const r = size * 0.38;
+  const pad = 54; // vùng trống cho nhãn (tránh cắt chữ)
+  const W = size + pad * 2;
+  const H = size + pad * 2 + 20;
+  const cx = W / 2;
+  const cy = H / 2 - 6;
+  const r = size * 0.30;
+  const labelR = r + 30;
   const levels = [0.25, 0.5, 0.75, 1.0];
 
   function getPoints(scale) {
@@ -411,9 +415,12 @@ function RadarChart({ data, size = 200 }) {
   return (
     <div className="chart-wrap" style={{ display: 'flex', justifyContent: 'center' }}>
       <svg
-        viewBox={`0 0 ${size} ${size + 24}`}
-        style={{ width: size, height: size + 24 }}
+        viewBox={`0 0 ${W} ${H}`}
+        style={{ width: W, height: H }}
       >
+        {/* Nền */}
+        <circle cx={cx} cy={cy} r={r} fill="#f5f7ff" />
+
         {/* Grid levels */}
         {levels.map((l) => (
           <polygon
@@ -463,40 +470,20 @@ function RadarChart({ data, size = 200 }) {
         {/* Labels */}
         {data.map((d, i) => {
           const angle = Math.PI / 2 + (i * 2 * Math.PI) / n;
-          const labelR = r + 24;
           const lx = cx + labelR * Math.cos(angle);
           const ly = cy - labelR * Math.sin(angle);
 
-          const anchor =
-            angle > Math.PI ? 'end' : angle < Math.PI && angle > 0 ? 'start' : 'middle';
-
-          const dy =
-            Math.abs(angle - Math.PI / 2) < 0.01
-              ? '-0.3em'
-              : Math.abs(angle - (3 * Math.PI) / 2) < 0.01
-                ? '0.9em'
-                : '0.3em';
+          const cos = Math.cos(angle);
+          const sin = Math.sin(angle);
+          const anchor = cos > 0.35 ? 'start' : cos < -0.35 ? 'end' : 'middle';
+          const dy = sin > 0.9 ? '-0.4em' : sin < -0.9 ? '1em' : '0.35em';
 
           return (
             <g key={i}>
-              <text
-                x={lx}
-                y={ly}
-                textAnchor={anchor}
-                dy={dy}
-                fontSize={10}
-                fontWeight={600}
-                fill="#374151"
-              >
+              <text x={lx} y={ly} textAnchor={anchor} dy={dy} fontSize={11} fontWeight={700} fill="#1f2937">
                 {d.name}
               </text>
-              <text
-                x={lx}
-                y={ly + 12}
-                textAnchor={anchor}
-                fontSize={9}
-                fill="#9ca3af"
-              >
+              <text x={lx} y={ly + 13} textAnchor={anchor} fontSize={10} fontWeight={600} fill="#4f46e5">
                 {d.percentage}%
               </text>
             </g>
