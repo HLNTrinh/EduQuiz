@@ -702,6 +702,52 @@ textarea.form-input{
   background: #fff6d9;
 }
 
+/* =========================================================
+   RESPONSIVE - Sidebar thành top bar
+========================================================= */
+
+@media (max-width: 900px) {
+  .dash-shell {
+    display: block;
+  }
+
+  .dash-shell .dash-main {
+    width: 100%;
+
+    margin-left: 0;
+
+    padding-top: 64px;
+  }
+
+  .dash-header--overview {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    min-height: auto;
+
+    padding: 24px 20px;
+
+    margin-top: 0;
+  }
+
+  .dash-shell .overview-actions {
+    width: 100%;
+
+    justify-content: flex-start;
+
+    flex-wrap: wrap;
+
+    padding-top: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-shell .dash-main {
+    padding-top: 52px;
+  }
+}
+
 @media (max-width: 1100px) {
   .dash-shell .sidebar {
     width: 185px;
@@ -978,4 +1024,20 @@ textarea.form-input{
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+}
+
+/* =========================================================
+   RESPONSIVE - Đảm bảo nội dung không bị che bởi top bar
+========================================================= */
+
+@media (max-width: 900px) {
+  .dash-shell .dash-main {
+    padding-top: 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-shell .dash-main {
+    padding-top: 52px;
+  }
 }

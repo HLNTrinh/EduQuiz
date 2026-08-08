@@ -221,3 +221,34 @@
         transform:translateY(0);
     }
 }
+
+/* =====================================================
+   RESPONSIVE - Thông báo trên mobile
+===================================================== */
+
+@media (max-width: 480px) {
+
+    .notification-popup-panel {
+        position: fixed;
+
+        top: 60px;
+        right: 10px;
+        left: 10px;
+
+        width: auto;
+
+        max-height: calc(100vh - 80px);
+    }
+
+    .notification-popup-header {
+        padding: 14px 16px;
+    }
+
+    .notification-popup-header h3 {
+        font-size: 18px;
+    }
+
+    .notification-popup-item {
+        padding: 14px 16px;
+    }
+}

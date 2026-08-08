@@ -663,6 +663,30 @@
   }
 }
 
+/* =========================================================
+   RESPONSIVE - Sidebar thành top bar
+========================================================= */
+
+@media (max-width: 900px) {
+  .dash-shell {
+    display: block;
+  }
+
+  .dash-shell .dash-main {
+    width: 100%;
+
+    margin-left: 0;
+
+    padding-top: 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-shell .dash-main {
+    padding-top: 52px;
+  }
+}
+
 @media (max-width: 700px) {
   .dash-shell {
     display: block;
@@ -734,5 +758,34 @@
 
   .dash-shell .members-table {
     min-width: 620px;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE - Đảm bảo nội dung không bị che bởi top bar
+========================================================= */
+
+@media (max-width: 900px) {
+  .dash-shell .dash-main {
+    padding-top: 64px;
+  }
+
+  .dash-shell .members-hero-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dash-shell .hero-stat {
+    width: 100%;
+  }
+
+  .dash-shell .members-hero-card .stat-card {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-shell .dash-main {
+    padding-top: 52px;
   }
 }

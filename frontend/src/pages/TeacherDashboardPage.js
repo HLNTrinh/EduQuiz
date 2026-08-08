@@ -13,6 +13,7 @@ import { quizService, quizAttemptService } from '../services/services';
 import { classService } from '../services/authService';
 import { getNotifications } from '../services/adminService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
+//import TeacherLayout from "../layouts/TeacherLayout";
 import TeacherAvatar from "../components/teacher/TeacherAvatar";
 import NotificationDropdown from "../components/teacher/NotificationDropdown";
 import '../styles/TeacherDashBoard.css';
@@ -253,11 +254,9 @@ export const TeacherDashboardPage = () => {
   }));
 
   return (
-    <div className="dash-shell">
-      {/* Thanh menu bên trái */}
-      <TeacherSidebar />
-
-      {/* Nội dung chính bên phải */}
+      <div className="dash-shell">
+        <TeacherSidebar />
+{/* Nội dung chính bên phải */}
       <main className="dash-main">
         {/* Header chào mừng */}
         <header className="dashboard-header">
@@ -497,6 +496,6 @@ export const TeacherDashboardPage = () => {
           ))}
         </section>
       </main>
-    </div>
+      </div>
   );
 };
