@@ -4,6 +4,8 @@ import TeacherSidebar from '../components/teacher/TeacherSidebar';
 import NotificationDropdown from '../components/teacher/NotificationDropdown';
 import TeacherAvatar from '../components/teacher/TeacherAvatar';
 import { classService, quizAttemptService } from '../services/services';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const formatDate = (iso) => {
   if (!iso) return '—';
@@ -15,6 +17,26 @@ const formatDate = (iso) => {
   const min = String(d.getMinutes()).padStart(2, '0');
   return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
 };
+
+// Nạp font TTF hỗ trợ tiếng Việt (cache sau lần đầu) cho jsPDF
+let vnFontsCache = null;
+async function getVnFonts() {
+  if (vnFontsCache) return vnFontsCache;
+  const toBase64 = async (url) => {
+    const res = await fetch(url);
+    const buf = await res.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  };
+  const base = process.env.PUBLIC_URL || '';
+  vnFontsCache = {
+    regular: await toBase64(`${base}/fonts/NotoSans-Regular.ttf`),
+    bold: await toBase64(`${base}/fonts/NotoSans-Bold.ttf`),
+  };
+  return vnFontsCache;
+}
 
 export default function TeacherClassResultPage() {
   const { user, logout } = useAuth();
@@ -117,6 +139,51 @@ export default function TeacherClassResultPage() {
     URL.revokeObjectURL(url);
   };
 
+  const exportPDF = async () => {
+    if (!students.length) return;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+    // Nhúng font tiếng Việt (Noto Sans) để chữ có dấu hiển thị đúng
+    const fonts = await getVnFonts();
+    doc.addFileToVFS('NotoSans-Regular.ttf', fonts.regular);
+    doc.addFileToVFS('NotoSans-Bold.ttf', fonts.bold);
+    doc.addFont('NotoSans-Regular.ttf', 'NotoSans', 'normal');
+    doc.addFont('NotoSans-Bold.ttf', 'NotoSans', 'bold');
+
+    doc.setFont('NotoSans', 'bold');
+    doc.setFontSize(15);
+    doc.text(`Kết quả lớp ${result?.class?.name || ''}`, 14, 16);
+
+    doc.setFont('NotoSans', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Ngày xuất: ${new Date().toLocaleString('vi-VN')}`, 14, 23);
+
+    const head = [['Học sinh', 'Email', ...subjectList, 'Trung bình']];
+    const body = students.map((s) => {
+      const bySubj = {};
+      (s.results || []).forEach((r) => { bySubj[r.subject] = r.bestScore; });
+      return [
+        s.student?.name || '',
+        s.student?.email || '',
+        ...subjectList.map((sub) => (bySubj[sub] !== undefined ? String(bySubj[sub]) : '')),
+        String(s.averageScore ?? ''),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 28,
+      head,
+      body,
+      styles: { font: 'NotoSans', fontSize: 9, cellPadding: 2, overflow: 'linebreak' },
+      headStyles: { fillColor: [59, 91, 219], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 247, 255] },
+      columnStyles: { 0: { cellWidth: 55 } },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save(`ket_qua_lop_${result?.class?.name || 'lop'}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   const cellStyle = {
     padding: '10px 12px', borderBottom: '1px solid #eef2f7', textAlign: 'center', fontSize: 13,
   };
@@ -165,15 +232,26 @@ export default function TeacherClassResultPage() {
               ))}
             </select>
             {students.length > 0 && (
-              <button
-                onClick={exportCSV}
-                style={{
-                  marginLeft: 'auto', padding: '9px 16px', border: '1px solid #d0d7e2', borderRadius: 8,
-                  background: '#fff', color: '#53637b', cursor: 'pointer', fontSize: 13, fontWeight: 600,
-                }}
-              >
-                📥 Xuất CSV
-              </button>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                <button
+                  onClick={exportCSV}
+                  style={{
+                    padding: '9px 16px', border: '1px solid #d0d7e2', borderRadius: 8,
+                    background: '#fff', color: '#53637b', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                  }}
+                >
+                  📥 Xuất CSV
+                </button>
+                <button
+                  onClick={exportPDF}
+                  style={{
+                    padding: '9px 16px', border: 'none', borderRadius: 8,
+                    background: '#3b5bdb', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                  }}
+                >
+                  📄 Xuất PDF
+                </button>
+              </div>
             )}
           </div>
         </div>
