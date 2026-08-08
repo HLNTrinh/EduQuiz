@@ -37,19 +37,31 @@ export default function UserMenu({ size = 36 }) {
         onClick={() => setOpen(!open)}
         style={{ cursor: 'pointer' }}
       >
-        <AvatarInitials user={user} size={size} />
+        <AvatarInitials
+          name={user?.name}
+          avatar={user?.avatar}
+          size={size}
+        />
       </div>
 
       {open && (
         <div className="user-menu-dropdown">
           <div className="user-menu-header">
-            <AvatarInitials user={user} size={44} />
+            <AvatarInitials
+              name={user?.name}
+              avatar={user?.avatar}
+              size={44}
+            />
             <div className="user-menu-info">
-              <strong className="user-menu-name">{user?.name || 'Người dùng'}</strong>
+              <strong className="user-menu-name">
+                {user?.name || 'Người dùng'}
+              </strong>
               <span className="user-menu-role">{roleLabel}</span>
             </div>
           </div>
-<div className="user-menu-divider" />
+
+          <div className="user-menu-divider" />
+
           <button
             className="user-menu-item"
             onClick={() => {
@@ -60,6 +72,7 @@ export default function UserMenu({ size = 36 }) {
             <ProfileIcon />
             Hồ sơ
           </button>
+
           <button
             className="user-menu-item user-menu-logout"
             onClick={logout}
@@ -162,7 +175,16 @@ export default function UserMenu({ size = 36 }) {
 
 function ProfileIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>
@@ -171,7 +193,16 @@ function ProfileIcon() {
 
 function LogoutIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
       <polyline points="16 17 21 12 16 7" />
       <line x1="21" y1="12" x2="9" y2="12" />

@@ -147,11 +147,13 @@ export default function ExamTaking() {
           <button
             className="btn-submit-exam"
             onClick={() => {
-              if (window.confirm(
-                blankCount > 0
-                  ? `Bạn còn ${blankCount} câu chưa trả lời. Nộp bài ngay?`
-                  : "Bạn có chắc chắn muốn nộp bài?"
-              )) {
+              if (
+                window.confirm(
+                  blankCount > 0
+                    ? `Bạn còn ${blankCount} câu chưa trả lời. Nộp bài ngay?`
+                    : "Bạn có chắc chắn muốn nộp bài?"
+                )
+              ) {
                 handleSubmit();
               }
             }}
@@ -185,14 +187,28 @@ export default function ExamTaking() {
           <div className="leftnav-list">
             {quiz.questions.map((q, idx) => {
               const status = getQuestionStatus(q, idx);
+              // Cắt ngắn nội dung câu hỏi để hiển thị gọn
+              const shortContent =
+                q.content && q.content.length > 55
+                  ? q.content.slice(0, 55) + "..."
+                  : q.content || "";
+
               return (
                 <button
                   key={q._id}
                   className={`leftnav-btn leftnav-btn--${status}`}
                   onClick={() => goTo(idx)}
-                  title={`Câu ${idx + 1}${status === "answered" ? " (Đã chọn)" : ""}${status === "flagged" ? " (Xem sau)" : ""}`}
+                  title={`Câu ${idx + 1}${
+                    status === "answered" ? " (Đã chọn)" : ""
+                  }${status === "flagged" ? " (Xem sau)" : ""}`}
                 >
                   <span className="leftnav-num">{idx + 1}</span>
+
+                  {/* Nội dung câu hỏi bên cạnh */}
+                  <span className="leftnav-content">
+                    {renderContent(shortContent)}
+                  </span>
+
                   {status === "flagged" && (
                     <span className="leftnav-flag-icon">🔖</span>
                   )}
@@ -332,10 +348,7 @@ export default function ExamTaking() {
           <div className="card exam-student-card">
             <img
               className="exam-student-avatar"
-              src={
-                user?.avatar ||
-                "https://i.pravatar.cc/64?img=12"
-              }
+              src={user?.avatar || "https://i.pravatar.cc/64?img=12"}
               alt=""
             />
             <div>
@@ -361,4 +374,3 @@ export default function ExamTaking() {
     </div>
   );
 }
-

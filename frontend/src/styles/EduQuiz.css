@@ -1290,6 +1290,7 @@
 .workflow-section {
   padding: 100px 0;
   background-color: #ffffff;
+  overflow: hidden;
 }
 
 .workflow-grid {
@@ -1299,16 +1300,38 @@
   position: relative;
 }
 
-.workflow-grid::after {
+.workflow-grid::before {
+  /* Lớp nền của đường nối (giữ cố định) */
   content: '';
   position: absolute;
   top: 36px;
   left: 10%;
   right: 10%;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-accent-purple));
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25));
   opacity: 0.3;
   z-index: 1;
+}
+
+.workflow-grid::after {
+  /* Đường nối có dòng chảy động (dash chuyển động) */
+  content: '';
+  position: absolute;
+  top: 36px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent-purple), var(--color-primary));
+  background-size: 200% 100%;
+  opacity: 0;
+  z-index: 1;
+  animation: none;
+}
+
+/* Khi section được kích hoạt (add class qua JS) thì đường nối chạy */
+.workflow-grid.run-flow::after {
+  opacity: 0.85;
+  animation: flowDash 3s linear infinite;
 }
 
 .workflow-step {
@@ -1319,6 +1342,27 @@
   gap: 24px;
   position: relative;
   z-index: 2;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scroll reveal: từng bước hiện ra lần lượt từ 1 → 2 → 3 */
+.workflow-step.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hiệu ứng hover riêng cho từng bước khi đã visible */
+.workflow-step.visible:hover .step-number {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.15), 0 12px 28px rgba(99, 102, 241, 0.4);
+}
+
+.workflow-step.visible:hover .workflow-step-card {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(99, 102, 241, 0.35);
 }
 
 .step-number {
@@ -1335,6 +1379,32 @@
   font-weight: 700;
   box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
   border: 8px solid #ffffff;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+/* Vòng tròn chạy quanh số bước */
+.step-number::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  padding: 2px;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(99, 102, 241, 0.9) 90deg, transparent 180deg, rgba(139, 92, 246, 0.9) 270deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: stepSpin 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.workflow-step.visible .step-number::before {
+  opacity: 1;
+}
+
+.workflow-step.visible:hover .step-number::before {
+  animation-play-state: paused;
 }
 
 .workflow-step-card {
@@ -1344,6 +1414,7 @@
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
   width: 100%;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .workflow-step-card h4 {
@@ -1353,9 +1424,37 @@
   margin-bottom: 8px;
 }
 
-.workflow-step-card p {
+ .workflow-step-card p {
   font-size: 13px;
   color: var(--color-text-muted);
+}
+
+/* --- Giảm chuyển động cho người dùng có nhu cầu --- */
+@media (prefers-reduced-motion: reduce) {
+  .workflow-step,
+  .workflow-step.visible .step-number,
+  .workflow-step.visible .workflow-step-card,
+  .workflow-step .step-number::before,
+  .workflow-grid.run-flow::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .workflow-step.visible:hover .step-number,
+  .workflow-step.visible:hover .workflow-step-card {
+    transform: none;
+  }
+}
+
+/* --- Keyframes --- */
+/* Đường nối gradient chạy liên tục */
+@keyframes flowDash {
+  0% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Vòng sáng xoay quanh số bước */
+@keyframes stepSpin {
+  to { transform: rotate(360deg); }
 }
 
 /* --- Testimonials Section --- */
