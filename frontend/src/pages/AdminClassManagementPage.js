@@ -150,8 +150,8 @@ export default function AdminClassManagementPage() {
   const handleOpenEditClass = () => {
     if (!activeClass) return;
     setEditClassName(activeClass.name || '');
-    setEditClassTeacher(activeClass.teacherName || activeClass.teacher?.name || '');
-    setEditClassTeacherId(activeClass.teacher?._id || '');
+    setEditClassTeacher(activeClass.teacherName || activeClass.homeroomTeacher?.name || '');
+    setEditClassTeacherId(activeClass.homeroomTeacher?._id || '');
     setEditClassYear(activeClass.year || '');
     setEditClassStatus(activeClass.status || 'active');
     setShowEditClass(true);
@@ -291,7 +291,7 @@ export default function AdminClassManagementPage() {
                     {isSelected && <div className="selected-indicator"><CheckCircle size={14} className="check-icon" /></div>}
                     <h4 className="class-card-name">{item.name}</h4>
                     <div className="class-card-meta">
-                      <div className="meta-item"><User size={14} /><span>GV: {item.teacherName || item.teacher?.name || 'Chưa phân công'}</span></div>
+                      <div className="meta-item"><User size={14} /><span>GV: {item.teacherName || item.homeroomTeacher?.name || 'Chưa phân công'}</span></div>
                       <div className="meta-item"><Users size={14} /><span>{item.studentCount || 0} học sinh</span></div>
                     </div>
                   </div>
@@ -330,7 +330,7 @@ export default function AdminClassManagementPage() {
                       <span className={`badge-status ${activeClass.status === 'active' ? 'active' : 'paused'}`}>{STATUS_LABELS[activeClass.status] || activeClass.status}</span>
                     </div>
                     <div className="hero-meta-row">
-                      <div className="hero-meta-col"><User size={16} /><span>GV: {activeClass.teacherName || activeClass.teacher?.name || 'Chưa phân công'}</span></div>
+                      <div className="hero-meta-col"><User size={16} /><span>GV: {activeClass.teacherName || activeClass.homeroomTeacher?.name || 'Chưa phân công'}</span></div>
                       <div className="hero-meta-col"><Calendar size={16} /><span>Năm học: {activeClass.year || '---'}</span></div>
                     </div>
                   </div>

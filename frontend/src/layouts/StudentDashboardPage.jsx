@@ -58,31 +58,48 @@ export default function StudentDashboardPage() {
     return () => clearInterval(interval);
   }, [currentHour]);
 
-  // Lấy dữ liệu
+  // Lấy dữ liệu (tải độc lập từng nguồn để 1 lỗi không làm trắng tất cả)
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [quizRes, attemptRes, classRes] = await Promise.all([
-          quizService.getQuizzes({ page: 1, limit: 50 }),
-          quizAttemptService.getStudentAttempts({ page: 1, limit: 50 }),
-          classService.getStudentClasses(),
-        ]);
+    let cancelled = false;
 
+    const loadQuizzes = async () => {
+      try {
+        const quizRes = await quizService.getQuizzes({ page: 1, limit: 50 });
         const quizList = Array.isArray(quizRes)
           ? quizRes
-          : quizRes?.data ?? quizRes?.data?.data ?? [];
-
-        const attemptList =
-          attemptRes?.data ?? attemptRes?.data?.data ?? [];
-
-        setQuizzes(Array.isArray(quizList) ? quizList : []);
-        setAttempts(Array.isArray(attemptList) ? attemptList : []);
-        setStudentClasses(Array.isArray(classRes) ? classRes : []);
+          : quizRes?.data ?? [];
+        if (!cancelled) setQuizzes(Array.isArray(quizList) ? quizList : []);
       } catch (err) {
-        console.error("Failed to load dashboard data:", err);
+        console.error("Failed to load quizzes:", err);
       }
     };
-    fetchData();
+
+    const loadAttempts = async () => {
+      try {
+        const attemptRes = await quizAttemptService.getStudentAttempts({ page: 1, limit: 50 });
+        const attemptList = attemptRes?.data ?? attemptRes?.data?.data ?? [];
+        if (!cancelled) setAttempts(Array.isArray(attemptList) ? attemptList : []);
+      } catch (err) {
+        console.error("Failed to load attempts:", err);
+      }
+    };
+
+    const loadClasses = async () => {
+      try {
+        const classRes = await classService.getStudentClasses();
+        if (!cancelled) setStudentClasses(Array.isArray(classRes) ? classRes : []);
+      } catch (err) {
+        console.error("Failed to load classes:", err);
+      }
+    };
+
+    loadQuizzes();
+    loadAttempts();
+    loadClasses();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // ========== BIỂU ĐỒ 6 THÁNG GẦN NHẤT (tính từ attempts) ==========
@@ -132,14 +149,14 @@ export default function StudentDashboardPage() {
 
     return quizzes
       .filter((q) => {
-        const end = q.endDate ? new Date(q.endDate) : null;
-        const start = q.startDate ? new Date(q.startDate) : null;
+        const end = q.assignment?.deadline ? new Date(q.assignment.deadline) : null;
+        const start = q.assignment?.startTime ? new Date(q.assignment.startTime) : null;
         const inWindow = (!start || start <= now) && (!end || end >= now);
         const notDone = !doneQuizIds.has(String(q._id));
         return inWindow && notDone;
       })
       .map((q) => {
-        const end = q.endDate ? new Date(q.endDate) : new Date();
+        const end = q.assignment?.deadline ? new Date(q.assignment.deadline) : new Date();
         const day = end.getDate();
         const month = "TH." + (end.getMonth() + 1);
         const isUrgent =
@@ -247,6 +264,22 @@ export default function StudentDashboardPage() {
       },
     ];
   }, [quizzes, attempts, upcomingExams]);
+
+  // Dữ liệu thật cho profile card + thử thách tuần
+  const completedCount = attempts.filter(
+    (a) => a.status === "submitted" || a.status === "completed"
+  ).length;
+  const avgPercentageOverall =
+    attempts.length > 0
+      ? Math.round(
+          attempts.reduce((s, a) => s + (a.percentage || 0), 0) / attempts.length
+        )
+      : 0;
+  const challengeTotal = 5;
+  const challengeProgress = Math.min(
+    100,
+    Math.round((completedCount / challengeTotal) * 100)
+  );
 
   return (
     <>
@@ -400,13 +433,13 @@ export default function StudentDashboardPage() {
 
               <div className="profile-stats">
                 <div>
-                  <span className="profile-stat-label">XẾP HẠNG</span>
-                  <strong>#14</strong>
+                  <span className="profile-stat-label">ĐÃ LÀM</span>
+                  <strong>{String(completedCount).padStart(2, "0")}</strong>
                 </div>
                 <div className="profile-stat-divider" />
                 <div>
-                  <span className="profile-stat-label">HUY HIỆU</span>
-                  <strong>08</strong>
+                  <span className="profile-stat-label">ĐTB</span>
+                  <strong>{avgPercentageOverall || 0}</strong>
                 </div>
               </div>
 
@@ -460,10 +493,10 @@ export default function StudentDashboardPage() {
             </p>
 
             <div className="progress-track">
-              <div className="progress-fill" style={{ width: "60%" }} />
+              <div className="progress-fill" style={{ width: `${challengeProgress}%` }} />
             </div>
 
-            <span className="progress-label">3/5 bài hoàn tất</span>
+            <span className="progress-label">{completedCount}/{challengeTotal} bài hoàn tất</span>
           </div>
         </div>
       </div>

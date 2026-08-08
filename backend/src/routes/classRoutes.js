@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const Class = require("../models/Class");
 const User = require("../models/User");
+const TeacherAssignment = require("../models/TeacherAssignment");
 const { authenticate } = require('../middlewares/auth');
 
 // Helper: kiểm tra ObjectId hợp lệ
@@ -18,6 +19,7 @@ const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 router.get("/teacher/:teacherId", authenticate, async (req, res) => {
   try {
     const { teacherId } = req.params;
+    const { subject } = req.query;
     const currentUserId = req.user.id || req.user.userId;
     const currentUserRole = req.user.role;
 
@@ -30,9 +32,31 @@ router.get("/teacher/:teacherId", authenticate, async (req, res) => {
       return res.status(403).json({ success: false, message: "Bạn không có quyền xem dữ liệu này" });
     }
 
-    const classes = await Class.find({ teacher: teacherId })
-      .select("name subject students studentCount progress")
-      .lean();
+    let ids = new Set();
+
+    if (subject && isValidObjectId(subject)) {
+      // Lọc theo môn: chỉ các lớp giáo viên được phân công dạy môn này
+      const subjectClassIds = await TeacherAssignment.find({
+        teacher: teacherId,
+        subject,
+        status: 'active',
+      }).distinct('class');
+      ids = new Set(subjectClassIds.map((x) => x.toString()));
+    } else {
+      // Không có môn: lớp chủ nhiệm + tất cả lớp được phân công dạy
+      const homeroomClasses = await Class.find({ homeroomTeacher: teacherId })
+        .select("name students")
+        .lean();
+      const assignedClassIds = await TeacherAssignment.find({ teacher: teacherId, status: 'active' }).distinct('class');
+      ids = new Set([
+        ...homeroomClasses.map((c) => c._id.toString()),
+        ...assignedClassIds.map((x) => x.toString()),
+      ]);
+    }
+
+    const classes = ids.size
+      ? await Class.find({ _id: { $in: [...ids] } }).select("name students").lean()
+      : [];
 
     res.json({
       success: true,
@@ -69,8 +93,12 @@ router.get("/:classId/members", authenticate, async (req, res) => {
     const currentUserId = (req.user.id || req.user.userId).toString();
     const currentUserRole = req.user.role;
 
-    // Kiểm tra quyền: admin || giáo viên của lớp || học sinh trong lớp
-    const isTeacher = classItem.teacher?.toString() === currentUserId;
+    // Kiểm tra quyền: admin || giáo viên (chủ nhiệm hoặc phân công dạy) của lớp || học sinh trong lớp
+    let isTeacher = classItem.homeroomTeacher?.toString() === currentUserId;
+    if (!isTeacher && currentUserRole === 'teacher') {
+      const assigned = await TeacherAssignment.findOne({ teacher: currentUserId, class: classItem._id, status: 'active' }).lean();
+      isTeacher = Boolean(assigned);
+    }
     const isStudent = classItem.students?.some((id) => id.toString() === currentUserId);
 
     if (currentUserRole !== "admin" && !isTeacher && !isStudent) {
@@ -122,7 +150,7 @@ router.get("/student", authenticate, async (req, res) => {
     const userId = req.user.id || req.user.userId;
 
     const classes = await Class.find({ students: userId })
-      .populate("teacher", "name email avatar")
+      .populate("homeroomTeacher", "name email avatar")
       .sort({ createdAt: -1 })
       .lean();
 

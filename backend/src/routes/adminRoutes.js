@@ -51,6 +51,14 @@ const {
 } = require('../controllers/adminDashboardController');
 
 const {
+  getAssignments,
+  getAssignmentById,
+  createAssignment,
+  updateAssignment,
+  deleteAssignment,
+} = require('../controllers/teacherAssignmentController');
+
+const {
   getSettings,
   updateSettings,
 } = require('../controllers/adminSettingController');
@@ -72,6 +80,13 @@ router.patch('/users/:id/toggle-lock', toggleLockUser);
 
 // ==================== Teacher quick search (for autocomplete) ====================
 router.get('/teachers', getTeachers);
+
+// ==================== Teacher Assignment Management ====================
+router.get('/assignments', getAssignments);
+router.get('/assignments/:id', getAssignmentById);
+router.post('/assignments', createAssignment);
+router.put('/assignments/:id', updateAssignment);
+router.delete('/assignments/:id', deleteAssignment);
 
 // ==================== Subject Management ====================
 router.get('/subjects', getSubjects);

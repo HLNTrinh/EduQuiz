@@ -91,7 +91,8 @@ export const QuestionManager = () => {
 
   const loadSubjects = async () => {
     try {
-      const res = await subjectService.getSubjects();
+      // getCategories trả về các môn giáo viên được phân công dạy
+      const res = await questionService.getCategories();
       const list = Array.isArray(res) ? res : [];
       setSubjectList(list);
     } catch (error) {

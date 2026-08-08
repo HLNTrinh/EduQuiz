@@ -55,18 +55,25 @@ export default function Results() {
   }, [attempts]);
 
   // Data for radar chart: performance by subject category
+  // Helper: lấy tên môn của câu hỏi (categoryName lưu sẵn, hoặc quiz.subject)
+  const getAttemptSubject = (a) => {
+    const subj = a.quizId?.subject;
+    if (subj && typeof subj === 'object' && subj.name) return subj.name;
+    const q = a.answers?.[0]?.questionId;
+    if (q?.categoryName) return q.categoryName;
+    return null;
+  };
+
   const radarData = useMemo(() => {
     const catMap = {};
     attempts.forEach((a) => {
-      if (!a.answers || !Array.isArray(a.answers)) return;
-      a.answers.forEach((ans) => {
-        const q = ans.questionId;
-        if (!q || !q.category) return;
-        const cat = SUBJECT_MAP[q.category] || q.category;
-        if (!catMap[cat]) catMap[cat] = { correct: 0, total: 0 };
-        catMap[cat].total += 1;
-        if (ans.isCorrect) catMap[cat].correct += 1;
-      });
+      const subject = getAttemptSubject(a);
+      if (!subject) return;
+      const correct = (a.answers || []).filter((ans) => ans.isCorrect).length;
+      const total = (a.answers || []).length;
+      if (!catMap[subject]) catMap[subject] = { correct: 0, total: 0 };
+      catMap[subject].correct += correct;
+      catMap[subject].total += total;
     });
 
     return Object.entries(catMap)

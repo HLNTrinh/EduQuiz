@@ -12,6 +12,17 @@ const quizAttemptSchema = new mongoose.Schema(
       ref: 'Quiz',
       required: true,
     },
+    // Denormalize để phân quyền xem điểm theo môn/lớp
+    subject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subject',
+      default: null,
+    },
+    class: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Class',
+      default: null,
+    },
     answers: [
       {
         questionId: {

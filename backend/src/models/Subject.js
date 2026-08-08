@@ -24,10 +24,6 @@ const subjectSchema = new mongoose.Schema(
       enum: ['active', 'inactive'],
       default: 'active',
     },
-    examsCount: {
-      type: Number,
-      default: 0,
-    },
   },
   {
     timestamps: true,

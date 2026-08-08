@@ -7,15 +7,10 @@ const classSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    teacher: {
+    homeroomTeacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null,
-    },
-    teacherName: {
-      type: String,
-      trim: true,
-      default: '',
     },
     students: [
       {
@@ -23,10 +18,6 @@ const classSchema = new mongoose.Schema(
         ref: 'User',
       }
     ],
-    studentCount: {
-      type: Number,
-      default: 0,
-    },
     year: {
       type: String,
       trim: true,
@@ -40,13 +31,14 @@ const classSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
-// Middleware: tự động cập nhật studentCount khi students thay đổi
-classSchema.pre('save', function (next) {
-  this.studentCount = this.students.length;
-  next();
+// studentCount: tính động từ danh sách học sinh
+classSchema.virtual('studentCount').get(function () {
+  return Array.isArray(this.students) ? this.students.length : 0;
 });
 
 const Class = mongoose.model('Class', classSchema);

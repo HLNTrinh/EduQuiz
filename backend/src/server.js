@@ -87,6 +87,7 @@ app.use('/api/quizzes', require('./routes/quizRoutes'));
 app.use('/api/quiz-attempts', require('./routes/quizAttemptRoutes'));
 //mới thêm
 app.use("/api/classes", require("./routes/classRoutes"));
+app.use("/api/assignments", require("./routes/assignmentRoutes"));
 
 // subjects
 app.use("/api/subjects", require("./routes/subjectRoutes"));

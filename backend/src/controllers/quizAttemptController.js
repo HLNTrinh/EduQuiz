@@ -1,16 +1,42 @@
 const QuizAttempt = require('../models/QuizAttempt');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
+const Class = require('../models/Class');
+const QuizAssignment = require('../models/QuizAssignment');
+const { getUserId, getAttemptsFilter } = require('../services/permissionService');
 
 // Bắt đầu làm bài thi
 exports.startQuizAttempt = async (req, res) => {
   try {
     const { quizId } = req.params;
-    const studentId = req.user.id || req.user.userId;
+    const studentId = getUserId(req);
 
     const quiz = await Quiz.findById(quizId).populate('questions.questionId');
     if (!quiz) {
       return res.status(404).json({ message: 'Đề thi không tồn tại' });
+    }
+
+    // Kiểm tra học sinh thuộc lớp được giao đề (QuizAssignment active)
+    const studentClasses = await Class.find({ students: studentId }).select('_id').lean();
+    const classIds = studentClasses.map((c) => c._id);
+
+    const assignment = await QuizAssignment.findOne({
+      quiz: quiz._id,
+      class: { $in: classIds },
+      status: 'active',
+    });
+
+    if (!assignment) {
+      return res.status(403).json({ message: 'Bạn không được giao đề thi này' });
+    }
+
+    // Kiểm tra khung thời gian làm bài (startTime / deadline của assignment)
+    const now = new Date();
+    if (assignment.startTime && now < new Date(assignment.startTime)) {
+      return res.status(400).json({ message: 'Đề thi chưa đến thời gian bắt đầu' });
+    }
+    if (assignment.deadline && now > new Date(assignment.deadline)) {
+      return res.status(400).json({ message: 'Đề thi đã hết hạn làm bài' });
     }
 
     const attemptCount = await QuizAttempt.countDocuments({
@@ -31,6 +57,8 @@ exports.startQuizAttempt = async (req, res) => {
     const attempt = new QuizAttempt({
       studentId,
       quizId,
+      subject: quiz.subject,
+      class: assignment.class,
       answers: validQuestions.map((q) => ({
         questionId: q.questionId._id,
         selectedOptionIndex: null,
@@ -92,7 +120,7 @@ exports.saveAnswer = async (req, res) => {
     }
 
     // Chỉ cho phép chủ bài làm cập nhật
-    const studentId = req.user.id || req.user.userId;
+    const studentId = getUserId(req);
     if (attempt.studentId.toString() !== studentId.toString()) {
       return res.status(403).json({ message: 'Bạn không có quyền cập nhật bài làm này' });
     }
@@ -105,6 +133,7 @@ exports.saveAnswer = async (req, res) => {
     }
 
     await attempt.save();
+
     res.json({ message: 'Lưu câu trả lời thành công' });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
@@ -115,7 +144,7 @@ exports.saveAnswer = async (req, res) => {
 exports.submitQuizAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
-    const studentId = req.user.id || req.user.userId;
+    const studentId = getUserId(req);
 
     const attempt = await QuizAttempt.findById(attemptId).populate('quizId');
     if (!attempt) {
@@ -189,7 +218,7 @@ exports.submitQuizAttempt = async (req, res) => {
 exports.getAttemptResult = async (req, res) => {
   try {
     const { attemptId } = req.params;
-    const userId = req.user.id || req.user.userId;
+    const userId = getUserId(req);
 
     const attempt = await QuizAttempt.findById(attemptId)
       .populate('quizId')
@@ -203,8 +232,20 @@ exports.getAttemptResult = async (req, res) => {
     }
 
     const isOwner = attempt.studentId.toString() === userId.toString();
-    const isTeacher =
-      attempt.quizId?.createdBy?.toString() === userId.toString();
+
+    // Giáo viên được phép xem nếu: admin, hoặc người tạo đề, hoặc attempt nằm trong phạm vi phân công
+    let isTeacher = false;
+    if (req.user.role === 'admin') {
+      isTeacher = true;
+    } else if (req.user.role === 'teacher') {
+      if (attempt.quizId?.createdBy?.toString() === userId) {
+        isTeacher = true;
+      } else {
+        const filter = await getAttemptsFilter(req.user);
+        const visible = await QuizAttempt.findOne({ _id: attempt._id, ...filter }).select('_id').lean();
+        isTeacher = Boolean(visible);
+      }
+    }
 
     if (!isOwner && !isTeacher) {
       return res.status(403).json({ message: 'Bạn không có quyền xem kết quả này' });
@@ -220,11 +261,11 @@ exports.getAttemptResult = async (req, res) => {
 exports.getStudentAttempts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-    const studentId = req.user.id || req.user.userId;
+    const studentId = getUserId(req);
 
     const attempts = await QuizAttempt.find({ studentId })
       .populate('quizId', 'title')
-      .populate('answers.questionId', 'category')
+      .populate('answers.questionId', 'category categoryName')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
@@ -245,27 +286,26 @@ exports.getStudentAttempts = async (req, res) => {
   }
 };
 
-// Lấy kết quả của học sinh cho giáo viên
+// Lấy kết quả cho giáo viên - theo phân quyền chủ nhiệm/bộ môn
 exports.getTeacherAttempts = async (req, res) => {
   try {
     const { page = 1, limit = 10, quizId: filterQuizId } = req.query;
-    const userId = req.user.id || req.user.userId;
 
-    // Chỉ khai báo 1 lần
-    const quizzes = await Quiz.find({ createdBy: userId }).select('_id');
-    const quizIds = quizzes.map((quiz) => quiz._id);
+    // Xây dựng filter theo vai trò (admin/chủ nhiệm/bộ môn)
+    const filter = await getAttemptsFilter(req.user);
+    if (filterQuizId) {
+      filter.quizId = filterQuizId;
+    }
 
-    // Nếu có filterQuizId thì chỉ lấy attempts của quiz đó
-    const matchQuizIds = filterQuizId ? [filterQuizId] : quizIds;
-
-    const attempts = await QuizAttempt.find({ quizId: { $in: matchQuizIds } })
-      .populate('quizId', 'title assignedClass')
+    const attempts = await QuizAttempt.find(filter)
+      .populate('quizId', 'title subject')
       .populate('studentId', 'name email')
+      .populate('class', 'name')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
 
-    const total = await QuizAttempt.countDocuments({ quizId: { $in: matchQuizIds } });
+    const total = await QuizAttempt.countDocuments(filter);
 
     res.json({
       data: attempts,
@@ -280,3 +320,5 @@ exports.getTeacherAttempts = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
+

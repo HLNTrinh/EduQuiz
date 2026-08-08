@@ -33,6 +33,7 @@ import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminUserManagementPage from "./pages/AdminUserManagementPage";
 import AdminSubjectManagementPage from "./pages/AdminSubjectManagementPage";
 import AdminClassManagementPage from "./pages/AdminClassManagementPage";
+import AdminAssignmentManagementPage from "./pages/AdminAssignmentManagementPage";
 import AdminNotificationManagementPage from "./pages/AdminNotificationManagementPage";
 import AdminSettingManagementPage from "./pages/AdminSettingManagementPage";
 import EduQuizPage from "./pages/EduQuizPage";
@@ -92,6 +93,7 @@ function AppRoutes() {
               <Route path="/admin/subject" element={<AdminSubjectManagementPage />} />
               <Route path="/admin/subjects" element={<AdminSubjectManagementPage />} />
               <Route path="/admin/class" element={<AdminClassManagementPage />} />
+              <Route path="/admin/assignments" element={<AdminAssignmentManagementPage />} />
               <Route path="/admin/notifications" element={<AdminNotificationManagementPage />}/>
               <Route path="/admin/settings"  element={<AdminSettingManagementPage />} />
             </>

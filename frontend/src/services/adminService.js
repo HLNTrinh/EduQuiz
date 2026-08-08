@@ -9,6 +9,13 @@ export const deleteUser = (id) => api.delete(`/admin/users/${id}`);
 export const toggleLockUser = (id) => api.patch(`/admin/users/${id}/toggle-lock`);
 export const getTeachers = (params) => api.get('/admin/teachers', { params });
 
+// ==================== Teacher Assignments ====================
+export const getAssignments = (params) => api.get('/admin/assignments', { params });
+export const getAssignmentById = (id) => api.get(`/admin/assignments/${id}`);
+export const createAssignment = (data) => api.post('/admin/assignments', data);
+export const updateAssignment = (id, data) => api.put(`/admin/assignments/${id}`, data);
+export const deleteAssignment = (id) => api.delete(`/admin/assignments/${id}`);
+
 // ==================== Subjects ====================
 export const getSubjects = (params) => api.get('/admin/subjects', { params });
 export const getSubjectById = (id) => api.get(`/admin/subjects/${id}`);

@@ -59,6 +59,16 @@ export const ExamManager = () => {
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState('');
+  // Modal "Giao đề": chọn lớp + thời gian bắt đầu/kết thúc trước khi công bố
+  const [assignModal, setAssignModal] = useState({
+    open: false,
+    mode: 'create', // 'create' | 'publish'
+    quizId: null,
+    subject: '',
+    classId: '',
+    startTime: '',
+    deadline: '',
+  });
 
   /*thêm state phân trang hiện ds đề thi*/
   const QUIZZES_PER_PAGE = 5;
@@ -95,14 +105,23 @@ export const ExamManager = () => {
     }
   };
 
+  const fetchClasses = async (subject) => {
+    try {
+      const classRes = user?._id
+        ? await classService.getTeacherClasses(user._id, subject ? { subject } : {}).catch(() => [])
+        : [];
+      setClasses(Array.isArray(classRes) ? classRes : []);
+    } catch (error) {
+      // silent
+    }
+  };
+
   const loadSubjectsAndClasses = async () => {
     try {
-      const [subjectRes, classRes] = await Promise.all([
-        subjectService.getSubjects().catch(() => []),
-        user?._id ? classService.getTeacherClasses(user._id).catch(() => []) : Promise.resolve([]),
-      ]);
+      // getCategories trả về các môn giáo viên được phân công dạy
+      const subjectRes = await questionService.getCategories().catch(() => []);
       setSubjects(Array.isArray(subjectRes) ? subjectRes : []);
-      setClasses(Array.isArray(classRes) ? classRes : []);
+      await fetchClasses('');
     } catch (error) {
       // silent
     }
@@ -112,6 +131,12 @@ export const ExamManager = () => {
     loadData();
     loadSubjectsAndClasses();
   }, []);
+
+  // Khi đổi môn → chỉ hiện lớp giáo viên được phân công dạy môn đó
+  useEffect(() => {
+    fetchClasses(selectedSubject);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSubject]);
 
   const filteredQuestions = useMemo(() => {
 const query = searchQuery.toLowerCase();
@@ -265,9 +290,6 @@ const showToast = (text, type = "success") => {
         })),
         duration: Number(formData.duration || 45),
         maxAttempts: Number(formData.maxAttempts || 1),
-        assignedClass: formData.assignedClass,
-        startDate: new Date(formData.startDate).toISOString(),
-        endDate: new Date(formData.endDate).toISOString(),
         showAnswerAfter: Boolean(formData.showAnswerAfter),
         totalPoints,
         passingScore: Number(formData.passingScore || 50),
@@ -368,9 +390,16 @@ const showToast = (text, type = "success") => {
     }
   };
 
-  const handlePublishQuiz = async (quizId) => {
+  const handlePublishQuiz = async (quizId, opts = {}) => {
     try {
-      await quizService.publishQuiz(quizId);
+      const body = {
+        classId: opts.classId || formData.assignedClass || undefined,
+        startTime: opts.startTime ? new Date(opts.startTime).toISOString()
+          : (formData.startDate ? new Date(formData.startDate).toISOString() : undefined),
+        deadline: opts.deadline ? new Date(opts.deadline).toISOString()
+          : (formData.endDate ? new Date(formData.endDate).toISOString() : undefined),
+      };
+      await quizService.publishQuiz(quizId, body);
       // refresh list
       await loadData();
       //setMessage('Đã công bố đề thi.');
@@ -378,6 +407,55 @@ const showToast = (text, type = "success") => {
     } catch (error) {
       //setMessage(error.message || 'Không thể công bố đề thi.');
       showToast(error.message || 'Không thể công bố đề thi.', 'error');
+    }
+  };
+
+  // Mở modal giao đề (create = tạo đề mới rồi giao; publish = giao đề đã có)
+  const openAssignModal = (mode, opts = {}) => {
+    const subject = opts.subject || selectedSubject || '';
+    setAssignModal({
+      open: true,
+      mode,
+      quizId: opts.quizId || null,
+      subject,
+      classId: opts.classId || formData.assignedClass || '',
+      startTime: opts.startTime || formData.startDate || '',
+      deadline: opts.deadline || formData.endDate || '',
+    });
+    // Nạp danh sách lớp đúng với môn đang giao đề
+    if (subject) fetchClasses(subject);
+  };
+
+  // Xác nhận giao đề trong modal: luôn gửi đầy đủ lớp + thời gian
+  const confirmAssign = async () => {
+    if (!assignModal.subject) {
+      showToast('Vui lòng chọn môn học.', 'error');
+      return;
+    }
+    if (!assignModal.classId) {
+      showToast('Vui lòng chọn lớp để giao đề.', 'error');
+      return;
+    }
+    const assignOpts = {
+      classId: assignModal.classId,
+      startTime: assignModal.startTime ? new Date(assignModal.startTime).toISOString() : undefined,
+      deadline: assignModal.deadline ? new Date(assignModal.deadline).toISOString() : undefined,
+    };
+    try {
+      if (assignModal.mode === 'create') {
+        const created = await handleSubmit({ preventDefault: () => {} });
+        const id = created?._id || created?.id;
+        if (!id) {
+          showToast('Không tạo được đề thi.', 'error');
+          return;
+        }
+        await handlePublishQuiz(id, assignOpts);
+      } else {
+        await handlePublishQuiz(assignModal.quizId, assignOpts);
+      }
+      setAssignModal((m) => ({ ...m, open: false }));
+    } catch (error) {
+      showToast(error.message || 'Không thể giao đề.', 'error');
     }
   };
 
@@ -414,9 +492,29 @@ const showToast = (text, type = "success") => {
             <button className="btn-outline" type="button" onClick={() => loadData()}>Lưu bản nháp</button>
             <button className="btn-start" type="button" onClick={async () => {
               try {
-                const created = await handleSubmit({ preventDefault: () => {} });
-                const id = created?._id || created?.id || formData._id;
-                if (id) await handlePublishQuiz(id);
+                // Chụp trước lớp + thời gian giao (vì handleSubmit reset formData sau khi tạo)
+                if (!formData.title.trim()) {
+                  showToast('Vui lòng nhập tên đề thi.', 'error');
+                  return;
+                }
+                if (!selectedQuestions.length) {
+                  showToast('Vui lòng chọn ít nhất một câu hỏi.', 'error');
+                  return;
+                }
+                if (!selectedSubject) {
+                  showToast('Vui lòng chọn môn học.', 'error');
+                  return;
+                }
+                if (!formData.assignedClass) {
+                  showToast('Vui lòng chọn lớp để giao đề.', 'error');
+                  return;
+                }
+                openAssignModal('create', {
+                  subject: selectedSubject,
+                  classId: formData.assignedClass,
+                  startTime: formData.startDate,
+                  deadline: formData.endDate,
+                });
               } catch (e) {
                 // ignore
               }
@@ -774,7 +872,7 @@ const showToast = (text, type = "success") => {
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button className="btn-outline btn-small" type="button" onClick={() => handleEditQuiz(item)}><HiOutlinePencilSquare size={16} /></button>
                         {!item.isPublished && (
-                          <button className="btn-outline btn-small" type="button" onClick={() => handlePublishQuiz(item._id || item.id)}>Công bố</button>
+                          <button className="btn-outline btn-small" type="button" onClick={() => openAssignModal('publish', { quizId: item._id || item.id, subject: item.subject?._id || item.subject || '' })}>Công bố</button>
                         )}
                         <button className="btn-outline btn-small" type="button" onClick={() => handleDeleteQuiz(item._id || item.id)}><RiDeleteBin3Line size={16} /></button>
                       </div>
@@ -826,6 +924,90 @@ const showToast = (text, type = "success") => {
           </div>
         </section>
       </main>
+
+      {/* ===== Modal Giao đề ===== */}
+      {assignModal.open && (
+        <div
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000,
+            background: 'rgba(15,23,42,0.5)',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 80,
+          }}
+          onClick={() => setAssignModal((m) => ({ ...m, open: false }))}
+        >
+          <div
+            style={{
+              background: '#fff', borderRadius: 14, padding: '22px 24px', width: 460, maxWidth: '92vw',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+              <h3 style={{ margin: 0, fontSize: 17, color: '#1c2433' }}>Giao đề thi</h3>
+              <button
+                type="button"
+                style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#868e96' }}
+                onClick={() => setAssignModal((m) => ({ ...m, open: false }))}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#1c2433' }}>
+                Lớp được giao <span style={{ color: '#e03131' }}>*</span>
+              </label>
+              <select
+                className="form-input"
+                value={assignModal.classId}
+                onChange={(e) => setAssignModal({ ...assignModal, classId: e.target.value })}
+              >
+                <option value="">-- Chọn lớp học --</option>
+                {classes.map((item) => (
+                  <option key={item._id} value={item._id}>{item.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#1c2433' }}>
+                Thời gian bắt đầu
+              </label>
+              <input
+                className="form-input"
+                type="datetime-local"
+                value={assignModal.startTime}
+                onChange={(e) => setAssignModal({ ...assignModal, startTime: e.target.value })}
+              />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#1c2433' }}>
+                Thời gian kết thúc (deadline)
+              </label>
+              <input
+                className="form-input"
+                type="datetime-local"
+                value={assignModal.deadline}
+                onChange={(e) => setAssignModal({ ...assignModal, deadline: e.target.value })}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                type="button"
+                className="btn-outline btn-small"
+                onClick={() => setAssignModal((m) => ({ ...m, open: false }))}
+              >
+                Huỷ
+              </button>
+              <button type="button" className="btn-start" onClick={confirmAssign}>
+                Giao đề
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

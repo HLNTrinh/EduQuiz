@@ -6,34 +6,22 @@ const router = express.Router();
 // Public: list published quizzes (simple summary view)
 router.get('/quizzes', async (req, res) => {
   try {
-    const now = new Date();
-    const quizzes = await Quiz.find({ isPublished: true, endDate: { $gte: now } })
-      .sort({ startDate: 1 })
+    const quizzes = await Quiz.find({ isPublished: true })
       .limit(200)
       .lean();
 
     // Map quizzes to the frontend-friendly shape used by ExamList
     const mapped = quizzes.map((q) => {
-      const status = q.startDate <= new Date() && q.endDate >= new Date() ? 'Đang diễn ra'
-        : q.startDate > new Date() ? 'Sắp diễn ra'
-        : 'Đã hoàn thành';
-
-      const statusType = q.startDate <= new Date() && q.endDate >= new Date() ? 'live'
-        : q.startDate > new Date() ? 'upcoming'
-        : 'done';
-
       return {
         quizId: q._id,
         subject: q.subject || 'Chung',
-        status,
-        statusType,
+        status: 'Đã công bố',
+        statusType: 'live',
         title: q.title,
         time: q.duration ? `${q.duration} phút` : undefined,
-        meta: q.endDate ? `Hạn nộp: ${new Date(q.endDate).toLocaleString()}` : undefined,
-        metaIcon: q.endDate ? 'calendar' : undefined,
         questions: q.questions ? `${q.questions.length} câu hỏi` : undefined,
-        cta: statusType === 'live' ? 'Vào thi ngay' : statusType === 'started' ? 'Tiếp tục làm bài' : statusType === 'upcoming' ? 'Chưa đến giờ' : 'Xem lại kết quả',
-        ctaType: statusType === 'live' ? 'primary' : statusType === 'upcoming' ? 'disabled' : 'outline',
+        cta: 'Vào thi ngay',
+        ctaType: 'primary',
         questionCount: q.questions ? q.questions.length : undefined,
         duration: q.duration,
       };

@@ -5,6 +5,7 @@ import {
   FaUsers, 
   FaBookOpen, 
   FaChalkboardTeacher, 
+  FaUserCog, 
   FaBell, 
   FaCog, 
   FaSignOutAlt 
@@ -23,6 +24,7 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, showToas
     { id: 'users', name: 'Quản lý người dùng', icon: <FaUsers />, path: '/admin/users' },
     { id: 'subjects', name: 'Môn học', icon: <FaBookOpen />, path: '/admin/subject' },
     { id: 'classes', name: 'Lớp học', icon: <FaChalkboardTeacher />, path: '/admin/class' },
+    { id: 'assignments', name: 'Phân công dạy', icon: <FaUserCog />, path: '/admin/assignments' },
     { id: 'notifications', name: 'Thông báo', icon: <FaBell />, path: '/admin/notifications' },
   ];
 
@@ -36,6 +38,7 @@ export default function AdminSidebar({ isSidebarOpen, setIsSidebarOpen, showToas
     if (path.includes('/users')) return 'users';
     if (path.includes('/subject')) return 'subjects';
     if (path.includes('/class')) return 'classes';
+    if (path.includes('/assignments')) return 'assignments';
     if (path.includes('/notifications')) return 'notifications';
     if (path.includes('/settings')) return 'settings';
     return 'dashboard';

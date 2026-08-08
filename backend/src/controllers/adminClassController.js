@@ -46,7 +46,6 @@ const getClasses = async (req, res) => {
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { teacherName: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -56,7 +55,7 @@ const getClasses = async (req, res) => {
 
     const [classes, total] = await Promise.all([
       Class.find(filter)
-        .populate('teacher', 'name email avatar')
+        .populate('homeroomTeacher', 'name email avatar')
         .populate('students', 'name email avatar role status userCode')
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -84,7 +83,7 @@ const getClasses = async (req, res) => {
 const getClassById = async (req, res) => {
   try {
     const classItem = await Class.findById(req.params.id)
-      .populate('teacher', 'name email avatar')
+      .populate('homeroomTeacher', 'name email avatar')
       .populate('students', 'name email avatar role status userCode')
       .lean();
 
@@ -104,13 +103,15 @@ const getClassById = async (req, res) => {
 const createClass = async (req, res) => {
   try {
     const { name, teacher, teacherName, year, status } = req.body;
+    // homeroomTeacher = Giáo viên chủ nhiệm (giữ tương thích cả 2 tên field từ frontend)
+    const homeroomTeacher = req.body.homeroomTeacher || teacher;
 
-    // Resolve teacher: prefer explicit teacher ObjectId; otherwise try to match by name or email
+    // Resolve homeroom teacher: prefer explicit ObjectId; otherwise try to match by name or email
     let teacherId = null;
     let resolvedTeacherName = teacherName || '';
 
-    if (teacher && mongoose.Types.ObjectId.isValid(teacher)) {
-      teacherId = teacher;
+    if (homeroomTeacher && mongoose.Types.ObjectId.isValid(homeroomTeacher)) {
+      teacherId = homeroomTeacher;
       // try to get canonical name
       const t = await User.findById(teacherId).select('name');
       if (t) resolvedTeacherName = t.name;
@@ -132,12 +133,11 @@ const createClass = async (req, res) => {
 
     const classData = {
       name,
-      teacher: teacherId,
+      homeroomTeacher: teacherId,
       teacherName: resolvedTeacherName,
       year: year || '',
       status: status || 'active',
       students: [],
-      studentCount: 0,
     };
 
     const newClass = await Class.create(classData);
@@ -155,17 +155,18 @@ const createClass = async (req, res) => {
 const updateClass = async (req, res) => {
   try {
     const { name, teacher, teacherName, year, status } = req.body;
+    const homeroomTeacher = req.body.homeroomTeacher !== undefined ? req.body.homeroomTeacher : teacher;
 
     const updateData = {};
     if (name) updateData.name = name;
 
-    // If teacher explicitly provided (could be null to clear), use it
-    if (teacher !== undefined) {
-      updateData.teacher = teacher;
+    // If homeroom teacher explicitly provided (could be null to clear), use it
+    if (homeroomTeacher !== undefined) {
+      updateData.homeroomTeacher = homeroomTeacher;
     }
 
-    // If teacherName provided but teacher not explicitly set, try to resolve to teacher id
-    if ((teacher === undefined || teacher === null) && teacherName) {
+    // If teacherName provided but homeroom teacher not explicitly set, try to resolve to teacher id
+    if ((homeroomTeacher === undefined || homeroomTeacher === null) && teacherName) {
       const found = await User.findOne({
         $or: [
           { email: teacherName.toLowerCase() },
@@ -175,7 +176,7 @@ const updateClass = async (req, res) => {
       }).select('name');
 
       if (found) {
-        updateData.teacher = found._id;
+        updateData.homeroomTeacher = found._id;
         updateData.teacherName = found.name;
       } else {
         // If not found, still update teacherName field so admin can store free text
@@ -192,7 +193,7 @@ const updateClass = async (req, res) => {
       new: true,
       runValidators: true,
     })
-      .populate('teacher', 'name email avatar')
+      .populate('homeroomTeacher', 'name email avatar')
       .populate('students', 'name email avatar role status userCode');
 
     if (!updatedClass) return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
@@ -258,10 +259,11 @@ const addStudent = async (req, res) => {
     await classItem.save();
 
     const updatedClass = await Class.findById(req.params.id)
-      .populate('teacher', 'name email avatar')
+      .populate('homeroomTeacher', 'name email avatar')
       .populate('students', 'name email avatar role status userCode')
       .lean();
 
+    updatedClass.studentCount = updatedClass.students.length;
     res.json({ success: true, message: 'Thêm học sinh thành công', class: updatedClass });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
@@ -494,10 +496,11 @@ const removeStudent = async (req, res) => {
     await classItem.save();
 
     const updatedClass = await Class.findById(id)
-      .populate('teacher', 'name email avatar')
+      .populate('homeroomTeacher', 'name email avatar')
       .populate('students', 'name email avatar role status userCode')
       .lean();
 
+    updatedClass.studentCount = updatedClass.students.length;
     res.json({ success: true, message: 'Xóa học sinh khỏi lớp thành công', class: updatedClass });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });

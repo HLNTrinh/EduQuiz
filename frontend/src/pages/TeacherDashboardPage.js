@@ -186,7 +186,7 @@ export const TeacherDashboardPage = () => {
     const quizClassMap = new Map();
     quizzes.forEach((quiz) => {
       if (!quiz?._id) return;
-      const classId = quiz.assignedClass?._id?.toString();
+      const classId = quiz.assignments?.[0]?.class?._id?.toString();
       if (classId) {
         quizClassMap.set(quiz._id.toString(), classId);
       }
@@ -204,7 +204,7 @@ export const TeacherDashboardPage = () => {
 
       const quiz = attempt.quizId;
       const quizId = quiz?._id?.toString();
-      const classId = quizClassMap.get(quizId) || quiz?.assignedClass?._id?.toString() || quiz?.assignedClass?.toString();
+      const classId = quizClassMap.get(quizId) || attempt.class?.toString();
       if (!classId) return;
 
       const studentId = attempt.studentId?._id?.toString();
@@ -247,10 +247,10 @@ export const TeacherDashboardPage = () => {
   const classCards = classes.map((classItem) => ({
     title: classItem.name || 'Lớp chưa đặt tên',
     subject: classItem.subject?.name || 'Chưa có môn',
-    students: classItem.studentCount || classItem.students?.length || 0,
+    students: classItem.students?.length || 0,
     /*room: classItem.room || 'Chưa có phòng',*/
     color: 'blue',
-    teacherName: classItem.teacher?.name || user?.name || 'Giáo viên',
+    teacherName: classItem.homeroomTeacher?.name || user?.name || 'Giáo viên',
   }));
 
   return (

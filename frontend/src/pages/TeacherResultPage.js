@@ -145,7 +145,7 @@ export const TeacherResultPage = () => {
       s.studentId?._id?.toString().slice(0, 8).toUpperCase(),
       s.studentId?.name || '',
       s.studentId?.email || '',
-      selectedQuiz?.assignedClass?.name || '',
+      selectedQuiz?.assignments?.[0]?.class?.name || '',
       s.highestScore,
       s.attemptCount,
       s.bestAttempt?.timeTaken || 0,
@@ -260,7 +260,7 @@ export const TeacherResultPage = () => {
                           </td>
                           <td style={{ fontWeight: 600 }}>{quiz.title || 'Chưa có tên'}</td>
                           <td>{quiz.subject?.name || 'N/A'}</td>
-                          <td>{quiz.assignedClass?.name || 'Chưa chọn lớp'}</td>
+                          <td>{quiz.assignments?.[0]?.class?.name || 'Chưa chọn lớp'}</td>
                           <td>{quiz.duration || 0} phút</td>
                           <td>{formatDate(quiz.createdAt)}</td>
                         </tr>
@@ -440,7 +440,7 @@ export const TeacherResultPage = () => {
                             </td>
                             <td style={{ fontWeight: 600 }}>{student.studentId?.name || 'N/A'}</td>
                             <td>{student.studentId?.email || 'N/A'}</td>
-                            <td>{selectedQuiz?.assignedClass?.name || 'N/A'}</td>
+                            <td>{selectedQuiz?.assignments?.[0]?.class?.name || 'N/A'}</td>
                             <td>
                               <span className={`status-chip ${student.highestScore >= (selectedQuiz?.passingScore || 50) ? 'status-chip--success' : 'status-chip--warning'}`}>
                                 {student.highestScore}

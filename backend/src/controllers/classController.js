@@ -1,17 +1,47 @@
 const Class = require('../models/Class');
 const User = require('../models/User');
+const TeacherAssignment = require('../models/TeacherAssignment');
 
 const getUserId = (req) => req.user?.id || req.user?.userId;
 
+// Các lớp giáo viên quản lý: là chủ nhiệm HOẶC được phân công dạy
 const getTeacherClasses = async (req, res) => {
   try {
     const userId = getUserId(req);
-    const filter = { teacher: userId };
-    const classes = await Class.find(filter)
-      .populate('teacher', 'name email avatar')
-      .populate('students', 'name email avatar role status')
-      .sort({ createdAt: -1 })
-      .lean();
+    const { subject } = req.query;
+
+    let ids;
+    if (subject) {
+      // Lọc theo môn: chỉ các lớp giáo viên được phân công dạy môn này
+      const subjectClassIds = await TeacherAssignment.find({
+        teacher: userId,
+        subject,
+        status: 'active',
+      }).distinct('class');
+      ids = new Set(subjectClassIds.map((x) => x.toString()));
+    } else {
+      // Lớp giáo viên làm chủ nhiệm
+      const homeroomClasses = await Class.find({ homeroomTeacher: userId })
+        .select('_id')
+        .lean();
+
+      // Lớp giáo viên được phân công dạy (qua TeacherAssignment)
+      const assignedClassIds = await TeacherAssignment.find({ teacher: userId, status: 'active' })
+        .distinct('class');
+
+      ids = new Set([
+        ...homeroomClasses.map((c) => c._id.toString()),
+        ...assignedClassIds.map((x) => x.toString()),
+      ]);
+    }
+
+    const classes = ids.size
+      ? await Class.find({ _id: { $in: [...ids] } })
+          .populate('homeroomTeacher', 'name email avatar')
+          .populate('students', 'name email avatar role status')
+          .sort({ createdAt: -1 })
+          .lean()
+      : [];
 
     res.json({ success: true, classes });
   } catch (error) {
@@ -23,7 +53,7 @@ const getStudentClasses = async (req, res) => {
   try {
     const userId = getUserId(req);
     const classes = await Class.find({ students: userId })
-      .populate('teacher', 'name email avatar')
+      .populate('homeroomTeacher', 'name email avatar')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -37,7 +67,7 @@ const getClassMembers = async (req, res) => {
   try {
     const userId = getUserId(req);
     const classItem = await Class.findById(req.params.id)
-      .populate('teacher', 'name email avatar')
+      .populate('homeroomTeacher', 'name email avatar')
       .populate('students', 'name email avatar role status')
       .lean();
 
@@ -45,7 +75,15 @@ const getClassMembers = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
     }
 
-    const isTeacher = req.user.role === 'teacher' && classItem.teacher?._id?.toString() === userId;
+    // Giáo viên: là chủ nhiệm hoặc được phân công dạy lớp này
+    let isTeacher = false;
+    if (req.user.role === 'teacher') {
+      isTeacher = classItem.homeroomTeacher?._id?.toString() === userId;
+      if (!isTeacher) {
+        const assigned = await TeacherAssignment.findOne({ teacher: userId, class: classItem._id, status: 'active' }).lean();
+        isTeacher = Boolean(assigned);
+      }
+    }
     const isStudent = req.user.role === 'student' && classItem.students.some((student) => student._id.toString() === userId);
     const isAdmin = req.user.role === 'admin';
 

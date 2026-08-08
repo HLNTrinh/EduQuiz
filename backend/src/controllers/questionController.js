@@ -1,6 +1,31 @@
 const Question = require('../models/Question');
 const Subject = require('../models/Subject');
 const mongoose = require('mongoose');
+const {
+  canAccessSubject,
+  getTeacherAssignedSubjects,
+  getUserId,
+} = require('../services/permissionService');
+
+// Kiểm tra giáo viên có được thao tác trên môn này không
+async function ensureSubjectPermission(req, category) {
+  const userId = getUserId(req);
+  if (!userId) return { ok: false, message: 'Vui lòng đăng nhập' };
+
+  // Admin không bị giới hạn môn
+  if (req.user.role === 'admin') return { ok: true };
+
+  if (!category) {
+    return { ok: false, message: 'Vui lòng chọn môn học cho câu hỏi' };
+  }
+
+  const allowed = await canAccessSubject(userId, category);
+  if (!allowed) {
+    return { ok: false, message: 'Bạn không được phân công dạy môn học này' };
+  }
+  return { ok: true };
+}
+
 // Tạo câu hỏi
 exports.createQuestion = async (req, res) => {
   try {
@@ -15,6 +40,10 @@ exports.createQuestion = async (req, res) => {
     if (correctCount !== 1) {
       return res.status(400).json({ message: 'Phải có đúng 1 đáp án đúng' });
     }
+
+    // Kiểm tra quyền dạy môn
+    const perm = await ensureSubjectPermission(req, category);
+    if (!perm.ok) return res.status(403).json({ message: perm.message });
 
     // Nếu category là ObjectId của Subject, lấy tên subject
     let categoryName = '';
@@ -40,32 +69,56 @@ exports.createQuestion = async (req, res) => {
   }
 };
 
-// Lấy danh sách câu hỏi của giáo viên
+// Lấy chi tiết câu hỏi
+exports.getQuestion = async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id).populate('createdBy', 'name email');
+    if (!question) {
+      return res.status(404).json({ message: 'Câu hỏi không tồn tại' });
+    }
+    res.json(question);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
 
+// Lấy danh sách câu hỏi (ngân hàng câu hỏi dùng chung theo môn được phân công)
 exports.getQuestions = async (req, res) => {
   try {
-
-    console.log("REQ.USER =", req.user);
-
     const { category, difficulty, page = 1, limit = 10 } = req.query;
 
-    const userId = req.user.id || req.user.userId;
+    const userId = getUserId(req);
 
-    const filter = {
-      createdBy: new mongoose.Types.ObjectId(userId)
-    };
+    // Xác định danh sách môn được phép
+    let allowedSubjects = null;
+    if (req.user.role === 'admin') {
+      allowedSubjects = null; // admin xem tất cả
+    } else {
+      allowedSubjects = await getTeacherAssignedSubjects(userId);
+      if (allowedSubjects.length === 0) {
+        return res.json({
+          data: [],
+          pagination: { total: 0, page: Number(page), limit: Number(limit), pages: 0 },
+        });
+      }
+    }
 
-    console.log("FILTER =", filter);
-
-    if (category) filter.category = category;
+    const filter = {};
+    if (allowedSubjects) {
+      // Nếu truyền category không thuộc môn được phân công → trả về rỗng
+      if (category && !allowedSubjects.includes(category)) {
+        return res.json({ data: [], pagination: { total: 0, page: Number(page), limit: Number(limit), pages: 0 } });
+      }
+      filter.category = category ? category : { $in: allowedSubjects };
+    } else if (category) {
+      filter.category = category;
+    }
     if (difficulty) filter.difficulty = difficulty;
 
     const questions = await Question.find(filter)
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
-
-    console.log("QUESTIONS =", questions);
 
     const total = await Question.countDocuments(filter);
 
@@ -75,27 +128,9 @@ exports.getQuestions = async (req, res) => {
         total,
         page: Number(page),
         limit: Number(limit),
-pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / limit),
       },
     });
-
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      message: 'Lỗi server',
-      error: error.message
-    });
-  }
-};
-// Lấy chi tiết câu hỏi
-exports.getQuestion = async (req, res) => {
-  try {
-    const question = await Question.findById(req.params.id).populate('createdBy', 'name email');
-    if (!question) {
-      return res.status(404).json({ message: 'Câu hỏi không tồn tại' });
-    }
-    res.json(question);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
@@ -127,7 +162,12 @@ exports.updateQuestion = async (req, res) => {
       }
     }
 
-    // Nếu category thay đổi, cập nhật categoryName
+    // Nếu category thay đổi, kiểm tra quyền dạy môn mới
+    if (category && category !== question.category?.toString()) {
+      const perm = await ensureSubjectPermission(req, category);
+      if (!perm.ok) return res.status(403).json({ message: perm.message });
+    }
+
     let categoryName = question.categoryName;
     if (category && category !== question.category?.toString()) {
       const subject = await Subject.findById(category);
@@ -163,10 +203,20 @@ exports.deleteQuestion = async (req, res) => {
   }
 };
 
-// Lấy danh sách category (từ Subject model)
+// Lấy danh sách category (từ Subject model) - giáo viên chỉ thấy môn được phân công
 exports.getCategories = async (req, res) => {
   try {
-const subjects = await Subject.find({ status: 'active' }).select('_id name code').sort({ name: 1 }).lean();
+    if (req.user.role === 'admin') {
+      const subjects = await Subject.find({ status: 'active' }).select('_id name code').sort({ name: 1 }).lean();
+      return res.json(subjects);
+    }
+
+    const userId = getUserId(req);
+    const allowedSubjects = await getTeacherAssignedSubjects(userId);
+    const subjects = await Subject.find({ _id: { $in: allowedSubjects }, status: 'active' })
+      .select('_id name code')
+      .sort({ name: 1 })
+      .lean();
     res.json(subjects);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });

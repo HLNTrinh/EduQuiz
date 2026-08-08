@@ -2,14 +2,18 @@ const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const Class = require('../models/Class');
 const QuizAssignment = require('../models/QuizAssignment');
+const { getUserId, canAccessSubject, canAccessSubjectClass } = require('../services/permissionService');
 
-// Tạo đề thi
+const getQuestionId = (q) => q.questionId || q._id;
+
+// Tạo đề thi (chỉ lưu nội dung đề: title, subject, questions, ...)
 exports.createQuiz = async (req, res) => {
   try {
-    const { title, description, questions, duration, maxAttempts, assignedClass, startDate, endDate, showAnswerAfter, totalPoints, passingScore, subject, class: classId } = req.body;
+    const { title, description, questions, duration, maxAttempts, showAnswerAfter, totalPoints, passingScore, subject } = req.body;
+    const userId = getUserId(req);
 
     const normalizedQuestions = (questions || []).map((question, index) => ({
-      questionId: question.questionId || question._id,
+      questionId: getQuestionId(question),
       order: question.order || index + 1,
     }));
 
@@ -23,8 +27,16 @@ exports.createQuiz = async (req, res) => {
       return res.status(400).json({ message: 'Một số câu hỏi không tồn tại' });
     }
 
-    if (!assignedClass) {
-      return res.status(400).json({ message: 'Vui lòng chọn lớp được giao' });
+    if (!subject) {
+      return res.status(400).json({ message: 'Vui lòng chọn môn học cho đề thi' });
+    }
+
+    // Kiểm tra quyền dạy môn
+    if (req.user.role !== 'admin') {
+      const allowed = await canAccessSubject(userId, subject);
+      if (!allowed) {
+        return res.status(403).json({ message: 'Bạn không được phân công dạy môn học này' });
+      }
     }
 
     const quiz = new Quiz({
@@ -33,15 +45,11 @@ exports.createQuiz = async (req, res) => {
       questions: normalizedQuestions,
       duration: Number(duration || 45),
       maxAttempts: Number(maxAttempts || 1),
-      assignedClass,
-      startDate: startDate ? new Date(startDate) : new Date(),
-      endDate: endDate ? new Date(endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       showAnswerAfter: Boolean(showAnswerAfter),
       totalPoints: Number(totalPoints || normalizedQuestions.length * 10),
       passingScore: Number(passingScore || 50),
-      createdBy: req.user.id || req.user.userId,
-      subject: subject || null,
-      class: classId || null,
+      createdBy: userId,
+      subject,
     });
 
     await quiz.save();
@@ -55,43 +63,86 @@ exports.createQuiz = async (req, res) => {
 exports.getQuizzes = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-
-    let filter = {};
+    const userId = getUserId(req);
 
     if (req.user.role === 'student') {
-      // Student: tìm tất cả class có chứa student này
-      const studentClasses = await Class.find({ students: req.user.id }).lean();
+      // Student: tìm các lớp có chứa học sinh này
+      const studentClasses = await Class.find({ students: userId }).select('_id').lean();
       const classIds = studentClasses.map((c) => c._id);
-      
-      if (classIds.length > 0) {
-        // Lấy các quiz published và có assignedClass nằm trong danh sách class của student
-        filter = { isPublished: true, assignedClass: { $in: classIds } };
-      } else {
-        filter = { _id: { $in: [] }, isPublished: true };
-      }
-    } else {
-      // Teacher/Admin: lấy quiz do họ tạo
-      filter = { createdBy: req.user.id };
+
+      // Tìm assignment đang active của các lớp đó
+      const assignments = classIds.length
+        ? await QuizAssignment.find({ class: { $in: classIds }, status: 'active' }).lean()
+        : [];
+
+      const quizIds = [...new Set(assignments.map((a) => a.quiz?.toString()).filter(Boolean))];
+
+      const quizzes = await Quiz.find({ _id: { $in: quizIds }, isPublished: true })
+        .populate('createdBy', 'name email')
+        .populate('questions.questionId')
+        .populate('subject', 'name')
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit))
+        .sort({ createdAt: -1 })
+        .lean();
+
+      // Gắn thông tin assignment (class, startTime, deadline) cho từng quiz
+      const assignmentsByQuiz = {};
+      assignments.forEach((a) => {
+        if (!a.quiz) return;
+        const id = a.quiz.toString();
+        if (!assignmentsByQuiz[id]) assignmentsByQuiz[id] = a;
+      });
+
+      const data = quizzes.map((q) => {
+        const ass = assignmentsByQuiz[q._id.toString()];
+        return {
+          ...q,
+          assignment: ass
+            ? { _id: ass._id, class: ass.class, startTime: ass.startTime, deadline: ass.deadline, status: ass.status }
+            : null,
+        };
+      });
+
+      return res.json({
+        data,
+        pagination: { total: quizIds.length, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(quizIds.length / limit) },
+      });
     }
 
-    const quizzes = await Quiz.find(filter)
+    // Teacher/Admin: đề do họ tạo
+    const quizFilter = req.user.role === 'admin' ? {} : { createdBy: userId };
+    const quizzes = await Quiz.find(quizFilter)
       .populate('createdBy', 'name email')
       .populate('questions.questionId')
-      .populate('assignedClass', 'name')
       .populate('subject', 'name')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
-const total = await Quiz.countDocuments(filter);
+      .sort({ createdAt: -1 })
+      .lean();
 
-    res.json({
-      data: quizzes,
-      pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / limit),
-      },
+    // Gắn thông tin các lớp được giao đề (từ QuizAssignment)
+    const quizIds = quizzes.map((q) => q._id);
+    const assignments = quizIds.length
+      ? await QuizAssignment.find({ quiz: { $in: quizIds } })
+          .populate('class', 'name')
+          .lean()
+      : [];
+    const assignmentsByQuiz = {};
+    assignments.forEach((a) => {
+      const id = a.quiz?.toString();
+      if (id) (assignmentsByQuiz[id] = assignmentsByQuiz[id] || []).push(a);
+    });
+
+    const data = quizzes.map((q) => ({
+      ...q,
+      assignments: assignmentsByQuiz[q._id.toString()] || [],
+    }));
+
+    const total = await Quiz.countDocuments(quizFilter);
+    return res.json({
+      data,
+      pagination: { total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total / limit) },
     });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
@@ -104,11 +155,9 @@ exports.getQuiz = async (req, res) => {
     const quiz = await Quiz.findById(req.params.id)
       .populate('createdBy', 'name email')
       .populate('questions.questionId');
-
     if (!quiz) {
       return res.status(404).json({ message: 'Đề thi không tồn tại' });
     }
-
     res.json(quiz);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
@@ -127,7 +176,15 @@ exports.updateQuiz = async (req, res) => {
       return res.status(403).json({ message: 'Bạn không có quyền chỉnh sửa đề thi này' });
     }
 
-    const { title, description, questions, duration, maxAttempts, assignedClass, startDate, endDate, showAnswerAfter, totalPoints, passingScore, subject, class: classId } = req.body;
+    const { title, description, questions, duration, maxAttempts, showAnswerAfter, totalPoints, passingScore, subject } = req.body;
+
+    // Nếu thay đổi môn → kiểm tra quyền dạy môn mới
+    if (subject && subject !== quiz.subject?.toString() && req.user.role !== 'admin') {
+      const allowed = await canAccessSubject(getUserId(req), subject);
+      if (!allowed) {
+        return res.status(403).json({ message: 'Bạn không được phân công dạy môn học này' });
+      }
+    }
 
     Object.assign(quiz, {
       title,
@@ -135,14 +192,10 @@ exports.updateQuiz = async (req, res) => {
       questions,
       duration,
       maxAttempts,
-      assignedClass: assignedClass || quiz.assignedClass,
-      startDate,
-      endDate,
       showAnswerAfter,
       totalPoints,
       passingScore,
-      subject: subject || null,
-      class: classId || null,
+      subject: subject || quiz.subject,
     });
 
     await quiz.save();
@@ -164,6 +217,8 @@ exports.deleteQuiz = async (req, res) => {
       return res.status(403).json({ message: 'Bạn không có quyền xóa đề thi này' });
     }
 
+    // Xóa cả các assignment giao đề
+    await QuizAssignment.deleteMany({ quiz: quiz._id });
     await Quiz.deleteOne({ _id: req.params.id });
     res.json({ message: 'Xóa đề thi thành công' });
   } catch (error) {
@@ -171,7 +226,7 @@ exports.deleteQuiz = async (req, res) => {
   }
 };
 
-// Publish đề thi
+// Publish + giao đề: tạo/cập nhật QuizAssignment cho từng lớp được chọn
 exports.publishQuiz = async (req, res) => {
   try {
     const quiz = await Quiz.findById(req.params.id);
@@ -179,35 +234,55 @@ exports.publishQuiz = async (req, res) => {
       return res.status(404).json({ message: 'Đề thi không tồn tại' });
     }
 
-    if (quiz.createdBy.toString() !== (req.user.id || req.user.userId)) {
+    const userId = req.user.id || req.user.userId;
+    if (quiz.createdBy.toString() !== userId) {
       return res.status(403).json({ message: 'Bạn không có quyền công bố đề thi này' });
+    }
+
+    const { classes, classId, startTime, deadline } = req.body;
+
+    // Chuẩn hóa danh sách lớp cần giao đề
+    let assignList = [];
+    if (Array.isArray(classes) && classes.length) {
+      assignList = classes.map((c) =>
+        typeof c === 'string' ? { classId: c } : { classId: c.classId || c.class, startTime: c.startTime, deadline: c.deadline }
+      );
+    } else if (classId) {
+      assignList = [{ classId, startTime, deadline }];
+    }
+
+    if (assignList.length === 0) {
+      return res.status(400).json({ message: 'Vui lòng chọn lớp để giao đề' });
+    }
+
+    // Kiểm tra giáo viên được phân công dạy môn ở từng lớp
+    for (const item of assignList) {
+      const cid = item.classId;
+      if (!cid) continue;
+      if (req.user.role !== 'admin') {
+        const allowed = await canAccessSubjectClass(userId, quiz.subject, cid);
+        if (!allowed) {
+          return res.status(403).json({ message: 'Bạn không được phân công dạy môn này ở lớp được chọn' });
+        }
+      }
+      await QuizAssignment.findOneAndUpdate(
+        { quiz: quiz._id, class: cid },
+        {
+          teacher: userId,
+          startTime: item.startTime ? new Date(item.startTime) : null,
+          deadline: item.deadline ? new Date(item.deadline) : null,
+          status: 'active',
+        },
+        { upsert: true, new: true }
+      );
     }
 
     quiz.isPublished = true;
     await quiz.save();
-// Nếu đề thi có chọn lớp → tạo QuizAssignment cho tất cả học sinh trong lớp đó
-    if (quiz.assignedClass) {
-      const classDoc = await Class.findById(quiz.assignedClass).populate('students', '_id');
-      
-      if (classDoc && classDoc.students && classDoc.students.length > 0) {
-        const studentIds = classDoc.students.map((s) => s._id);
-
-        // Xóa assignment cũ nếu có
-        await QuizAssignment.deleteMany({ quizId: quiz._id, teacherId: req.user.id || req.user.userId });
-
-        // Tạo assignment mới
-        const assignment = new QuizAssignment({
-          quizId: quiz._id,
-          teacherId: req.user.id || req.user.userId,
-          studentIds,
-          assignedDate: new Date(),
-        });
-        await assignment.save();
-      }
-    }
-
     res.json({ message: 'Công bố đề thi thành công', data: quiz });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
+

@@ -34,14 +34,6 @@ const quizSchema = new mongoose.Schema(
       default: 999,
       min: [1, 'Tối thiểu 1 lần làm'],
     },
-    startDate: {
-      type: Date,
-      required: true,
-    },
-    endDate: {
-      type: Date,
-      required: true,
-    },
     showAnswerAfter: {
       type: Boolean,
       default: true,
@@ -59,12 +51,6 @@ const quizSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    // Lớp được giao đề thi
-    assignedClass: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Class',
-      required: true,
-    },
     // Trạng thái đề thi
     isPublished: {
       type: Boolean,
@@ -75,13 +61,12 @@ const quizSchema = new mongoose.Schema(
       ref: 'Subject',
       default: null,
     },
-    class: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Class',
-      default: null,
-    },
   },
   { timestamps: true }
 );
+
+// Chỉ mục: lấy nhanh đề theo giáo viên / môn
+quizSchema.index({ createdBy: 1 });
+quizSchema.index({ subject: 1 });
 
 module.exports = mongoose.model('Quiz', quizSchema);

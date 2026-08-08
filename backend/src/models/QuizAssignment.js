@@ -2,34 +2,41 @@ const mongoose = require('mongoose');
 
 const quizAssignmentSchema = new mongoose.Schema(
   {
-    quizId: {
+    quiz: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Quiz',
       required: true,
     },
-    teacherId: {
+    class: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Class',
+      required: true,
+    },
+    teacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    studentIds: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
-    assignedDate: {
+    startTime: {
       type: Date,
-      default: Date.now,
+      default: null,
     },
     deadline: {
       type: Date,
       default: null,
     },
+    status: {
+      type: String,
+      enum: ['active', 'closed', 'draft'],
+      default: 'active',
+    },
   },
   { timestamps: true }
 );
 
-quizAssignmentSchema.index({ quizId: 1, teacherId: 1 });
+// 1 đề giao cho 1 lớp chỉ có 1 assignment
+quizAssignmentSchema.index({ quiz: 1, class: 1 }, { unique: true });
+quizAssignmentSchema.index({ class: 1 });
+quizAssignmentSchema.index({ teacher: 1 });
 
 module.exports = mongoose.model('QuizAssignment', quizAssignmentSchema);

@@ -13,6 +13,7 @@ export const TakeQuizPage = () => {
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const handleSubmit = useCallback(async () => {
     try {
@@ -29,8 +30,9 @@ export const TakeQuizPage = () => {
       setQuiz(response.quiz);
       setAttemptId(response.attemptId);
       setTimeLeft(response.quiz.duration * 60);
-    } catch (error) {
-      console.error('Failed to start quiz:', error);
+    } catch (err) {
+      console.error('Failed to start quiz:', err);
+      setError(err?.message || 'Không thể tải đề thi');
     } finally {
       setLoading(false);
     }
@@ -89,6 +91,7 @@ const getOptionClass = (question, index) => {
   };
 
   if (loading) return <div className="loading">Đang tải...</div>;
+  if (error) return <div className="error">{error}</div>;
   if (!quiz) return <div className="error">Không thể tải đề thi</div>;
 
   const question = quiz.questions[currentQuestion];

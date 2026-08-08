@@ -168,26 +168,53 @@ export default function ExamList() {
             <div className="exam-card" key={e.quizId}>
               <div className="exam-card-top">
                 <span className={'subject-pill subject-' + slug(e.subject)}>{e.subject}</span>
-                <span className={'status-pill status-live'}>Đang mở</span>
+                <span className={'status-pill ' + (
+                  (e.assignment?.startTime && new Date(e.assignment.startTime) > new Date()) ? 'status-upcoming'
+                  : (e.assignment?.deadline && new Date(e.assignment.deadline) < new Date()) ? 'status-closed'
+                  : 'status-live'
+                )}>
+                  {(e.assignment?.startTime && new Date(e.assignment.startTime) > new Date()) ? 'Chưa mở'
+                    : (e.assignment?.deadline && new Date(e.assignment.deadline) < new Date()) ? 'Đã đóng'
+                    : 'Đang mở'}
+                </span>
               </div>
               <h3>{e.title}</h3>
               <div className="exam-card-meta">
                 {e.time && <span><ClockIcon /> {e.time}</span>}
+                {e.assignment?.startTime && <span><CalendarIcon /> Mở lúc {formatDateTime(e.assignment.startTime)}</span>}
                 {e.meta && <span><CalendarIcon /> {e.meta}</span>}
                 {e.questionCount !== undefined && <span><QIcon /> {e.questionCount} câu hỏi</span>}
               </div>
 {(() => {
+                const now = new Date();
+                const startTime = e.assignment?.startTime ? new Date(e.assignment.startTime) : null;
+                const deadline = e.assignment?.deadline ? new Date(e.assignment.deadline) : null;
+                const notStarted = startTime && now < startTime;
+                const expired = deadline && now > deadline;
                 const doneCount = attemptCountMap[e.quizId] || 0;
                 const maxAttempts = e.maxAttempts || 999;
                 const isExhausted = doneCount >= maxAttempts;
+                const blocked = Boolean(notStarted || expired || isExhausted);
+                let label = 'Vào làm bài';
+                let title = 'Vào làm bài';
+                if (notStarted) {
+                  label = 'Chưa đến thời gian làm bài';
+                  title = startTime ? `Mở lúc ${formatDateTime(startTime)}` : 'Chưa đến thời gian làm bài';
+                } else if (expired) {
+                  label = 'Đã hết hạn';
+                  title = deadline ? `Hết hạn lúc ${formatDateTime(deadline)}` : 'Đã hết hạn';
+                } else if (isExhausted) {
+                  label = `Đã hết lượt (${doneCount}/${maxAttempts})`;
+                  title = `Bạn đã hết lượt làm bài (${doneCount}/${maxAttempts})`;
+                }
                 return (
                   <button
-                    className={`btn-primary full${isExhausted ? ' disabled' : ''}`}
-                    disabled={isExhausted}
-                    onClick={() => !isExhausted && navigate(`/quiz/${e.quizId}`)}
-                    title={isExhausted ? `Bạn đã hết lượt làm bài (${doneCount}/${maxAttempts})` : 'Vào làm bài'}
+                    className={`btn-primary full${blocked ? ' disabled' : ''}`}
+                    disabled={blocked}
+                    onClick={() => !blocked && navigate(`/quiz/${e.quizId}`)}
+                    title={title}
                   >
-                    {isExhausted ? `Đã hết lượt (${doneCount}/${maxAttempts})` : 'Vào làm bài'}
+                    {label}
                   </button>
                 );
               })()}
@@ -320,6 +347,18 @@ function slug(str) {
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
     .replace(/\s+/g, '-')
+}
+
+function formatDateTime(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${min} ${dd}/${mm}/${yyyy}`;
 }
 
 function DocIcon() {

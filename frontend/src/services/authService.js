@@ -44,7 +44,7 @@ export const quizService = {
   },
   updateQuiz: (id, data) => api.put(`/quizzes/${id}`, data),
   deleteQuiz: (id) => api.delete(`/quizzes/${id}`),
-  publishQuiz: (id) => api.post(`/quizzes/${id}/publish`),
+  publishQuiz: (id, data) => api.post(`/quizzes/${id}/publish`, data),
 };
 
 export const subjectService = {
@@ -55,8 +55,8 @@ export const subjectService = {
 };
 
 export const classService = {
-  getTeacherClasses: async (teacherId) => {
-    const response = await api.get(`/classes/teacher/${teacherId}`);
+  getTeacherClasses: async (teacherId, params = {}) => {
+    const response = await api.get(`/classes/teacher/${teacherId}`, { params });
     return response?.data ?? response ?? [];
   },
   getClassMembers: async (classId, params) => {

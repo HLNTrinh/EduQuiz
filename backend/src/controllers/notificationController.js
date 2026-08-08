@@ -13,16 +13,17 @@ exports.getStudentNotifications = async (req, res) => {
     const studentClasses = await Class.find({ students: userId }).lean();
     const classIds = studentClasses.map((c) => c._id);
 
-    // Lấy các quiz được giao cho lớp của học sinh
+    // Lấy các quiz được giao cho lớp của học sinh (qua QuizAssignment)
     const assignments = await QuizAssignment.find({
-      studentIds: userId,
+      class: { $in: classIds },
+      status: 'active',
     })
       .populate({
-        path: 'quizId',
-        select: 'title description startDate endDate subject',
+        path: 'quiz',
+        select: 'title description subject',
         populate: { path: 'subject', select: 'name' },
       })
-      .sort({ assignedDate: -1 })
+      .sort({ createdAt: -1 })
       .lean();
 
     // Tạo danh sách thông báo từ các assignment
@@ -30,7 +31,7 @@ exports.getStudentNotifications = async (req, res) => {
     const notifications = [];
 
     for (const assignment of assignments) {
-      const quiz = assignment.quizId;
+      const quiz = assignment.quiz;
       if (!quiz) continue;
 
       // Thông báo: Đề thi mới được giao
@@ -40,12 +41,12 @@ exports.getStudentNotifications = async (req, res) => {
         content: `Bạn có đề thi "${quiz.title}" cần hoàn thành.`,
         quizId: quiz._id,
         type: 'new_quiz',
-        createdAt: assignment.assignedDate || assignment.createdAt,
+        createdAt: assignment.createdAt,
         read: false,
       });
 
-      // Thông báo: Sắp đến hạn (trong 3 ngày)
-      const endDate = quiz.endDate ? new Date(quiz.endDate) : null;
+      // Thông báo: Sắp đến hạn (trong 3 ngày) - deadline nằm trong QuizAssignment
+      const endDate = assignment.deadline ? new Date(assignment.deadline) : null;
       if (endDate) {
         const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
         
