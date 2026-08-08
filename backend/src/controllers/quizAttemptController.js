@@ -295,7 +295,7 @@ exports.getStudentAttempts = async (req, res) => {
     const studentId = getUserId(req);
 
     const attempts = await QuizAttempt.find({ studentId })
-      .populate('quizId', 'title')
+      .populate({ path: 'quizId', select: 'title subject', populate: { path: 'subject', select: 'name' } })
       .populate('answers.questionId', 'category categoryName')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
