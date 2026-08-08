@@ -6,6 +6,7 @@ const {
   getAttemptResult,
   getStudentAttempts,
   getTeacherAttempts,
+  getClassResults,
 } = require('../controllers/quizAttemptController');
 const { authenticate, authorize } = require('../middlewares/auth');
 
@@ -20,5 +21,8 @@ router.get('/', authenticate, authorize('student'), getStudentAttempts);
 
 // Giáo viên
 router.get('/teacher', authenticate, authorize('teacher', 'admin'), getTeacherAttempts);
+
+// Xem điểm cả lớp theo môn (giáo viên chủ nhiệm / admin)
+router.get('/class/:classId/results', authenticate, authorize('teacher', 'admin'), getClassResults);
 
 module.exports = router;

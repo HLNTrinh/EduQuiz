@@ -2,6 +2,8 @@ const QuizAttempt = require('../models/QuizAttempt');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
 const Class = require('../models/Class');
+const User = require('../models/User');
+const Subject = require('../models/Subject');
 const QuizAssignment = require('../models/QuizAssignment');
 const { getUserId, getAttemptsFilter } = require('../services/permissionService');
 
@@ -321,4 +323,102 @@ exports.getTeacherAttempts = async (req, res) => {
   }
 };
 
+
+
+// Xem điểm cả lớp theo môn (chỉ giáo viên chủ nhiệm hoặc admin)
+exports.getClassResults = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const userId = getUserId(req);
+
+    const classDoc = await Class.findById(classId).select('name homeroomTeacher students');
+    if (!classDoc) {
+      return res.status(404).json({ message: 'Lớp học không tồn tại' });
+    }
+
+    // Chỉ giáo viên chủ nhiệm lớp này hoặc admin mới xem được
+    if (req.user.role !== 'admin') {
+      const isHomeroom =
+        classDoc.homeroomTeacher &&
+        classDoc.homeroomTeacher.toString() === userId;
+      if (!isHomeroom) {
+        return res.status(403).json({ message: 'Bạn không phải giáo viên chủ nhiệm lớp này' });
+      }
+    }
+
+    const studentIds = classDoc.students || [];
+
+    const students = await User.find({ _id: { $in: studentIds } })
+      .select('name email userCode avatar')
+      .lean();
+
+    const attempts = await QuizAttempt.find({ studentId: { $in: studentIds }, class: classId })
+      .populate('quizId', 'title')
+      .lean();
+
+    // Lấy tên môn
+    const subjectIds = [...new Set(attempts.filter((a) => a.subject).map((a) => a.subject.toString()))];
+    const subjectDocs = await Subject.find({ _id: { $in: subjectIds } }).select('name').lean();
+    const subjectNameMap = {};
+    subjectDocs.forEach((s) => { subjectNameMap[s._id.toString()] = s.name; });
+
+    // Nhóm theo học sinh → môn → các đề
+    const byStudent = {};
+    attempts.forEach((a) => {
+      if (!a.subject) return;
+      const sid = a.studentId.toString();
+      const subjId = a.subject.toString();
+      if (!byStudent[sid]) byStudent[sid] = {};
+      if (!byStudent[sid][subjId]) {
+        byStudent[sid][subjId] = { bestScore: -1, sumScore: 0, count: 0, quizzes: [] };
+      }
+      const entry = byStudent[sid][subjId];
+      entry.sumScore += a.score || 0;
+      entry.count += 1;
+      if ((a.score || 0) > entry.bestScore) entry.bestScore = a.score || 0;
+      entry.quizzes.push({
+        quizId: a.quizId?._id || a.quizId,
+        quizTitle: a.quizId?.title || 'Bài thi',
+        score: a.score || 0,
+        percentage: a.percentage || 0,
+        isPassed: Boolean(a.isPassed),
+        timeTaken: a.timeTaken,
+        endTime: a.endTime,
+      });
+    });
+
+    const data = students.map((st) => {
+      const subjMap = byStudent[st._id.toString()] || {};
+      const results = Object.entries(subjMap)
+        .map(([subjId, d]) => ({
+          subjectId: subjId,
+          subject: subjectNameMap[subjId] || 'Môn khác',
+          bestScore: d.bestScore < 0 ? 0 : d.bestScore,
+          averageScore: d.count > 0 ? Math.round((d.sumScore / d.count) * 10) / 10 : 0,
+          attemptCount: d.count,
+          quizzes: d.quizzes,
+        }))
+        .sort((a, b) => a.subject.localeCompare(b.subject));
+
+      const averageAll = results.length
+        ? Math.round((results.reduce((s, r) => s + r.averageScore, 0) / results.length) * 10) / 10
+        : 0;
+
+      return {
+        student: st,
+        results,
+        averageScore: averageAll,
+        totalSubjects: results.length,
+      };
+    });
+
+    res.json({
+      success: true,
+      class: { _id: classDoc._id, name: classDoc.name },
+      students: data,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
 

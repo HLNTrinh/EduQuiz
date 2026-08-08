@@ -74,6 +74,12 @@ export const classService = {
     const body = response ?? {};
     return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
   },
+  // Lớp mà giáo viên đang đăng nhập làm chủ nhiệm
+  getHomeroomClasses: async () => {
+    const response = await api.get('/classes/homeroom');
+    const body = response ?? {};
+    return Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+  },
 };
 
 export const quizAttemptService = {
@@ -83,6 +89,7 @@ export const quizAttemptService = {
   getAttemptResult:  (attemptId)    => api.get(`/quiz-attempts/${attemptId}/result`),
   getStudentAttempts:(params)       => api.get('/quiz-attempts', { params }),
   getTeacherAttempts:(params)       => api.get('/quiz-attempts/teacher', { params }),
+  getClassResults:(classId)         => api.get(`/quiz-attempts/class/${classId}/results`),
 };
 
 export const notificationService = {

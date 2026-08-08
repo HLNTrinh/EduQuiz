@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { TbLayoutDashboard } from "react-icons/tb";
@@ -5,12 +6,28 @@ import { LuBookOpenText } from "react-icons/lu";
 import { FcLibrary } from "react-icons/fc";
 import { LuChartNoAxesCombined } from "react-icons/lu";
 import { FaUsers } from "react-icons/fa";
+import { classService } from "../../services/services";
 
 import "./TeacherSidebar.css";
 
 export default function TeacherSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isHomeroom, setIsHomeroom] = useState(false);
+
+  // Chỉ hiện mục "Kết quả lớp" nếu giáo viên là chủ nhiệm của ít nhất 1 lớp
+  useEffect(() => {
+    let cancelled = false;
+    classService
+      .getHomeroomClasses()
+      .then((list) => {
+        if (!cancelled) setIsHomeroom(Array.isArray(list) && list.length > 0);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleNavigate = (path) => {
     navigate(path);
@@ -193,6 +210,30 @@ export default function TeacherSidebar() {
           </span>
         </a>
 
+
+        {/* Kết quả lớp (chỉ giáo viên chủ nhiệm) */}
+        {isHomeroom && (
+          <a
+            href="#"
+            className={`sidebar-link ${
+              location.pathname === "/teacher/class-results"
+                ? "sidebar-link--active"
+                : ""
+            }`}
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavigate("/teacher/class-results");
+            }}
+          >
+            <span className="sidebar-icon">
+              <FaUsers size={22} />
+            </span>
+
+            <span className="sidebar-text">
+              Kết quả lớp
+            </span>
+          </a>
+        )}
 
         {/* Thành viên */}
         <a

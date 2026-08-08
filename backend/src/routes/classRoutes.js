@@ -142,6 +142,23 @@ router.get("/:classId/members", authenticate, async (req, res) => {
 });
 
 /**
+ * GET /homeroom
+ * Lấy danh sách lớp mà giáo viên đang đăng nhập làm chủ nhiệm
+ */
+router.get("/homeroom", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.userId;
+    const classes = await Class.find({ homeroomTeacher: userId, status: 'active' })
+      .select("name year")
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ success: true, data: classes });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+});
+
+/**
  * GET /student
  * Lấy danh sách lớp của học sinh đang đăng nhập
  */
