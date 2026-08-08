@@ -29,7 +29,16 @@ export const TakeQuizPage = () => {
       const response = await quizAttemptService.startQuizAttempt(quizId);
       setQuiz(response.quiz);
       setAttemptId(response.attemptId);
-      setTimeLeft(response.quiz.duration * 60);
+      // Đếm ngược = min(thời gian làm bài, thời gian còn lại đến deadline)
+      const durationSeconds = (response.quiz.duration || 0) * 60;
+      let timeLeft = durationSeconds;
+      if (response.quiz.deadline) {
+        const deadlineSeconds = Math.floor(
+          (new Date(response.quiz.deadline).getTime() - Date.now()) / 1000
+        );
+        if (deadlineSeconds < timeLeft) timeLeft = deadlineSeconds;
+      }
+      setTimeLeft(Math.max(timeLeft, 0));
     } catch (err) {
       console.error('Failed to start quiz:', err);
       setError(err?.message || 'Không thể tải đề thi');

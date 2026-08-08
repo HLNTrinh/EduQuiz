@@ -265,6 +265,14 @@ exports.publishQuiz = async (req, res) => {
           return res.status(403).json({ message: 'Bạn không được phân công dạy môn này ở lớp được chọn' });
         }
       }
+
+      // Ràng buộc: thời gian làm bài (duration) không được lớn hơn khung giờ giao đề
+      const startT = item.startTime ? new Date(item.startTime) : null;
+      const endT = item.deadline ? new Date(item.deadline) : null;
+      if (quiz.duration && startT && endT && endT - startT < quiz.duration * 60000) {
+        return res.status(400).json({ message: 'Thời gian làm bài không được lớn hơn khung thời gian giao đề' });
+      }
+
       await QuizAssignment.findOneAndUpdate(
         { quiz: quiz._id, class: cid },
         {

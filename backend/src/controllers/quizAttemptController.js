@@ -79,6 +79,7 @@ exports.startQuizAttempt = async (req, res) => {
       title: quiz.title,
       description: quiz.description,
       duration: quiz.duration,
+      deadline: assignment.deadline,
       showAnswerAfter: quiz.showAnswerAfter,
       questions: validQuestions.map((q) => ({
         _id: q.questionId._id,
@@ -112,7 +113,7 @@ exports.saveAnswer = async (req, res) => {
     const { attemptId } = req.params;
     const { questionId, selectedOptionIndex } = req.body;
 
-    const attempt = await QuizAttempt.findById(attemptId);
+    const attempt = await QuizAttempt.findById(attemptId).populate('quizId', 'duration');
     if (!attempt) {
       return res.status(404).json({ message: 'Lần làm bài không tồn tại' });
     }
@@ -125,6 +126,25 @@ exports.saveAnswer = async (req, res) => {
     const studentId = getUserId(req);
     if (attempt.studentId.toString() !== studentId.toString()) {
       return res.status(403).json({ message: 'Bạn không có quyền cập nhật bài làm này' });
+    }
+
+    // Ép thời gian làm bài (duration) ở server
+    const now = new Date();
+    const durationMs = (attempt.quizId?.duration || 0) * 60000;
+    if (durationMs > 0 && now - attempt.startTime > durationMs) {
+      return res.status(400).json({ message: 'Đã hết thời gian làm bài' });
+    }
+
+    // Ép deadline của lần giao đề (nếu đã hết hạn thì không cho trả lời nữa)
+    if (attempt.class) {
+      const assignment = await QuizAssignment.findOne({
+        quiz: attempt.quizId?._id || attempt.quizId,
+        class: attempt.class,
+        status: 'active',
+      }).lean();
+      if (assignment?.deadline && now > new Date(assignment.deadline)) {
+        return res.status(400).json({ message: 'Đã hết hạn nộp bài' });
+      }
     }
 
     const answerIndex = attempt.answers.findIndex(
@@ -193,10 +213,19 @@ exports.submitQuizAttempt = async (req, res) => {
       (correctCount / attempt.totalQuestions) * 100
     );
     attempt.status = 'submitted';
-    attempt.endTime = new Date();
+
+    // Giới hạn thời gian nộp theo duration (không cho vượt quá thời lượng đề)
+    const now = new Date();
+    const durationMs = (attempt.quizId?.duration || 0) * 60000;
+    const effectiveEnd =
+      durationMs > 0 && now - attempt.startTime > durationMs
+        ? new Date(attempt.startTime.getTime() + durationMs)
+        : now;
+    attempt.endTime = effectiveEnd;
     attempt.timeTaken = Math.round(
-      (attempt.endTime - attempt.startTime) / 60000
+      (effectiveEnd - attempt.startTime) / 60000
     );
+
     attempt.isPassed = attempt.score >= (attempt.quizId.passingScore || 0);
 
     await attempt.save();
