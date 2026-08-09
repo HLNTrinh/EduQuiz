@@ -1,11 +1,3 @@
-/* ==================== LAYOUT CHÍNH ==================== */
-.dashboard-layout {
-    display: flex;
-    min-height: 100vh;
-    width: 100%;
-}
-
-/* ==================== SIDEBAR ==================== */
 .sidebar {
     width: 260px;
     flex-shrink: 0;
@@ -16,15 +8,6 @@
     padding: 24px 20px;
     height: 100vh;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
-    z-index: 100;
-}
-
-/* ==================== MAIN CONTENT ==================== */
-.dash-main {
-    flex: 1;
-    min-width: 0;               /* Quan trọng: tránh nội dung bị tràn / che */
-    width: 100%;
-    overflow-x: hidden;
 }
 
 /* ==================== LOGO ==================== */
@@ -180,13 +163,14 @@
     background: var(--color-danger-bg, #fee2e2);
 }
 
-/* ==================== MOBILE OVERLAY ==================== */
+/* ============ RESPONSIVE Sidebar (Drawer on Mobile) ============ */
+
+/* Mobile overlay */
 .sidebar-overlay {
     display: none;
 }
 
-/* ==================== RESPONSIVE (≤ 900px) ==================== */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
     .sidebar {
         position: fixed !important;
         top: 0;
@@ -213,12 +197,6 @@
 
     .sidebar-overlay.open {
         display: block;
-    }
-
-    /* Khi sidebar fixed thì main chiếm full width */
-    .dash-main {
-        margin-left: 0 !important;
-        padding-top: 68px !important; /* tránh bị nút hamburger che */
     }
 
     .sidebar-logo {
@@ -250,7 +228,6 @@
     }
 }
 
-/* ==================== RESPONSIVE (≤ 480px) ==================== */
 @media (max-width: 480px) {
     .sidebar {
         width: 260px;
@@ -278,18 +255,18 @@
     }
 }
 
-/* ==================== NÚT HAMBURGER ==================== */
+/* ============ NÚT HAMBURGER (mobile) ============ */
 .sidebar-hamburger {
     display: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
     .sidebar-hamburger {
         display: flex;
         position: fixed;
         top: 12px;
         left: 12px;
-        z-index: 10000;
+        z-index: 3100;
         width: 42px;
         height: 42px;
         border: none;
@@ -303,4 +280,26 @@
         cursor: pointer;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
+
+    /* Đẩy nội dung xuống để không bị nút hamburger che */
+    .dash-main {
+        padding-top: 68px !important;
+    }
 }
+
+/* ============ FIX: chặn rule global leak (sidebar của admin, dash-main của Result)
+   sang layout học sinh. Chỉ áp dụng desktop/tablet, không đụng mobile drawer. ============ */
+@media (min-width: 769px) {
+    .page-shell > .sidebar {
+        position: relative;
+        left: auto;
+        top: auto;
+        z-index: auto;
+    }
+
+    .page-shell > .dash-main {
+        margin-left: 0;
+        width: auto;
+    }
+}
+
