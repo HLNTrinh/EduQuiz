@@ -116,12 +116,13 @@ export default function TeacherClassResultPage() {
 
   const exportCSV = () => {
     if (!students.length) return;
-    const headers = ['Học sinh', 'Email', ...subjectList, 'Trung bình'];
+    const headers = ['Học sinh', 'Mã học sinh', 'Email', ...subjectList, 'Trung bình'];
     const rows = students.map((s) => {
       const bySubj = {};
       (s.results || []).forEach((r) => { bySubj[r.subject] = r.bestScore; });
       return [
         s.student?.name || '',
+        s.student?.userCode || '',
         s.student?.email || '',
         ...subjectList.map((sub) => (bySubj[sub] !== undefined ? bySubj[sub] : '')),
         s.averageScore ?? '',
@@ -158,12 +159,13 @@ export default function TeacherClassResultPage() {
     doc.setFontSize(10);
     doc.text(`Ngày xuất: ${new Date().toLocaleString('vi-VN')}`, 14, 23);
 
-    const head = [['Học sinh', 'Email', ...subjectList, 'Trung bình']];
+    const head = [['Học sinh', 'Mã học sinh', 'Email', ...subjectList, 'Trung bình']];
     const body = students.map((s) => {
       const bySubj = {};
       (s.results || []).forEach((r) => { bySubj[r.subject] = r.bestScore; });
       return [
         s.student?.name || '',
+        s.student?.userCode || '',
         s.student?.email || '',
         ...subjectList.map((sub) => (bySubj[sub] !== undefined ? String(bySubj[sub]) : '')),
         String(s.averageScore ?? ''),
@@ -266,20 +268,21 @@ export default function TeacherClassResultPage() {
           <div className="loading">Đang tải kết quả...</div>
         ) : (
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e6ebf2', overflow: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
               <thead>
                 <tr>
-                  <th style={{ ...headStyle, minWidth: 160 }}>Học sinh</th>
+                  <th style={{ ...headStyle, position: 'sticky', left: 0, top: 0, zIndex: 2, background: '#f7f9fc', minWidth: 120 }}>Mã học sinh</th>
+                  <th style={{ ...headStyle, position: 'sticky', left: 120, top: 0, zIndex: 2, background: '#f7f9fc', minWidth: 200 }}>Họ và tên</th>
                   {subjectList.map((sub) => (
-                    <th key={sub} style={{ ...headStyle, textAlign: 'center', minWidth: 90 }}>{sub}</th>
+                    <th key={sub} style={{ ...headStyle, position: 'sticky', top: 0, zIndex: 1, textAlign: 'center', minWidth: 90 }}>{sub}</th>
                   ))}
-                  <th style={{ ...headStyle, textAlign: 'center', minWidth: 90 }}>Trung bình</th>
+                  <th style={{ ...headStyle, position: 'sticky', top: 0, zIndex: 1, textAlign: 'center', minWidth: 90 }}>Trung bình</th>
                 </tr>
               </thead>
               <tbody>
                 {students.length === 0 && (
                   <tr>
-                    <td colSpan={subjectList.length + 2} style={{ padding: 28, textAlign: 'center', color: '#97a3b5' }}>
+                    <td colSpan={subjectList.length + 3} style={{ padding: 28, textAlign: 'center', color: '#97a3b5' }}>
                       Chưa có học sinh nào làm bài trong lớp này.
                     </td>
                   </tr>
@@ -290,7 +293,10 @@ export default function TeacherClassResultPage() {
                   return (
                     <React.Fragment key={s.student?._id}>
                       <tr>
-                        <td style={cellStyle}>
+                        <td style={{ ...cellStyle, position: 'sticky', left: 0, zIndex: 1, background: '#fff', fontFamily: 'monospace', fontWeight: 600 }}>
+                          {s.student?.userCode || '—'}
+                        </td>
+                        <td style={{ ...cellStyle, position: 'sticky', left: 120, zIndex: 1, background: '#fff' }}>
                           <div style={{ fontWeight: 600 }}>{s.student?.name || '—'}</div>
                           <div style={{ fontSize: 11, color: '#9aa7ba' }}>{s.student?.email || ''}</div>
                         </td>
@@ -316,7 +322,7 @@ export default function TeacherClassResultPage() {
                       </tr>
                       {expanded && expanded.studentId === s.student?._id && (
                         <tr>
-                          <td colSpan={subjectList.length + 2} style={{ background: '#fafbff', padding: '6px 16px 14px' }}>
+                          <td colSpan={subjectList.length + 3} style={{ background: '#fafbff', padding: '6px 16px 14px' }}>
                             {(() => {
                               const r = (s.results || []).find((x) => x.subjectId === expanded.subjectId);
                               if (!r) return null;
