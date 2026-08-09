@@ -143,7 +143,7 @@ export default function AdminAssignmentManagementPage() {
 
   return (
     <AdminLayout pageTitle="Phân công giảng dạy" pageSubtitle="Quản lý giáo viên - môn học - lớp học">
-      <div style={{ padding: '0 4px' }}>
+      <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: 1, maxWidth: 360 }}>
             <FaSearch style={{ position: 'absolute', left: 12, top: 11, color: '#9aa7ba' }} />
