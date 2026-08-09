@@ -19,17 +19,31 @@
   flex-wrap: wrap;
 }
 
-/* ---------- 2. Fix xung đột .dash-main (teacher/result) ---------- */
-/* TeacherSidebar là position:fixed chiếm 238px bên trái. Cho .dash-main
-   margin-left đúng bằng sidebar để nội dung không bị che/đẩy ("thụt vô").
-   Trên mobile sidebar thành top bar → reset margin về 0. */
+/* ---------- 2. Fix xung đột class .dash-main (dùng chung nhiều file) ---------- */
+/* Class .dash-main bị định nghĩa ở nhiều file CSS (Dashboard.css, TeacherDashBoard.css,
+   Result.css) và được nạp toàn cục nên đè lẫn nhau.
+   - Result.css đặt margin-left:237px → làm trang học sinh (.page-shell) bị "thụt vô".
+   - TeacherSidebar là position:fixed chiếm 238px → cần margin-left đúng bằng sidebar.
+
+   Vì vậy ta tách riêng theo layout cha: học sinh dùng .page-shell, giáo viên dùng .dash-shell. */
+
+/* Học sinh: .page-shell là flex (sidebar 260px trong luồng) → KHÔNG cần margin, reset về 0 */
+.page-shell .dash-main {
+  margin-left: 0 !important;
+  width: auto;
+  min-width: 0;
+}
+
+/* Giáo viên: .dash-shell + sidebar fixed 238px → margin-left đúng bằng sidebar */
 .dash-shell .dash-main {
   margin-left: 238px !important;
   width: auto;
   min-width: 0;
 }
 
+/* Mobile: sidebar thành top bar/drawer → reset margin về 0 */
 @media (max-width: 900px) {
+  .page-shell .dash-main,
   .dash-shell .dash-main {
     margin-left: 0 !important;
     width: 100%;
