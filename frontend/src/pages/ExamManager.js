@@ -132,19 +132,23 @@ export const ExamManager = () => {
     loadSubjectsAndClasses();
   }, []);
 
-  // Khi đổi môn → chỉ hiện lớp giáo viên được phân công dạy môn đó
+// Khi đổi môn → chỉ hiện lớp giáo viên được phân công dạy môn đó
   useEffect(() => {
     fetchClasses(selectedSubject);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSubject]);
 
-  const filteredQuestions = useMemo(() => {
-const query = searchQuery.toLowerCase();
+const filteredQuestions = useMemo(() => {
+    const query = searchQuery.toLowerCase();
     return questions.filter((item) => {
+      // Lọc theo môn học đã chọn (đồng nhất với môn của đề thi)
+      if (selectedSubject && String(item.category) !== String(selectedSubject)) {
+        return false;
+      }
       const text = `${item.content || ''} ${item.category || ''} ${item.difficulty || ''}`.toLowerCase();
       return text.includes(query);
     });
-  }, [questions, searchQuery]);
+  }, [questions, searchQuery, selectedSubject]);
 
   const totalPoints = useMemo(() => selectedQuestions.length * 10, [selectedQuestions.length]);
 
@@ -591,11 +595,15 @@ const showToast = (text, type = "success") => {
               />
             </div>
             <div className="exam-form-card">
-              <label className="field-label">Môn học</label>
+<label className="field-label">Môn học</label>
               <select
                 className="form-input"
                 value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
+                onChange={(e) => {
+                  setSelectedSubject(e.target.value);
+                  // Khi đổi môn, xóa các câu hỏi đã chọn từ môn cũ để đề thi đồng nhất với môn đang chọn
+                  setSelectedQuestions([]);
+                }}
               >
                 <option value="">-- Chọn môn học --</option>
                 {subjects.map((sub) => (
@@ -680,8 +688,8 @@ const showToast = (text, type = "success") => {
                 <h2 className="panel-title">Ngân hàng câu hỏi</h2>
                 <p className="panel-subtitle">Chọn câu hỏi phù hợp để thêm vào đề thi.</p>
               </div>
-              <div className="panel-actions">
-                <div className="panel-badge">{questions.length.toLocaleString()} câu</div>
+<div className="panel-actions">
+                <div className="panel-badge">{filteredQuestions.length.toLocaleString()} câu</div>
                 <input
                   className="search-input"
                   type="text"
@@ -786,8 +794,10 @@ const showToast = (text, type = "success") => {
                     </div>
                   </div>
                 ))
+) : selectedSubject ? (
+                <p>Không có câu hỏi nào thuộc môn học đã chọn trong ngân hàng của bạn.</p>
               ) : (
-                <p>Chưa có câu hỏi nào trong ngân hàng của bạn.</p>
+                <p>Vui lòng chọn môn học ở trên để xem các câu hỏi tương ứng.</p>
               )}
             </div>
           </div>

@@ -170,7 +170,7 @@
     display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .sidebar {
         position: fixed !important;
         top: 0;
@@ -260,7 +260,7 @@
     display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .sidebar-hamburger {
         display: flex;
         position: fixed;
