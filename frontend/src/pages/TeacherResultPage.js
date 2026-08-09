@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { quizService, quizAttemptService } from '../services/services';
+import { formatDuration } from '../utils/formatTime';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import NotificationDropdown from '../components/teacher/NotificationDropdown';
 import TeacherAvatar from '../components/teacher/TeacherAvatar';
@@ -148,7 +149,9 @@ export const TeacherResultPage = () => {
       selectedQuiz?.assignments?.[0]?.class?.name || '',
       s.highestScore,
       s.attemptCount,
-      s.bestAttempt?.timeTaken || 0,
+      formatDuration(
+        new Date(s.bestAttempt?.endTime) - new Date(s.bestAttempt?.startTime)
+      ),
       formatDate(s.bestAttempt?.endTime),
     ]);
 
@@ -447,7 +450,12 @@ export const TeacherResultPage = () => {
                               </span>
                             </td>
                             <td>{student.attemptCount} lần</td>
-                            <td>{student.bestAttempt?.timeTaken || 0} phút</td>
+                            <td>
+                              {formatDuration(
+                                new Date(student.bestAttempt?.endTime) -
+                                  new Date(student.bestAttempt?.startTime)
+                              )}
+                            </td>
                             <td>{formatDate(student.bestAttempt?.endTime)}</td>
                             <td>
                               <button
