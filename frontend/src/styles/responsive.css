@@ -1,0 +1,204 @@
+/* =========================================================
+   responsive.css
+   Bổ sung & sửa các điểm responsive còn thiếu trên toàn app.
+   File này được import CUỐI CÙNG trong App.js để đảm bảo
+   quyền ưu tiên ghi đè đúng (no !important nếu không cần).
+   ========================================================= */
+
+/* ---------- 1. TOAST không tràn trên màn hình nhỏ ---------- */
+.toast {
+  min-width: unset;
+  max-width: calc(100vw - 32px);
+  right: 16px;
+  left: 16px;
+  top: 16px;
+  width: auto;
+  font-size: 15px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  flex-wrap: wrap;
+}
+
+/* ---------- 2. Fix xung đột .dash-main ở Result.css ---------- */
+/* Result.css dùng margin-left:237px + width:calc() → tràn khi sidebar
+   thu gọn/vô hình. Dùng flex để nội dung co đúng theo vùng còn lại. */
+.dash-shell .dash-main,
+.dash-shell.dash-main {
+  margin-left: 0;
+  width: auto;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- 3. ExamConfirmModal - responsive ---------- */
+.exam-modal {
+  max-width: 620px;
+}
+.exam-modal-header {
+  padding: 22px 22px 16px;
+}
+.exam-modal-body {
+  padding: 18px 22px;
+}
+.exam-modal-footer {
+  flex-direction: column;
+  padding: 16px 22px 22px;
+}
+.exam-modal-footer .btn {
+  width: 100%;
+}
+
+/* ---------- 4. ExamTaking - header & support button ---------- */
+.exam-take-shell {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.exam-take-header {
+  flex-wrap: wrap;
+}
+.exam-take-header-actions {
+  flex-wrap: wrap;
+}
+.exam-support-btn {
+  right: 16px;
+  bottom: 16px;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
+/* ---------- 5. Các bảng rộng cho phép cuộn ngang (an toàn) ---------- */
+.table-wrap,
+.table-scroller,
+.members-table-panel,
+.history-card,
+.students-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- 6. Admin dashboard: card thống kê không vỡ trên tablet ---------- */
+.db-stat-card {
+  min-width: 0;
+}
+.db-stat-content {
+  min-width: 0;
+}
+.db-stat-value {
+  word-break: break-word;
+}
+
+/* ---------- 7. Admin content: đảm bảo grid không tràn ---------- */
+.dashboard-content,
+.asm-content-body,
+.asm-content {
+  min-width: 0;
+  overflow-x: hidden;
+}
+.asm-content-grid > *,
+.dashboard-grid > *,
+.db-body > *,
+.results-body > *,
+.score-grid > *,
+.stat-two-grid > *,
+.profile-grid > *,
+.dash-main-grid > * {
+  min-width: 0;
+}
+
+/* ---------- 8. Giữ nội dung không tràn ngang toàn app ---------- */
+html, body {
+  overflow-x: hidden;
+}
+#root {
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   MEDIA QUERIES BỔ SUNG
+   ========================================================= */
+
+/* Tablet nhỏ → điện thoại */
+@media (max-width: 768px) {
+  .eduquiz-container {
+    padding: 0 16px;
+  }
+  .hero-section {
+    padding: 56px 0 80px;
+  }
+  .hero-title {
+    font-size: 32px;
+  }
+  .features-section,
+  .roles-section,
+  .playground-section,
+  .workflow-section,
+  .testimonials-section {
+    padding: 56px 0;
+  }
+  .section-title {
+    font-size: 28px;
+    margin-bottom: 28px;
+  }
+  .cta-section {
+    padding: 40px 0 64px;
+  }
+  .eduquiz-cta-card {
+    padding: 32px 20px;
+  }
+  .cta-title {
+    font-size: 24px;
+  }
+  /* Auth */
+  .auth-right {
+    padding: 24px 16px;
+  }
+  .auth-form-container {
+    padding: 28px 20px;
+  }
+}
+
+/* Điện thoại */
+@media (max-width: 480px) {
+  .eduquiz-header {
+    height: 60px;
+  }
+  .eduquiz-logo {
+    font-size: 20px;
+  }
+  .hero-title {
+    font-size: 27px;
+  }
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .hero-actions .btn {
+    width: 100%;
+  }
+  .playground-content {
+    padding: 24px 16px;
+  }
+  .role-card-content {
+    padding: 24px;
+  }
+  .testimonial-card {
+    padding: 24px;
+  }
+  .footer-grid {
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .auth-form-container {
+    padding: 20px 14px;
+  }
+  .auth-form-title {
+    font-size: 20px;
+  }
+  .eduquiz-cta-card {
+    padding: 24px 16px;
+  }
+}
