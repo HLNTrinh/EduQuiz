@@ -9,7 +9,16 @@
     height: 100vh;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
 }
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
 
+.dash-main {
+  flex: 1;
+  min-width: 0;          /* quan trọng để tránh tràn */
+  /* không cần margin-left */
+}
 /* ==================== LOGO ==================== */
 .sidebar-logo {
     display: flex;
