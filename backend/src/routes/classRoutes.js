@@ -55,7 +55,10 @@ router.get("/teacher/:teacherId", authenticate, async (req, res) => {
     }
 
     const classes = ids.size
-      ? await Class.find({ _id: { $in: [...ids] } }).select("name students").lean()
+      ? await Class.find({ _id: { $in: [...ids] } })
+          .select("name students")
+          .populate("students", "name avatar")
+          .lean()
       : [];
 
     res.json({

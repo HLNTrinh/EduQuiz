@@ -330,7 +330,7 @@ exports.getTeacherAttempts = async (req, res) => {
 
     const attempts = await QuizAttempt.find(filter)
       .populate('quizId', 'title subject')
-      .populate('studentId', 'name email userCode')
+      .populate('studentId', 'name email userCode avatar')
       .populate('class', 'name')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))

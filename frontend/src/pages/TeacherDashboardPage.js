@@ -15,6 +15,7 @@ import { getNotifications } from '../services/adminService';
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
 //import TeacherLayout from "../layouts/TeacherLayout";
 import TeacherAvatar from "../components/teacher/TeacherAvatar";
+import AvatarInitials from "../components/student/AvatarInitials";
 import NotificationDropdown from "../components/teacher/NotificationDropdown";
 import '../styles/TeacherDashBoard.css';
 
@@ -134,14 +135,7 @@ export const TeacherDashboardPage = () => {
         quiz: attempt.quizId?.title || "Đề thi",
         score: Number(attempt.score || 0),
         time: formatTimeAgo(attempt.createdAt),
-
-        avatar:
-          (attempt.studentId?.name || "HS")
-            .split(" ")
-            .map(w => w[0])
-            .slice(0, 2)
-            .join("")
-            .toUpperCase(),
+        avatar: attempt.studentId?.avatar || '',
       }));
   }, [teacherAttempts]);
 
@@ -248,6 +242,7 @@ export const TeacherDashboardPage = () => {
     title: classItem.name || 'Lớp chưa đặt tên',
     subject: classItem.subject?.name || 'Chưa có môn',
     students: classItem.students?.length || 0,
+    studentList: Array.isArray(classItem.students) ? classItem.students : [],
     /*room: classItem.room || 'Chưa có phòng',*/
     color: 'blue',
     teacherName: classItem.homeroomTeacher?.name || user?.name || 'Giáo viên',
@@ -428,7 +423,7 @@ export const TeacherDashboardPage = () => {
                 <div className="activity-item" key={index}>
 
                   <div className="activity-avatar">
-                    {item.avatar}
+                    <AvatarInitials name={item.name} avatar={item.avatar} size={38} />
                   </div>
 
                   <div className="activity-content">
@@ -474,7 +469,7 @@ export const TeacherDashboardPage = () => {
 
         {/* Danh sách lớp học quản lý */}
         <section className="class-card-grid" style={{ marginBottom: '24px' }}>
-          {classCards.map(({ title, subject, students, room, color }) => (
+          {classCards.map(({ title, subject, students, studentList, room, color }) => (
             <div className={`class-card class-card--${color}`} key={title}>
               <div className="class-card-header">
                 <div>
@@ -486,9 +481,13 @@ export const TeacherDashboardPage = () => {
               <div className="class-card-meta">{students} học sinh · {room}</div>
               <div className="class-card-footer">
                 <div className="avatar-group">
-                  <div className="avatar-small">NT</div>
-                  <div className="avatar-small">LM</div>
-                  <div className="avatar-small">PL</div>
+                  {studentList.length > 0 ? (
+                    studentList.slice(0, 3).map((st) => (
+                      <AvatarInitials key={st._id} name={st.name} avatar={st.avatar} size={30} />
+                    ))
+                  ) : (
+                    <span style={{ fontSize: 11, color: '#97a3b5' }}>Chưa có HS</span>
+                  )}
                 </div>
                 <button className="btn-start" onClick={() => navigate("/teacher/members")}>Vào lớp </button>
               </div>
