@@ -139,12 +139,14 @@ export const ExamManager = () => {
   }, [selectedSubject]);
 
   const filteredQuestions = useMemo(() => {
-const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase();
     return questions.filter((item) => {
       const text = `${item.content || ''} ${item.category || ''} ${item.difficulty || ''}`.toLowerCase();
-      return text.includes(query);
+      // Lọc theo môn đã chọn trong combobox "Môn học": nếu chưa chọn thì hiện tất cả
+      const subjectMatch = !selectedSubject || item.category === selectedSubject;
+      return subjectMatch && text.includes(query);
     });
-  }, [questions, searchQuery]);
+  }, [questions, searchQuery, selectedSubject]);
 
   const totalPoints = useMemo(() => selectedQuestions.length * 10, [selectedQuestions.length]);
 
