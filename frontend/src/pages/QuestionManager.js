@@ -103,9 +103,8 @@ export const QuestionManager = () => {
   const loadQuestions = async () => {
     try {
       setLoading(true);
-      const response = await questionService.getQuestions();
-      const items = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
-      setQuestions(items);
+      const items = await questionService.getAllQuestions();
+      setQuestions(Array.isArray(items) ? items : []);
     } catch (error) {
      //setMessage(error.message || 'Không thể tải câu hỏi.');
       showToast(error.message || 'Không thể tải câu hỏi.', 'error');

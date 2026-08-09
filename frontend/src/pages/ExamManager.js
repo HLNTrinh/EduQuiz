@@ -84,7 +84,7 @@ export const ExamManager = () => {
       setLoading(true);
       // Lấy danh sách câu hỏi, đề thi và lớp của giáo viên
       const [questionResponse, quizResponse, classResponse] = await Promise.all([
-        questionService.getQuestions().catch(() => []),
+        questionService.getAllQuestions().catch(() => []),
         quizService.getQuizzes().catch(() => []),
         classService.getTeacherClasses(user._id).catch(() => null),
       ]);
