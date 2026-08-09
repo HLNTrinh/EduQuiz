@@ -1,68 +1,57 @@
 services:
-  mongodb:
-    image: mongo:7.0
-    container_name: exam_mongodb
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: exam_backend
     restart: unless-stopped
+
+    env_file:
+      - ./backend/.env
+
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: secret
-      MONGO_INITDB_DATABASE: examdb
+      NODE_ENV: development
+      PORT: 8080
+
     ports:
-      - "27017:27017"
+      - "8080:8080"
+
     volumes:
-      - mongo_data:/data/db
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+
     networks:
       - exam_network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
 
-  backend:
-  build:
-    context: ./backend
-    dockerfile: Dockerfile
-  container_name: exam_backend
-  restart: unless-stopped
-  env_file:
-    - ./backend/.env
-  environment:
-    NODE_ENV: development
-    PORT: 8080
-  ports:
-    - "8080:8080"
-  volumes:
-    - ./backend:/app
-    - backend_node_modules:/app/node_modules
-  networks:
-    - exam_network
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        REACT_APP_API_URL: http://localhost:8080/api
+
     container_name: exam_frontend
     restart: unless-stopped
+
     env_file:
       - ./frontend/.env
+
     environment:
       REACT_APP_API_URL: http://localhost:8080/api
-      CHOKIDAR_USEPOLLING: "true" # Thêm dòng này để nhận diện thay đổi file trong Docker
+      CHOKIDAR_USEPOLLING: "true"
+
     ports:
       - "3000:3000"
+
     volumes:
       - ./frontend:/app
       - frontend_node_modules:/app/node_modules
+
     depends_on:
       - backend
+
     networks:
       - exam_network
 
 volumes:
-  mongo_data:
   backend_node_modules:
   frontend_node_modules:
 
