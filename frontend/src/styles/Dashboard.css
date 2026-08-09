@@ -12,6 +12,13 @@
     min-width: 0;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+@media (max-width: 1280px) {
+    .dash-main {
+        padding: 24px 24px 48px;
+    }
 }
 
 /* ============ HEADER ============ */
@@ -194,8 +201,15 @@
 
 @media (max-width: 480px) {
     .notification-dropdown {
-        width: 320px;
-        right: -60px;
+        position: fixed;
+        top: 58px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-width: 320px;
+        margin-left: auto;
+        max-height: 70vh;
+        overflow-y: auto;
     }
 }
 
@@ -348,6 +362,7 @@
     grid-template-columns: 2fr 1fr;
     gap: 24px;
     align-items: start;
+    min-width: 0;
 }
 
 .dash-col-left,
@@ -355,6 +370,11 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+    min-width: 0;
+}
+
+.dash-main-grid > * {
+    min-width: 0;
 }
 
 /* ============ SHARED CARD ============ */

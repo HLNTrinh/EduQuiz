@@ -343,3 +343,30 @@
     height: 100px;
   }
 }
+
+/* ===== Responsive mobile bổ sung ===== */
+@media (max-width: 640px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .cta-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .history-card {
+    overflow-x: auto;
+  }
+}
+
+
+/* Cho phép các khối co lại, tránh tràn ngang */
+.charts-grid > *,
+.score-grid > *,
+.stat-two-grid > * {
+  min-width: 0;
+}
+.results-body {
+  overflow-x: hidden;
+}
+

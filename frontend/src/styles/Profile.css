@@ -404,3 +404,23 @@
     font-size: 12px;
   }
 }
+
+/* ===== Responsive mobile bổ sung ===== */
+@media (max-width: 700px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-grid {
+    padding: 0 14px;
+  }
+}
+
+
+/* Cho phép các khối co lại, tránh tràn ngang */
+.profile-grid > * {
+  min-width: 0;
+}
+

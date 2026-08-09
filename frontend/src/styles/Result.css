@@ -937,3 +937,14 @@
 .result-sidebar-bottom a:hover span {
   transform: scale(1.15);
 }
+
+/* ===== Responsive mobile bổ sung ===== */
+@media (max-width: 520px) {
+  .result-container {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .result-qgrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

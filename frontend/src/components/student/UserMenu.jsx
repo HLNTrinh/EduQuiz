@@ -98,6 +98,17 @@ export default function UserMenu({ size = 36 }) {
           transform-origin: top right;
         }
 
+        @media (max-width: 480px) {
+          .user-menu-dropdown {
+            position: fixed;
+            top: 56px;
+            right: 12px;
+            left: auto;
+            width: min(260px, calc(100vw - 24px));
+            max-width: calc(100vw - 24px);
+          }
+        }
+
         @keyframes userMenuFadeIn {
           from {
             opacity: 0;

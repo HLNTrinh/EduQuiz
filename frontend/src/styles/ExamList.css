@@ -323,3 +323,33 @@
     width: 100%;
   }
 }
+
+/* ===== Responsive mobile bổ sung ===== */
+@media (max-width: 480px) {
+  .exam-card {
+    padding: 16px;
+  }
+  .exam-card-meta {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tab-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .tab-pill {
+    flex-shrink: 0;
+  }
+}
+
+
+/* Cho phép card co lại, tránh tràn ngang */
+.exam-grid > * {
+  min-width: 0;
+}
+.exam-main {
+  overflow-x: hidden;
+}
+
