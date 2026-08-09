@@ -19,15 +19,21 @@
   flex-wrap: wrap;
 }
 
-/* ---------- 2. Fix xung đột .dash-main ở Result.css ---------- */
-/* Result.css dùng margin-left:237px + width:calc() → tràn khi sidebar
-   thu gọn/vô hình. Dùng flex để nội dung co đúng theo vùng còn lại. */
-.dash-shell .dash-main,
-.dash-shell.dash-main {
-  margin-left: 0;
+/* ---------- 2. Fix xung đột .dash-main (teacher/result) ---------- */
+/* TeacherSidebar là position:fixed chiếm 238px bên trái. Cho .dash-main
+   margin-left đúng bằng sidebar để nội dung không bị che/đẩy ("thụt vô").
+   Trên mobile sidebar thành top bar → reset margin về 0. */
+.dash-shell .dash-main {
+  margin-left: 238px !important;
   width: auto;
-  flex: 1;
   min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .dash-shell .dash-main {
+    margin-left: 0 !important;
+    width: 100%;
+  }
 }
 
 /* ---------- 3. ExamConfirmModal - responsive ---------- */
