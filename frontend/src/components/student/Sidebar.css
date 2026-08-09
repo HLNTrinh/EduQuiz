@@ -1,3 +1,11 @@
+/* ==================== LAYOUT CHÍNH ==================== */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* ==================== SIDEBAR ==================== */
 .sidebar {
     width: 260px;
     flex-shrink: 0;
@@ -8,17 +16,17 @@
     padding: 24px 20px;
     height: 100vh;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
-}
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
+    z-index: 100;
 }
 
+/* ==================== MAIN CONTENT ==================== */
 .dash-main {
-  flex: 1;
-  min-width: 0;          /* quan trọng để tránh tràn */
-  /* không cần margin-left */
+    flex: 1;
+    min-width: 0;               /* Quan trọng: tránh nội dung bị tràn / che */
+    width: 100%;
+    overflow-x: hidden;
 }
+
 /* ==================== LOGO ==================== */
 .sidebar-logo {
     display: flex;
@@ -172,13 +180,12 @@
     background: var(--color-danger-bg, #fee2e2);
 }
 
-/* ============ RESPONSIVE Sidebar (Drawer on Mobile) ============ */
-
-/* Mobile overlay */
+/* ==================== MOBILE OVERLAY ==================== */
 .sidebar-overlay {
     display: none;
 }
 
+/* ==================== RESPONSIVE (≤ 900px) ==================== */
 @media (max-width: 900px) {
     .sidebar {
         position: fixed !important;
@@ -206,6 +213,12 @@
 
     .sidebar-overlay.open {
         display: block;
+    }
+
+    /* Khi sidebar fixed thì main chiếm full width */
+    .dash-main {
+        margin-left: 0 !important;
+        padding-top: 68px !important; /* tránh bị nút hamburger che */
     }
 
     .sidebar-logo {
@@ -237,6 +250,7 @@
     }
 }
 
+/* ==================== RESPONSIVE (≤ 480px) ==================== */
 @media (max-width: 480px) {
     .sidebar {
         width: 260px;
@@ -264,7 +278,7 @@
     }
 }
 
-/* ============ NÚT HAMBURGER (mobile) ============ */
+/* ==================== NÚT HAMBURGER ==================== */
 .sidebar-hamburger {
     display: none;
 }
@@ -275,7 +289,7 @@
         position: fixed;
         top: 12px;
         left: 12px;
-        z-index: 3100;
+        z-index: 10000;
         width: 42px;
         height: 42px;
         border: none;
@@ -288,10 +302,5 @@
         justify-content: center;
         cursor: pointer;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Đẩy nội dung xuống để không bị nút hamburger che */
-    .dash-main {
-        padding-top: 68px !important;
     }
 }
