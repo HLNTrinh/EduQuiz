@@ -21,29 +21,23 @@ services:
       start_period: 10s
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: exam_backend
-    restart: unless-stopped
-    env_file:
-      - ./backend/.env
-    environment:
-      NODE_ENV: development
-      PORT: 8080
-      # MONGO_URI: mongodb://admin:secret@mongodb:27017/examdb?authSource=admin
-      # (đã comment — để backend dùng MONGO_URI từ backend/.env, tức MongoDB Atlas)
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./backend:/app
-      - backend_node_modules:/app/node_modules
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - exam_network
-
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  container_name: exam_backend
+  restart: unless-stopped
+  env_file:
+    - ./backend/.env
+  environment:
+    NODE_ENV: development
+    PORT: 8080
+  ports:
+    - "8080:8080"
+  volumes:
+    - ./backend:/app
+    - backend_node_modules:/app/node_modules
+  networks:
+    - exam_network
   frontend:
     build:
       context: ./frontend
