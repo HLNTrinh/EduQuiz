@@ -118,7 +118,7 @@ router.get("/:classId/members", authenticate, async (req, res) => {
 
     const total = await User.countDocuments(filter);
     const students = await User.find(filter)
-      .select("name email avatar role status")
+      .select("name email avatar role status userCode")
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();

@@ -173,7 +173,7 @@ const filteredStudents = students;
             <tbody>
               {filteredStudents.map((student) => (
                 <tr key={student._id}>
-                  <td>{student._id}</td>
+                  <td>{student.userCode || student._id}</td>
                   <td>
                     <div className="member-profile-cell">
                       <Avatar user={student} size={40} className="member-avatar" />

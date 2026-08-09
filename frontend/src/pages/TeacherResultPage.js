@@ -142,7 +142,7 @@ export const TeacherResultPage = () => {
     const headers = ['Mã học sinh', 'Họ tên', 'Email', 'Lớp', 'Điểm số', 'Số lần làm', 'Thời gian làm', 'Ngày nộp'];
     
     const rows = groupedStudents.map((s) => [
-      s.studentId?._id?.toString().slice(0, 8).toUpperCase(),
+      s.studentId?.userCode || (s.studentId?._id?.toString().slice(0, 8).toUpperCase() || ''),
       s.studentId?.name || '',
       s.studentId?.email || '',
       selectedQuiz?.assignments?.[0]?.class?.name || '',
@@ -436,7 +436,7 @@ export const TeacherResultPage = () => {
                         groupedStudents.map((student) => (
                           <tr key={student.studentId?._id}>
                             <td style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '12px', color: '#53637b' }}>
-                              {student.studentId?._id ? student.studentId._id.toString().slice(0, 8).toUpperCase() : 'N/A'}
+                              {student.studentId?.userCode || (student.studentId?._id ? student.studentId._id.toString().slice(0, 8).toUpperCase() : 'N/A')}
                             </td>
                             <td style={{ fontWeight: 600 }}>{student.studentId?.name || 'N/A'}</td>
                             <td>{student.studentId?.email || 'N/A'}</td>
