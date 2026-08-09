@@ -84,7 +84,7 @@ export const ExamManager = () => {
       setLoading(true);
       // Lấy danh sách câu hỏi, đề thi và lớp của giáo viên
       const [questionResponse, quizResponse, classResponse] = await Promise.all([
-        questionService.getQuestions().catch(() => []),
+        questionService.getAllQuestions().catch(() => []),
         quizService.getQuizzes().catch(() => []),
         classService.getTeacherClasses(user._id).catch(() => null),
       ]);
@@ -138,15 +138,13 @@ export const ExamManager = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSubject]);
 
-const filteredQuestions = useMemo(() => {
+  const filteredQuestions = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return questions.filter((item) => {
-      // Lọc theo môn học đã chọn (đồng nhất với môn của đề thi)
-      if (selectedSubject && String(item.category) !== String(selectedSubject)) {
-        return false;
-      }
+      // Lọc theo môn đã chọn trong combobox "Môn học": nếu chưa chọn thì hiện tất cả
       const text = `${item.content || ''} ${item.category || ''} ${item.difficulty || ''}`.toLowerCase();
-      return text.includes(query);
+      const subjectMatch = !selectedSubject || String(item.category) === String(selectedSubject);
+      return subjectMatch && text.includes(query);
     });
   }, [questions, searchQuery, selectedSubject]);
 

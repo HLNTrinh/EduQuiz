@@ -103,9 +103,8 @@ export const QuestionManager = () => {
   const loadQuestions = async () => {
     try {
       setLoading(true);
-      const response = await questionService.getQuestions();
-      const items = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
-      setQuestions(items);
+      const items = await questionService.getAllQuestions();
+      setQuestions(Array.isArray(items) ? items : []);
     } catch (error) {
      //setMessage(error.message || 'Không thể tải câu hỏi.');
       showToast(error.message || 'Không thể tải câu hỏi.', 'error');
@@ -778,6 +777,16 @@ skipEmptyLines: true,
 
                   const importedQuestions = [];
 
+                  // ==== CHẶN TRÙNG KHI IMPORT CSV ====
+                  // Tập hợp nội dung câu hỏi đã có trong ngân hàng (theo content)
+                  const existingContents = new Set(
+                    (Array.isArray(questions) ? questions : [])
+                      .map((q) => String(q.content || '').trim().toLowerCase())
+                      .filter(Boolean)
+                  );
+                  const seenContents = new Set();
+                  let skippedDuplicateCount = 0;
+
                   for (let i = 0; i < rows.length; i++) {
 
                       const row = rows[i];
@@ -925,6 +934,14 @@ skipEmptyLines: true,
                           ],
                       };
 
+                      // ==== CHẶN TRÙNG: bỏ qua câu trùng trong file hoặc đã có trong ngân hàng ====
+                      const contentKey = content.trim().toLowerCase();
+                      if (seenContents.has(contentKey) || existingContents.has(contentKey)) {
+                        skippedDuplicateCount += 1;
+                        continue;
+                      }
+                      seenContents.add(contentKey);
+
                       importedQuestions.push(question);
                   }
 
@@ -963,8 +980,12 @@ skipEmptyLines: true,
                   // THÔNG BÁO
                   // ==========================================
 
+                  const dupNote =
+                    skippedDuplicateCount > 0
+                      ? `, bỏ qua ${skippedDuplicateCount} câu trùng`
+                      : '';
                   showToast(
-                      `Đã nhập thành công ${savedQuestions.length} câu hỏi từ file CSV.`,
+                      `Đã nhập thành công ${savedQuestions.length} câu hỏi từ file CSV${dupNote}.`,
                       'success'
                   );
 

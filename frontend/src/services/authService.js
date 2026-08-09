@@ -17,6 +17,24 @@ export const questionService = {
     const response = await api.get('/questions', { params });
     return response?.data ?? response ?? [];
   },
+  // Lấy TOÀN BỘ câu hỏi trong ngân hàng bằng cách phân trang qua backend
+  // (tránh giới hạn mặc định 10 câu/trang khiến thiếu câu hỏi của các môn khác)
+  getAllQuestions: async (params = {}) => {
+    const pageSize = params.limit || 100;
+    let page = 1;
+    const all = [];
+    while (true) {
+      const response = await api.get('/questions', { params: { ...params, page, limit: pageSize } });
+      const body = response ?? {};
+      const data = Array.isArray(body?.data) ? body.data : (Array.isArray(body) ? body : []);
+      all.push(...data);
+      const total = body?.pagination?.total ?? all.length;
+      const pages = body?.pagination?.pages ?? Math.ceil(total / pageSize);
+      if (page >= pages || data.length < pageSize) break;
+      page += 1;
+    }
+    return all;
+  },
   getQuestion: async (id) => {
     const response = await api.get(`/questions/${id}`);
     return response?.data ?? response;
