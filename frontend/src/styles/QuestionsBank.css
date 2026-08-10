@@ -118,6 +118,15 @@
   font-size: 11px;
 }
 
+.dash-shell .notice-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-color: #f3d18a;
+  color: #8a5a00;
+  background: #fff8e5;
+}
+
 .dash-shell .question-bank-toolbar,
 .dash-shell .question-bank-table-container,
 .dash-shell .question-form-panel {
@@ -1398,4 +1407,20 @@
 
 .question-create-info-row .question-create-field {
     min-width: 0;
+}
+
+.dash-shell .duplicate-question-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #8a5a00;
+  background: #fff1c7;
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.dash-shell .question-row--duplicate td {
+  background: #fffdf5;
 }

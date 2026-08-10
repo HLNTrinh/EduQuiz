@@ -1116,10 +1116,10 @@ CLASS
    TABLET NHỎ / ĐIỆN THOẠI NGANG
 ===================================================== */
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
 
     .dash-main {
-        padding: 16px;
+        padding: 68px 16px 16px;
     }
 
     .dashboard-header {
@@ -1227,7 +1227,7 @@ CLASS
 @media (max-width: 480px) {
 
     .dash-main {
-        padding: 12px;
+        padding: 68px 12px 12px;
     }
 
     .dashboard-title {
