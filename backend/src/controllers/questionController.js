@@ -7,6 +7,25 @@ const {
   getUserId,
 } = require('../services/permissionService');
 
+const normalizeQuestionContent = (content) =>
+  String(content || '')
+    .normalize('NFKC')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase();
+
+async function findDuplicateQuestion(content, category, excludeId = null) {
+  const questions = await Question.find({ category: category || null })
+    .select('_id content')
+    .lean();
+  const normalizedContent = normalizeQuestionContent(content);
+
+  return questions.find((question) =>
+    question._id.toString() !== excludeId?.toString() &&
+    normalizeQuestionContent(question.content) === normalizedContent
+  );
+}
+
 // Kiểm tra giáo viên có được thao tác trên môn này không
 async function ensureSubjectPermission(req, category) {
   const userId = getUserId(req);
@@ -44,6 +63,14 @@ exports.createQuestion = async (req, res) => {
     // Kiểm tra quyền dạy môn
     const perm = await ensureSubjectPermission(req, category);
     if (!perm.ok) return res.status(403).json({ message: perm.message });
+
+    const duplicate = await findDuplicateQuestion(content, category);
+    if (duplicate) {
+      return res.status(409).json({
+        message: 'Câu hỏi này đã tồn tại trong ngân hàng câu hỏi của môn học.',
+        duplicateId: duplicate._id,
+      });
+    }
 
     // Nếu category là ObjectId của Subject, lấy tên subject
     let categoryName = '';
@@ -166,6 +193,16 @@ exports.updateQuestion = async (req, res) => {
     if (category && category !== question.category?.toString()) {
       const perm = await ensureSubjectPermission(req, category);
       if (!perm.ok) return res.status(403).json({ message: perm.message });
+    }
+
+    const nextCategory = category === undefined ? question.category : category;
+    const nextContent = content === undefined ? question.content : content;
+    const duplicate = await findDuplicateQuestion(nextContent, nextCategory, question._id);
+    if (duplicate) {
+      return res.status(409).json({
+        message: 'Câu hỏi này đã tồn tại trong ngân hàng câu hỏi của môn học.',
+        duplicateId: duplicate._id,
+      });
     }
 
     let categoryName = question.categoryName;

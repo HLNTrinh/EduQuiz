@@ -202,6 +202,20 @@
 
 
 /* =====================================================
+   NÚT HAMBURGER & OVERLAY (điện thoại)
+   Mặc định ẩn trên desktop/tablet
+===================================================== */
+
+.sidebar-teacher-hamburger {
+    display: none;
+}
+
+.sidebar-teacher-overlay {
+    display: none;
+}
+
+
+/* =====================================================
    RESPONSIVE - TABLET (≤900px)
    Sidebar trái → Thanh menu ngang trên cùng
 ===================================================== */
@@ -340,38 +354,145 @@
 
 /* =====================================================
    RESPONSIVE - ĐIỆN THOẠI (≤480px)
+   Sidebar trái → Drawer (ngăn kéo) + nút hamburger
 ===================================================== */
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
 
+    /* Ẩn thanh menu ngang trên cùng từ tablet */
     .sidebar-teacher {
-        padding: 8px 10px;
+        position: fixed;
+        top: 0;
+        left: -260px;
+        right: auto;
+        width: 260px;
+        height: 100vh;
+        padding: 20px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        border-right: 1px solid var(--border);
+        border-bottom: none;
+        background: #ffffff;
+        box-shadow: 4px 0 20px rgba(20, 40, 90, 0.15);
+        z-index: 9999;
+        transition: left 0.3s ease;
+        transform: none !important;
+    }
 
-        gap: 8px;
+    .sidebar-teacher.open {
+        left: 0;
+    }
+
+    /* Logo khôi phục dạng dọc */
+    .sidebar-logo-teacher {
+        padding-left: 8px;
     }
 
     .sidebar-logo-teacher svg {
-        width: 104px;
-        height: 30px;
+        width: 170px;
+        height: 48px;
     }
 
+    .sidebar-subtitle {
+        display: block;
+    }
+
+    /* Menu dọc lại */
     .sidebar-nav {
+        flex: 1;
+        flex-direction: column;
+        align-items: stretch;
         gap: 4px;
+        padding: 18px 0 0;
+        overflow: visible;
     }
 
     .sidebar-link {
-        height: 34px;
+        flex-shrink: 0;
+        width: 100%;
+        height: 42px;
+        padding: 0 14px;
+        font-size: 14px;
+        white-space: normal;
+    }
 
-        padding: 0 9px;
-
-        font-size: 12px;
+    .sidebar-link:hover {
+        transform: translateX(3px);
     }
 
     .sidebar-icon {
+        display: flex;
+        width: 24px;
+        min-width: 24px;
+        height: 24px;
+    }
+
+    .sidebar-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .sidebar-text {
+        display: inline;
+        font-size: 14px;
+    }
+
+    /* ==== NÚT HAMBURGER ==== */
+    .sidebar-teacher-hamburger {
+        display: flex;
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 3100;
+        width: 42px;
+        height: 42px;
+        border: none;
+        border-radius: 10px;
+        background: var(--primary, #2563eb);
+        color: #fff;
+        font-size: 22px;
+        line-height: 1;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Ẩn nút hamburger khi menu đã mở */
+    /* Ẩn hamburger khi drawer mở để tránh chồng lấn */
+    .sidebar-teacher.open ~ .sidebar-teacher-hamburger,
+    .sidebar-teacher-hamburger[aria-expanded="true"] {
         display: none;
     }
 
+    .sidebar-teacher-hamburger:hover {
+        background: #1d4ed8;
+    }
+
+    /* ==== OVERLAY ==== */
+    .sidebar-teacher-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        z-index: 9998;
+    }
+
+    .sidebar-teacher-overlay.open {
+        display: block;
+    }
+
+    /* Nội dung chính full chiều rộng, chừa chỗ cho nút hamburger */
     .teacher-main {
-        padding-top: 52px;
+        width: 100%;
+        margin-left: 0;
+        padding-top: 68px;
+    }
+
+    .dash-main {
+        width: 100%;
+        margin-left: 0;
+        padding-top: 68px;
     }
 }

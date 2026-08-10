@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { FiCheckCircle, FiXCircle,} from "react-icons/fi";
+import { FiAlertTriangle, FiCheckCircle, FiXCircle,} from "react-icons/fi";
 import { FiX } from "react-icons/fi";
 import { HiOutlinePencilSquare } from "react-icons/hi2";
 import { RiDeleteBin3Line } from "react-icons/ri";
@@ -38,6 +38,16 @@ const createEmptyQuestion = (category = '') => ({
     { text: '', isCorrect: false },
   ],
 });
+
+const normalizeQuestionContent = (content) =>
+  String(content || '')
+    .normalize('NFKC')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase();
+
+const getQuestionCategoryKey = (category) =>
+  typeof category === 'object' ? category?._id : category;
 
 export const QuestionManager = () => {
   const { user, logout } = useAuth();
@@ -167,6 +177,26 @@ export const QuestionManager = () => {
         return aTime - bTime;
       });
   }, [questions, searchQuery, selectedSubject, difficulty, sortOrder]);
+
+  const duplicateQuestionKeys = useMemo(() => {
+    const counts = new Map();
+
+    questions.forEach((question) => {
+      const content = normalizeQuestionContent(question.content);
+      if (!content) return;
+      const key = `${getQuestionCategoryKey(question.category) || ''}:${content}`;
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+
+    return new Set(
+      Array.from(counts.entries())
+        .filter(([, count]) => count > 1)
+        .map(([key]) => key)
+    );
+  }, [questions]);
+
+  const getQuestionDuplicateKey = (question, content = question.content, category = question.category) =>
+    `${getQuestionCategoryKey(category) || ''}:${normalizeQuestionContent(content)}`;
 
   const totalQuestionPages = Math.ceil(
   filteredQuestions.length / QUESTIONS_PER_PAGE
@@ -342,6 +372,16 @@ const handleQuestionChange = (questionIndex, field, value) => {
       return;
     }
 
+    const duplicate = questions.find((question) =>
+      question._id !== formData._id &&
+      getQuestionDuplicateKey(question, content, formData.category) ===
+        getQuestionDuplicateKey(formData, content, formData.category)
+    );
+    if (duplicate) {
+      showToast('Cảnh báo: câu hỏi này đã tồn tại trong môn học.', 'warning');
+      return;
+    }
+
     try {
       const payload = {
         content,
@@ -436,6 +476,20 @@ const handleQuestionChange = (questionIndex, field, value) => {
           `Vui lòng chọn môn học cho Câu hỏi số ${i + 1}.`,
           'error'
         );
+        return;
+      }
+
+      const duplicateInForm = questionForms.some((otherQuestion, otherIndex) =>
+        otherIndex !== i &&
+        getQuestionDuplicateKey(otherQuestion, otherQuestion.content, otherQuestion.category) ===
+          getQuestionDuplicateKey(question, content, question.category)
+      );
+      const duplicateInBank = questions.some((existingQuestion) =>
+        getQuestionDuplicateKey(existingQuestion, content, question.category) ===
+          getQuestionDuplicateKey(question, content, question.category)
+      );
+      if (duplicateInForm || duplicateInBank) {
+        showToast(`Cảnh báo: Câu hỏi số ${i + 1} đã trùng trong ngân hàng hoặc danh sách đang nhập.`, 'warning');
         return;
       }
     }
@@ -950,6 +1004,17 @@ skipEmptyLines: true,
                   // LƯU TỪNG CÂU HỎI VÀO DATABASE
                   // ==========================================
 
+                    const importedQuestionKeys = new Set();
+                    for (const question of importedQuestions) {
+                      const key = getQuestionDuplicateKey(question);
+                      if (duplicateQuestionKeys.has(key) || importedQuestionKeys.has(key)) {
+                        throw new Error(
+                          `Câu hỏi "${question.content}" bị trùng trong ngân hàng hoặc trong file CSV.`
+                        );
+                      }
+                      importedQuestionKeys.add(key);
+                    }
+
                   const savedQuestions = [];
 
                   for (const question of importedQuestions) {
@@ -1054,12 +1119,21 @@ event.target.value = '';
         
         {toast.show && (
           <div className={`toast toast--${toast.type}`}>
-            {toast.type === "success"
-              ? <FiCheckCircle className="toast-icon" />
+            {toast.type === "success" ? <FiCheckCircle className="toast-icon" />
+              : toast.type === "warning" ? <FiAlertTriangle className="toast-icon" />
               : <FiXCircle className="toast-icon" />}
             <span>{toast.text}</span>
           </div>
         )}        
+
+        {duplicateQuestionKeys.size > 0 && (
+          <div className="notice notice-warning" role="alert">
+            <FiAlertTriangle />
+            <span>
+              Cảnh báo: ngân hàng đang có {duplicateQuestionKeys.size} nhóm câu hỏi trùng nội dung trong cùng môn học.
+            </span>
+          </div>
+        )}
 
 
         {showForm ? (
@@ -1666,9 +1740,17 @@ event.target.value = '';
               </thead>
               <tbody>
                 {paginatedQuestions.map((item) => (
-                  <tr key={item._id || item.id}>
+                  <tr
+                    key={item._id || item.id}
+                    className={duplicateQuestionKeys.has(getQuestionDuplicateKey(item)) ? 'question-row--duplicate' : ''}
+                  >
                     <td className="question-bank-row-title">
-                      <div>{item.content}</div>
+                      <div>
+                        {item.content}
+                        {duplicateQuestionKeys.has(getQuestionDuplicateKey(item)) && (
+                          <span className="duplicate-question-badge">Trùng nội dung</span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <span className="category-badge">{getSubjectName(item.category)}</span>

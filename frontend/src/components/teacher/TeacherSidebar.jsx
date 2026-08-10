@@ -11,9 +11,11 @@ import { classService } from "../../services/services";
 import "./TeacherSidebar.css";
 
 export default function TeacherSidebar() {
-  const navigate = useNavigate();
+const navigate = useNavigate();
   const location = useLocation();
   const [isHomeroom, setIsHomeroom] = useState(false);
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
 
   // Chỉ hiện mục "Kết quả lớp" nếu giáo viên là chủ nhiệm của ít nhất 1 lớp
   useEffect(() => {
@@ -33,8 +35,20 @@ export default function TeacherSidebar() {
     navigate(path);
   };
 
-  return (
-    <aside className="sidebar-teacher">
+return (
+    <>
+      {/* Nút hamburger - chỉ hiển thị trên mobile */}
+      <button
+        type="button"
+        className="sidebar-teacher-hamburger"
+        aria-label="Mở menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        ☰
+      </button>
+
+      <aside className={`sidebar-teacher ${open ? "open" : ""}`}>
 
       {/* =========================
           LOGO
@@ -127,9 +141,10 @@ export default function TeacherSidebar() {
               ? "sidebar-link--active"
               : ""
           }`}
-          onClick={(e) => {
+onClick={(e) => {
             e.preventDefault();
             handleNavigate("/teacher/dashboard");
+            close();
           }}
         >
           <span className="sidebar-icon">
@@ -150,9 +165,10 @@ export default function TeacherSidebar() {
               ? "sidebar-link--active"
               : ""
           }`}
-          onClick={(e) => {
+onClick={(e) => {
             e.preventDefault();
             handleNavigate("/teacher/exams");
+            close();
           }}
         >
           <span className="sidebar-icon">
@@ -173,9 +189,10 @@ export default function TeacherSidebar() {
               ? "sidebar-link--active"
               : ""
           }`}
-          onClick={(e) => {
+onClick={(e) => {
             e.preventDefault();
             handleNavigate("/teacher/questions");
+            close();
           }}
         >
           <span className="sidebar-icon">
@@ -196,9 +213,10 @@ export default function TeacherSidebar() {
               ? "sidebar-link--active"
               : ""
           }`}
-          onClick={(e) => {
+onClick={(e) => {
             e.preventDefault();
             handleNavigate("/teacher/results");
+            close();
           }}
         >
           <span className="sidebar-icon">
@@ -220,9 +238,10 @@ export default function TeacherSidebar() {
                 ? "sidebar-link--active"
                 : ""
             }`}
-            onClick={(e) => {
+onClick={(e) => {
               e.preventDefault();
               handleNavigate("/teacher/class-results");
+              close();
             }}
           >
             <span className="sidebar-icon">
@@ -243,9 +262,10 @@ export default function TeacherSidebar() {
               ? "sidebar-link--active"
               : ""
           }`}
-          onClick={(e) => {
+onClick={(e) => {
             e.preventDefault();
             handleNavigate("/teacher/members");
+            close();
           }}
         >
           <span className="sidebar-icon">
@@ -257,8 +277,15 @@ export default function TeacherSidebar() {
           </span>
         </a>
 
-      </nav>
+</nav>
 
-    </aside>
+      </aside>
+
+      {/* Overlay - đóng khi bấm ra ngoài */}
+      <div
+        className={`sidebar-teacher-overlay ${open ? "open" : ""}`}
+        onClick={close}
+      />
+    </>
   );
 }
