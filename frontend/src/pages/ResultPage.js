@@ -266,17 +266,17 @@ export const ResultPage = () => {
       {/* Action Buttons */}
       <div className="result-actions">
         <button
-          onClick={() => navigate('/exams')}
+          onClick={() => navigate('/student/exams')}
           className="btn btn-primary"
         >
           ← Quay lại danh sách bài thi
         </button>
-        <button
+        {/* <button
           onClick={() => navigate('/dashboard')}
           className="btn btn-secondary"
         >
           Về trang chủ
-        </button>
+        </button> */}
       </div>
     </div>
   );
