@@ -1144,17 +1144,19 @@ CLASS
     }
 
     .dashboard-header {
-        flex-direction: column;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+    }
 
-        align-items: stretch;
-
-        gap: 14px;
+    .dashboard-header-left {
+        flex: 1;
+        min-width: 0;
     }
 
     .dashboard-header-right {
-        width: 100%;
-
-        justify-content: flex-end;
+        flex-shrink: 0;
+        gap: 10px;
     }
 
     .dashboard-title {
