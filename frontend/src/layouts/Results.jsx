@@ -126,7 +126,7 @@ return (
               <h3>Tổng số bài đã làm</h3>
               <p
                 className="stat-value"
-                style={{ fontSize: 36, fontWeight: 700, color: '#2563eb' }}
+                style={{ fontSize: 36, fontWeight: 900, color: '#2563eb' }}
               >
                 {attempts.length}
               </p>
@@ -136,7 +136,7 @@ return (
               <h3>Điểm trung bình</h3>
               <p
                 className="stat-value"
-                style={{ fontSize: 36, fontWeight: 700, color: '#10b981' }}
+                style={{ fontSize: 36, fontWeight: 900, color: '#10b981' }}
               >
                 {avgScore}%
               </p>
@@ -145,33 +145,7 @@ return (
           </section>
         )}
 
-        {/* Charts Section */}
-        {attempts.length > 0 && (
-          <section className="charts-grid">
-            {/* Bar Chart */}
-            <div className="card chart-card">
-              <div className="card-head">
-                <h3>Điểm số các bài thi gần đây</h3>
-              </div>
-              {barData.length > 0 && <BarChart data={barData} />}
-            </div>
-
-            {/* Radar Chart */}
-            <div className="card chart-card">
-              <div className="card-head">
-                <h3>Kết quả theo môn học</h3>
-              </div>
-              {radarData.length > 0 ? (
-                <RadarChart data={radarData} size={200} />
-              ) : (
-                <p style={{ textAlign: 'center', color: '#9ca3af', padding: 20 }}>
-                  Chưa có dữ liệu theo môn để hiển thị.
-                </p>
-              )}
-            </div>
-          </section>
-        )}
-
+      
         {/* History Table */}
         <section className="card history-card">
           <div className="card-head">
