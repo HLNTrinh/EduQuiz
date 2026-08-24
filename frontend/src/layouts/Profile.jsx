@@ -34,6 +34,7 @@ export default function Profile() {
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
 
+  // Email notification luôn bật
   const [emailNotif, setEmailNotif] = useState(true);
   const [pushNotif, setPushNotif] = useState(false);
   const [language, setLanguage] = useState('vi');
@@ -76,11 +77,8 @@ export default function Profile() {
         setEditPhone(userData.phone || '');
         if (userData.settings) {
           setLanguage(userData.settings.language || 'vi');
-          setEmailNotif(
-            userData.settings.emailNotif !== undefined
-              ? userData.settings.emailNotif
-              : true
-          );
+          // Luôn bật thông báo email
+          setEmailNotif(true);
           setPushNotif(
             userData.settings.pushNotif !== undefined
               ? userData.settings.pushNotif
@@ -148,13 +146,13 @@ export default function Profile() {
     try {
       const data = await authService.updateSettings({
         language,
-        emailNotif,
+        emailNotif: true, // luôn gửi true
         pushNotif,
       });
       const updated = data?.user || data;
       if (updated?.settings) {
         setLanguage(updated.settings.language);
-        setEmailNotif(updated.settings.emailNotif);
+        setEmailNotif(true); // luôn giữ true
         setPushNotif(updated.settings.pushNotif);
       }
       alert('Đã lưu cài đặt thành công!');
@@ -288,10 +286,8 @@ export default function Profile() {
             <span>
               <MailIcon /> Thông báo qua Email
             </span>
-            <Toggle
-              checked={emailNotif}
-              onChange={() => setEmailNotif((v) => !v)}
-            />
+            {/* Email notification luôn bật, không cho tắt */}
+            <Toggle checked={true} onChange={() => {}} />
           </div>
           <div className="toggle-row">
             <span>
