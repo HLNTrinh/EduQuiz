@@ -92,7 +92,7 @@ export const QuestionManager = () => {
   const [subjects, setSubjects] = useState([]);
 
   /* phân trang ngân hàng câu hỏi */
-  const QUESTIONS_PER_PAGE = 50;
+  const QUESTIONS_PER_PAGE = 20;
   const [questionPage, setQuestionPage] = useState(1); 
 
   const tabs = useMemo(() => {
@@ -210,6 +210,14 @@ export const QuestionManager = () => {
     );
   }, [filteredQuestions, questionPage]);
 
+  const displayedQuestionStart = filteredQuestions.length === 0
+    ? 0
+    : (questionPage - 1) * QUESTIONS_PER_PAGE + 1;
+  const displayedQuestionEnd = Math.min(
+    questionPage * QUESTIONS_PER_PAGE,
+    filteredQuestions.length
+  );
+
   const handleOpenForm = (question = null) => {
     // Nếu mở chế độ chỉnh sửa
     if (question) {
@@ -280,7 +288,6 @@ const handleQuestionChange = (questionIndex, field, value) => {
   );
 };
 
-{/**/}
   // Thay đổi nội dung đáp án A/B/C/D
   const handleQuestionOptionChange = (
     questionIndex,
@@ -485,7 +492,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
           getQuestionDuplicateKey(question, content, question.category)
       );
       const duplicateInBank = questions.some((existingQuestion) =>
-        getQuestionDuplicateKey(existingQuestion, content, question.category) ===
+        getQuestionDuplicateKey(existingQuestion, existingQuestion.content, existingQuestion.category) ===
           getQuestionDuplicateKey(question, content, question.category)
       );
       if (duplicateInForm || duplicateInBank) {
@@ -1720,7 +1727,9 @@ event.target.value = '';
             </div>
           </div>
           <div className="table-header-actions">
-            <p className="table-header-note">Hiển thị 1-{filteredQuestions.length} trong số {questions.length} câu hỏi</p>
+            <p className="table-header-note">
+              Hiển thị {displayedQuestionStart}-{displayedQuestionEnd} trong số {filteredQuestions.length} câu hỏi
+            </p>
           </div>
         </section>
 

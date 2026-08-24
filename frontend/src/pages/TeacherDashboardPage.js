@@ -35,6 +35,7 @@ export const TeacherDashboardPage = () => {
   });
   const [classSummaries, setClassSummaries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAllActivities, setShowAllActivities] = useState(false);
 
   useEffect(() => {
     if (user?._id) {
@@ -129,7 +130,6 @@ export const TeacherDashboardPage = () => {
     return teacherAttempts
       .slice()
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 3)
       .map((attempt) => ({
         name: attempt.studentId?.name || "Học sinh",
         quiz: attempt.quizId?.title || "Đề thi",
@@ -418,8 +418,8 @@ export const TeacherDashboardPage = () => {
                 <p className="panel-subtitle">Cập nhật nhanh về lớp và học sinh</p>
               </div>
             </div>
-            <div className="activity-list">
-              {recentActivities.map((item, index) => (
+            <div className={`activity-list ${showAllActivities ? 'activity-list--expanded' : ''}`}>
+              {(showAllActivities ? recentActivities : recentActivities.slice(0, 3)).map((item, index) => (
                 <div className="activity-item" key={index}>
 
                   <div className="activity-avatar">
@@ -460,8 +460,12 @@ export const TeacherDashboardPage = () => {
                 </div>
               ))}
 
-              <button className="activity-more">
-                Xem tất cả hoạt động
+              <button
+                className="activity-more"
+                type="button"
+                onClick={() => setShowAllActivities((current) => !current)}
+              >
+                {showAllActivities ? 'Thu gọn hoạt động' : 'Xem tất cả hoạt động'}
               </button>
             </div>
           </aside>
