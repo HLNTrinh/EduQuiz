@@ -81,7 +81,7 @@ const filteredStudents = students;
         <header className="dash-header dash-header--overview">
           <div>
             <p className="overview-badge">Quản lý thành viên</p>
-            <h1 className="dash-greeting">Hôm nay hãy kiểm tra danh sách lớp học và thành viên trong lớp.</h1>
+            
           </div>
 
           <div className="dash-header-right">
@@ -93,7 +93,7 @@ const filteredStudents = students;
         <section className="members-hero-card">
           <div>
             <h2>Lớp học đang quản lý</h2>
-            <p >Hiện tại bạn đang phụ trách {classes.length} lớp với tổng số {classes.reduce((sum, item) => sum + item.students.length, 0)} học sinh.</p>
+            <p  >Hiện tại bạn đang phụ trách {classes.length} lớp với tổng số {classes.reduce((sum, item) => sum + item.students.length, 0)} học sinh.</p>
           </div>
           <div className="hero-stat">
             <div className="stat-card stat-card--primary" style={{ padding: '20px 24px', borderRadius: '20px', background: 'rgba(255,255,255,0.15)' }}>
