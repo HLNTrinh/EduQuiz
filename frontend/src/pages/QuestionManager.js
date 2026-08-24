@@ -387,7 +387,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
 
     const duplicate = questions.find((question) =>
       question._id !== formData._id &&
-      getQuestionDuplicateKey(question, content, formData.category) ===
+      getQuestionDuplicateKey(question) ===
         getQuestionDuplicateKey(formData, content, formData.category)
     );
     if (duplicate) {
