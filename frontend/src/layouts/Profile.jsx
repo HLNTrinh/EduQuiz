@@ -279,7 +279,6 @@ export default function Profile() {
             onChange={(e) => setLanguage(e.target.value)}
           >
             <option value="vi">Tiếng Việt (Việt Nam)</option>
-            <option value="en">English (US)</option>
           </select>
 
           <div className="field-label" style={{ marginTop: 22 }}>
