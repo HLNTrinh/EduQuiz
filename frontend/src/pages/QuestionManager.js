@@ -498,7 +498,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
           getQuestionDuplicateKey(question, content, question.category)
       );
       const duplicateInBank = questions.some((existingQuestion) =>
-        getQuestionDuplicateKey(existingQuestion, content, question.category) ===
+        getQuestionDuplicateKey(existingQuestion, existingQuestion.content, existingQuestion.category) ===
           getQuestionDuplicateKey(question, content, question.category)
       );
       if (duplicateInForm || duplicateInBank) {
