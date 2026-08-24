@@ -10,6 +10,7 @@ import Avatar from "../components/common/Avatar";
 import '../styles/Members.css';
 
 export const MembersPage = () => {
+  // Hiển thị các lớp giáo viên quản lý và danh sách học sinh.
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -23,7 +24,7 @@ export const MembersPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loadingStudents, setLoadingStudents] = useState(false);
   
-// Thêm useEffect để lấy danh sách lớp từ API
+// Tải danh sách lớp của giáo viên và chọn lớp đầu tiên.
 useEffect(() => {
   if (!user?._id) return;
 
@@ -38,7 +39,10 @@ useEffect(() => {
     .catch(console.error);
 }, [user]);
 
+// Tải học sinh theo lớp, trang và từ khóa tìm kiếm hiện tại.
+// Effect này chạy lại khi selectedClass, page hoặc search thay đổi.
 useEffect(() => {
+  // Lấy dữ liệu học sinh từ API và cập nhật phân trang.
   const loadStudents = async () => {
     if (!selectedClass?._id) {
       setStudents([]);
@@ -70,6 +74,7 @@ useEffect(() => {
   loadStudents();
 }, [selectedClass, page, search, limit]);
 
+// Danh sách hiển thị; dữ liệu đã được lọc theo search ở API.
 const filteredStudents = students;
 
   return (

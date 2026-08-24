@@ -26,6 +26,8 @@ const emptyForm = {
     { text: '', isCorrect: false },
   ],
 };
+
+// Tạo dữ liệu rỗng cho một câu hỏi mới.
 const createEmptyQuestion = (category = '') => ({
   content: '',
   category,
@@ -39,6 +41,7 @@ const createEmptyQuestion = (category = '') => ({
   ],
 });
 
+// Chuẩn hóa nội dung để so sánh câu hỏi trùng nhau.
 const normalizeQuestionContent = (content) =>
   String(content || '')
     .normalize('NFKC')
@@ -46,10 +49,12 @@ const normalizeQuestionContent = (content) =>
     .replace(/\s+/g, ' ')
     .toLocaleLowerCase();
 
+  // Lấy mã môn học dù category là object hay chuỗi ID.
 const getQuestionCategoryKey = (category) =>
   typeof category === 'object' ? category?._id : category;
 
 export const QuestionManager = () => {
+  // Quản lý, tìm kiếm, thêm, sửa, xóa và nhập câu hỏi.
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,6 +78,7 @@ export const QuestionManager = () => {
     text: "",
     type: "success",
   });
+  // Hiển thị thông báo ngắn trên giao diện rồi tự ẩn.
   const showToast = (text, type = "success") => {
     setToast({
       show: true,
@@ -95,10 +101,12 @@ export const QuestionManager = () => {
   const QUESTIONS_PER_PAGE = 20;
   const [questionPage, setQuestionPage] = useState(1); 
 
+  // Tạo danh sách tab từ các môn giáo viên được phân công.
   const tabs = useMemo(() => {
     return ['Tất cả', ...subjectList.map((s) => s._id)];
   }, [subjectList]);
 
+  // Tải danh sách môn học dùng cho bộ lọc và form câu hỏi.
   const loadSubjects = async () => {
     try {
       // getCategories trả về các môn giáo viên được phân công dạy
@@ -110,6 +118,7 @@ export const QuestionManager = () => {
     }
   };
 
+  // Tải toàn bộ câu hỏi trong ngân hàng.
   const loadQuestions = async () => {
     try {
       setLoading(true);
@@ -129,6 +138,7 @@ export const QuestionManager = () => {
     }
   };
 /*Gọi API lấy danh sách môn học -> Lưu vào state subjects, state ở <select>*/
+  // Tải môn học cho danh sách chọn trong form.
   const loadCategories = async () => {
     try {
       const response = await questionService.getCategories();
@@ -147,21 +157,25 @@ export const QuestionManager = () => {
     }
   };
 
+  // Tải dữ liệu ban đầu khi trang được mở.
   useEffect(() => {
     loadSubjects();
     loadQuestions();
     loadCategories();
   }, []);
   /* Khi searchQuery thay đổi, reset questionPage về 1 */
+  // Đưa về trang đầu khi người dùng thay đổi từ khóa tìm kiếm.
   useEffect(() => {
     setQuestionPage(1);
   }, [searchQuery]);
 
+  // Đổi mã môn học thành tên môn học để hiển thị.
   const getSubjectName = (id) => {
     const found = subjectList.find((s) => s._id === id);
     return found ? found.name : id || 'Khác';
   };
 
+  // Lọc và sắp xếp câu hỏi theo bộ lọc hiện tại.
   const filteredQuestions = useMemo(() => {
     return questions
       .filter((item) => {
@@ -184,6 +198,7 @@ export const QuestionManager = () => {
       });
   }, [questions, searchQuery, selectedSubject, difficulty, sortOrder]);
 
+  // Tìm các nhóm câu hỏi bị trùng nội dung trong cùng môn.
   const duplicateQuestionKeys = useMemo(() => {
     const counts = new Map();
 
@@ -201,6 +216,7 @@ export const QuestionManager = () => {
     );
   }, [questions]);
 
+  // Tạo khóa duy nhất từ môn học và nội dung câu hỏi.
   const getQuestionDuplicateKey = (question, content = question.content, category = question.category) =>
     `${getQuestionCategoryKey(category) || ''}:${normalizeQuestionContent(content)}`;
 
@@ -208,6 +224,7 @@ export const QuestionManager = () => {
   filteredQuestions.length / QUESTIONS_PER_PAGE
 );
   /* Lấy danh sách câu hỏi theo trang hiện tại */
+  // Lấy phần câu hỏi tương ứng với trang hiện tại.
   const paginatedQuestions = useMemo(() => {
     const start = (questionPage - 1) * QUESTIONS_PER_PAGE;
     return filteredQuestions.slice(
@@ -224,6 +241,7 @@ export const QuestionManager = () => {
     filteredQuestions.length
   );
 
+  // Mở form thêm mới hoặc chuẩn bị dữ liệu để chỉnh sửa câu hỏi.
   const handleOpenForm = (question = null) => {
     // Nếu mở chế độ chỉnh sửa
     if (question) {
@@ -259,6 +277,7 @@ export const QuestionManager = () => {
     setShowForm(true);
   };
 
+  // Mở hộp thoại chỉnh sửa cho câu hỏi đã chọn.
   const handleOpenEditModal = (question) => {
     setShowForm(false);
     setFormData({
@@ -274,6 +293,7 @@ export const QuestionManager = () => {
     setToast(prev => ({ ...prev, show: false }));
     setShowEditModal(true);
   };
+  // Cập nhật một thuộc tính của đáp án trong form chỉnh sửa.
   const handleOptionChange = (index, field, value) => {
     const nextOptions = [...formData.options];
     nextOptions[index] = { ...nextOptions[index], [field]: value };
@@ -281,6 +301,7 @@ export const QuestionManager = () => {
   };
 
 // Thay đổi nội dung / môn học / độ khó / giải thích
+// Cập nhật nội dung, môn học, độ khó hoặc lời giải thích.
 const handleQuestionChange = (questionIndex, field, value) => {
   setQuestionForms((prev) =>
     prev.map((question, index) =>
@@ -294,7 +315,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
   );
 };
 
-  // Thay đổi nội dung đáp án A/B/C/D
+  // Cập nhật nội dung một đáp án trong form nhiều câu hỏi.
   const handleQuestionOptionChange = (
     questionIndex,
     optionIndex,
@@ -320,7 +341,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
   };
 
 
-  // Chọn đáp án đúng
+  // Chọn một đáp án đúng cho câu hỏi.
   const handleQuestionCorrectChange = (
     questionIndex,
     optionIndex
@@ -341,7 +362,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
   };
 
 
-  // Thêm câu hỏi tiếp theo
+  // Thêm một câu hỏi rỗng vào form nhiều câu hỏi.
   const handleAddNextQuestion = () => {
     const defaultCategory =
       subjectList.length > 0 ? subjectList[0]._id : '';
@@ -353,13 +374,14 @@ const handleQuestionChange = (questionIndex, field, value) => {
   };
 
 
-  // Xóa một câu hỏi khỏi form
+  // Xóa một câu hỏi khỏi form nhiều câu hỏi.
   const handleRemoveQuestionForm = (questionIndex) => {
     setQuestionForms((prev) =>
       prev.filter((_, index) => index !== questionIndex)
     );
   };  
 
+  // Kiểm tra và lưu một câu hỏi, dùng cho thêm mới hoặc chỉnh sửa.
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -433,7 +455,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
       showToast(error.message || 'Không thể lưu câu hỏi.', 'error');
     }
   };
-  /*hàm lưu nhiều câu hỏi*/
+  // Kiểm tra và lưu lần lượt nhiều câu hỏi trong form.
   const handleSubmitQuestions = async (event) => {
     event.preventDefault();
 
@@ -566,6 +588,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
   };
 
 
+  // Xác nhận rồi xóa câu hỏi khỏi hệ thống và danh sách hiện tại.
   const handleDelete = async (questionId) => {
     if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return;
     try {
@@ -579,7 +602,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
     }
   };
 
-//Thêm input file ẩn
+  // Mở hộp chọn file CSV đang được ẩn trên giao diện.
   const handleCSVButtonClick = () => {
     document.getElementById('question-csv-input')?.click();
   };
@@ -587,6 +610,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
   // ==========================================
   // TẢI FILE CSV MẪU
   // ==========================================
+  // Tạo và tải file CSV mẫu cho người dùng.
   const handleDownloadTemplate = () => {
     const headers = [
       'content',
@@ -643,6 +667,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
   // ==========================================
   // CHUYỂN ĐỔI ENCODING (FileReader + TextDecoder)
   // ==========================================
+  // Đọc file và tự nhận diện UTF-8, UTF-16 hoặc Windows-1258.
   const decodeFile = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -707,7 +732,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
     });
   };
 
-  // Giải mã mã Windows-1258 (ANSI tiếng Việt) sang Unicode
+  // Chuyển dữ liệu Windows-1258 sang chuỗi Unicode.
   const decodeWindows1258 = (bytes) => {
     const bytes1 = Array.from(bytes);
 
@@ -751,6 +776,8 @@ const handleQuestionChange = (questionIndex, field, value) => {
       .join('');
   };
 
+  // Đọc, kiểm tra, chuyển đổi và lưu câu hỏi từ file CSV.
+  // Hàm này dùng decodeFile, getQuestionDuplicateKey và showToast.
   const handleCSVImport = (event) => {
       const file = event.target.files?.[0];
 

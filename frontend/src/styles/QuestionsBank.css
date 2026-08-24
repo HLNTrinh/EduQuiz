@@ -177,12 +177,18 @@
 }
 
 .dash-shell .question-page-actions {
+  /*
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 7px;*/
+  display: flex;
+  align-items: center;
   gap: 7px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
-
+/*
 .dash-shell .filter-select {
   width: 145px;
   min-width: 145px;
@@ -195,6 +201,33 @@
   text-overflow: ellipsis;
   color: #4c5e79;
   background: #fff;
+}
+*/
+/* Khung chứa bộ lọc */
+.dash-shell .filter-select {
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
+  flex: 0 0 150px;
+}
+
+/* Ô select màu trắng bên trong */
+.dash-shell .filter-select .form-input {
+  display: block;
+  width: 100%;
+  min-width: 150px;
+  height: 37px;
+  padding: 0 32px 0 12px;
+
+  box-sizing: border-box;
+
+  color: #4c5e79;
+  background: #fff;
+  font-size: 14px;
+
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .dash-shell .question-filter-panel {

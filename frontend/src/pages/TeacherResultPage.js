@@ -10,6 +10,7 @@ import TeacherAvatar from '../components/teacher/TeacherAvatar';
 import '../styles/Result.css';
 
 export const TeacherResultPage = () => {
+  // Hiển thị danh sách đề và kết quả học sinh cho giáo viên.
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -33,6 +34,7 @@ export const TeacherResultPage = () => {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const limit = 5;
 
+  // Lấy các lượt làm của đề được chọn và tính thống kê kết quả.
   const loadTeacherAttempts = async (quizId) => {
     if (!quizId) {
       setTeacherAttempts([]);
@@ -81,6 +83,7 @@ export const TeacherResultPage = () => {
     }
   };
 
+  // Lấy danh sách đề thi theo từng trang.
   const fetchQuizzes = async (page = 1) => {
     try {
       setQuizLoading(true);
@@ -103,15 +106,18 @@ export const TeacherResultPage = () => {
     }
   };
 
+  // Tải trang đề thi đầu tiên khi trang được mở.
   useEffect(() => {
     fetchQuizzes(1);
   }, []);
 
+  // Chuyển trang danh sách đề nếu số trang hợp lệ.
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > quizTotalPages) return;
     fetchQuizzes(newPage);
   };
 
+  // Chọn hoặc bỏ chọn đề, đồng thời tải kết quả của đề đó.
   const handleSelectQuiz = (quiz) => {
     if (selectedQuizId === quiz._id) {
       // Nếu click lại thì bỏ chọn
@@ -125,6 +131,7 @@ export const TeacherResultPage = () => {
     loadTeacherAttempts(quiz._id);
   };
 
+  // Định dạng ngày giờ theo kiểu ngày/tháng/năm và giờ/phút.
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A';
     const d = new Date(dateStr);
@@ -136,7 +143,8 @@ export const TeacherResultPage = () => {
     return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
-  // Hàm xuất file CSV
+  // Xuất danh sách kết quả đã nhóm thành file CSV.
+  // Dữ liệu groupedStudents được tạo ở phía dưới.
   const exportToCSV = () => {
     if (groupedStudents.length === 0) return;
 
@@ -167,7 +175,8 @@ export const TeacherResultPage = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Nhóm attempts theo học sinh, lấy điểm cao nhất và đếm số lần làm
+  // Nhóm lượt làm (attempt) theo học sinh, lấy điểm cao nhất và đếm số lần làm.
+  // Kết quả này được dùng trong bảng chi tiết và exportToCSV.
   const groupedStudents = React.useMemo(() => {
     const map = new Map();
     teacherAttempts.forEach((attempt) => {

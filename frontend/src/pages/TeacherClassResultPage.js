@@ -7,6 +7,7 @@ import { classService, quizAttemptService } from '../services/services';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// Định dạng thời gian ISO thành ngày giờ dễ đọc.
 const formatDate = (iso) => {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -20,8 +21,11 @@ const formatDate = (iso) => {
 
 // Nạp font TTF hỗ trợ tiếng Việt (cache sau lần đầu) cho jsPDF
 let vnFontsCache = null;
+
+// Tải và mã hóa font để jsPDF hiển thị được tiếng Việt.
 async function getVnFonts() {
   if (vnFontsCache) return vnFontsCache;
+  // Chuyển nội dung file font thành chuỗi Base64.
   const toBase64 = async (url) => {
     const res = await fetch(url);
     const buf = await res.arrayBuffer();
@@ -39,6 +43,7 @@ async function getVnFonts() {
 }
 
 export default function TeacherClassResultPage() {
+  // Hiển thị kết quả học sinh theo lớp và theo môn học.
   const { user, logout } = useAuth();
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState('');
@@ -48,8 +53,10 @@ export default function TeacherClassResultPage() {
   const [expanded, setExpanded] = useState(null); // { studentId, subjectId }
   const [toast, setToast] = useState(null);
 
+  // Hiển thị thông báo trạng thái trên giao diện.
   const showToast = useCallback((message, type = 'success') => setToast({ message, type }), []);
 
+  // Tự ẩn thông báo sau 3 giây.
   useEffect(() => {
     if (toast) {
       const t = setTimeout(() => setToast(null), 3000);
@@ -57,6 +64,7 @@ export default function TeacherClassResultPage() {
     }
   }, [toast]);
 
+  // Tải các lớp chủ nhiệm và chọn lớp đầu tiên.
   const loadClasses = useCallback(async () => {
     try {
       setLoadingClasses(true);
@@ -72,10 +80,12 @@ export default function TeacherClassResultPage() {
     }
   }, [showToast]);
 
+  // Tải danh sách lớp khi trang được mở.
   useEffect(() => {
     loadClasses();
   }, [loadClasses]);
 
+  // Tải kết quả học sinh của lớp được chọn.
   const loadResults = useCallback(async (classId) => {
     if (!classId) return;
     try {
@@ -89,6 +99,7 @@ export default function TeacherClassResultPage() {
     }
   }, [showToast]);
 
+  // Tải lại kết quả khi người dùng đổi lớp.
   useEffect(() => {
     if (selectedClassId) loadResults(selectedClassId);
   }, [selectedClassId, loadResults]);
@@ -106,6 +117,7 @@ export default function TeacherClassResultPage() {
     });
   });
 
+  // Mở hoặc thu gọn chi tiết kết quả của một môn học.
   const toggleExpand = (studentId, subjectId) => {
     setExpanded((prev) =>
       prev && prev.studentId === studentId && prev.subjectId === subjectId
@@ -114,6 +126,7 @@ export default function TeacherClassResultPage() {
     );
   };
 
+  // Xuất bảng kết quả của lớp thành file CSV.
   const exportCSV = () => {
     if (!students.length) return;
     const headers = ['Học sinh', 'Mã học sinh', 'Email', ...subjectList, 'Trung bình'];
@@ -140,6 +153,7 @@ export default function TeacherClassResultPage() {
     URL.revokeObjectURL(url);
   };
 
+  // Tạo file PDF kết quả lớp, có nhúng font tiếng Việt.
   const exportPDF = async () => {
     if (!students.length) return;
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });

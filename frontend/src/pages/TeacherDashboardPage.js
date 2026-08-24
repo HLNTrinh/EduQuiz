@@ -20,6 +20,7 @@ import NotificationDropdown from "../components/teacher/NotificationDropdown";
 import '../styles/TeacherDashBoard.css';
 
 export const TeacherDashboardPage = () => {
+  // Hiển thị dashboard và quản lý dữ liệu của giáo viên.
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
@@ -37,6 +38,7 @@ export const TeacherDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [showAllActivities, setShowAllActivities] = useState(false);
 
+  // Khi có thông tin giáo viên, tải dữ liệu dashboard và thông báo.
   useEffect(() => {
     if (user?._id) {
       fetchDashboardData();
@@ -44,6 +46,7 @@ export const TeacherDashboardPage = () => {
     }
   }, [user]);
 
+  // Lấy danh sách thông báo mới nhất của giáo viên.
   const fetchNotifications = async () => {
     try {
       const response = await getNotifications({ page: 1, limit: 10 });
@@ -54,6 +57,7 @@ export const TeacherDashboardPage = () => {
     }
   };
 
+  // Lấy đề thi, lớp học và lượt làm bài, rồi tính các số liệu tổng hợp.
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -79,6 +83,7 @@ export const TeacherDashboardPage = () => {
       setClasses(classesList);
       setTeacherAttempts(attempts);
 
+      // Hai hàm dưới chuyển dữ liệu lượt làm bài thành số liệu hiển thị.
       const summary = calculateTeacherSummary(attempts);
       setSummaryStats(summary);
       setClassSummaries(calculateClassSummaries(attempts, quizList, classesList));
@@ -94,6 +99,7 @@ export const TeacherDashboardPage = () => {
     }
   };
 
+  // Tính các số liệu tổng quan từ danh sách đề thi.
   const stats = useMemo(() => {
     const publishedCount = quizzes.filter((quiz) => quiz.isPublished).length;
     const questionCount = quizzes.reduce((sum, quiz) => sum + (quiz.questions?.length || 0), 0);
@@ -108,8 +114,7 @@ export const TeacherDashboardPage = () => {
       avgDuration: averageDuration,
     };
   }, [quizzes]);
-  // Function to format time ago
-
+  // Đổi thời gian nộp bài thành dạng dễ đọc, ví dụ "5 phút trước".
   const formatTimeAgo = (date) => {
     if (!date) return 'vừa xong';
     const diffMs = Date.now() - new Date(date).getTime();
@@ -122,6 +127,8 @@ export const TeacherDashboardPage = () => {
     return `${diffDays} ngày trước`;
   };
 
+  // Sắp xếp lượt làm bài mới nhất và chuẩn bị dữ liệu cho danh sách hoạt động.
+  // Hàm này dùng formatTimeAgo để hiển thị thời gian tương đối.
   const recentActivities = useMemo(() => {
     if (!teacherAttempts || teacherAttempts.length === 0) {
       return [];
@@ -139,6 +146,7 @@ export const TeacherDashboardPage = () => {
       }));
   }, [teacherAttempts]);
 
+  // Tính điểm trung bình, tỷ lệ đạt và số học sinh đã hoàn thành bài.
   const calculateTeacherSummary = (attempts) => {
     if (!attempts || attempts.length === 0) {
       return { averageScore: 0, passRate: 0, totalAttempts: 0, completedQuizzes: 0 };
@@ -174,6 +182,7 @@ export const TeacherDashboardPage = () => {
     };
   };
 
+  // Tính điểm trung bình của học sinh theo từng lớp để vẽ biểu đồ.
   const calculateClassSummaries = (attempts, quizzes, classes) => {
     if (!attempts || attempts.length === 0 || !classes || classes.length === 0) return [];
 

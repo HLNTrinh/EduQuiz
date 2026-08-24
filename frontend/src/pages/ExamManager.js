@@ -9,12 +9,14 @@ import { questionService, quizService, subjectService, classService } from '../s
 import TeacherSidebar from "../components/teacher/TeacherSidebar";
 import '../styles/Exam.css';
 
+// Đổi ngày giờ sang định dạng dùng được cho ô nhập datetime-local.
 const toLocalDatetimeInput = (date) => {
   const value = new Date(date);
   const offset = value.getTimezoneOffset() * 60000;
   return new Date(value.getTime() - offset).toISOString().slice(0, 16);
 };
 
+// Tạo dữ liệu mặc định cho form đề thi.
 const buildInitialForm = () => ({
   title: '',
   description: '',
@@ -28,6 +30,7 @@ const buildInitialForm = () => ({
 });
 
 export const ExamManager = () => {
+  // Quản lý câu hỏi, đề thi, lớp được giao và thao tác xuất bản.
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +78,7 @@ export const ExamManager = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Tải đồng thời câu hỏi, đề thi và lớp giáo viên phụ trách.
   const loadData = async () => {
     if (!user?._id) {
       return;
@@ -105,6 +109,7 @@ export const ExamManager = () => {
     }
   };
 
+  // Tải các lớp giáo viên được phân công theo môn học.
   const fetchClasses = async (subject) => {
     try {
       const classRes = user?._id
@@ -116,6 +121,7 @@ export const ExamManager = () => {
     }
   };
 
+  // Tải danh sách môn học rồi nạp các lớp ban đầu.
   const loadSubjectsAndClasses = async () => {
     try {
       // getCategories trả về các môn giáo viên được phân công dạy
@@ -127,17 +133,20 @@ export const ExamManager = () => {
     }
   };
 
+  // Tải dữ liệu cần thiết khi trang được mở.
   useEffect(() => {
     loadData();
     loadSubjectsAndClasses();
   }, []);
 
   // Khi đổi môn → chỉ hiện lớp giáo viên được phân công dạy môn đó
+  // Tải lại lớp khi giáo viên đổi môn học.
   useEffect(() => {
     fetchClasses(selectedSubject);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSubject]);
 
+  // Lọc câu hỏi theo từ khóa và môn học đang chọn.
   const filteredQuestions = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return questions.filter((item) => {
@@ -148,17 +157,21 @@ export const ExamManager = () => {
     });
   }, [questions, searchQuery, selectedSubject]);
 
+  // Tính tổng điểm dựa trên số câu hỏi đã chọn.
   const totalPoints = useMemo(() => selectedQuestions.length * 10, [selectedQuestions.length]);
 
+  // Thêm câu hỏi vào đề và tránh thêm trùng.
   const handleAddQuestion = (question) => {
     if (selectedQuestions.some((item) => item._id === question._id)) return;
     setSelectedQuestions([...selectedQuestions, { ...question, score: 10 }]);
   };
 
+  // Bỏ câu hỏi khỏi đề đang tạo hoặc chỉnh sửa.
   const handleRemoveQuestion = (questionId) => {
     setSelectedQuestions(selectedQuestions.filter((item) => item._id !== questionId));
   };
 
+  // Đưa form câu hỏi về trạng thái ban đầu và đóng form.
   const resetQuestionEditor = () => {
     setEditingQuestionId(null);
     setNewQuestion({
@@ -173,6 +186,7 @@ export const ExamManager = () => {
     //showToast(' ');
   };
 
+  // Mở form thêm câu hỏi hoặc nạp câu hỏi để chỉnh sửa.
   const openQuestionEditor = (question = null) => {
     if (question) {
       setEditingQuestionId(question._id);
@@ -198,6 +212,7 @@ export const ExamManager = () => {
     //showToast(' ');
   };
 
+  // Kiểm tra rồi tạo mới hoặc cập nhật một câu hỏi.
   const handleSaveQuestion = async () => {
     if (!newQuestion.content.trim()) {
       setMessage('Nhập nội dung câu hỏi.');
@@ -246,7 +261,7 @@ export const ExamManager = () => {
       setSubmitting(false);
     }
   };
-//Hàm hiển thị thông báo
+// Hiển thị thông báo ngắn trên giao diện rồi tự ẩn.
 const showToast = (text, type = "success") => {
   setToast({
     show: true,
@@ -263,6 +278,7 @@ const showToast = (text, type = "success") => {
 };
 
 
+  // Kiểm tra và lưu đề thi, dùng cho cả tạo mới và chỉnh sửa.
   const handleSubmit = async (event) => {
     if (event && typeof event.preventDefault === 'function') event.preventDefault();
 
@@ -322,6 +338,7 @@ const showToast = (text, type = "success") => {
     }
   };
 
+  // Lấy thông tin đề và nạp vào form để chỉnh sửa.
   const handleEditQuiz = async (quiz) => {
     try {
       setLoading(true);
@@ -365,6 +382,7 @@ const showToast = (text, type = "success") => {
     }
   };
 
+  // Xác nhận rồi xóa đề thi khỏi hệ thống và danh sách hiện tại.
   const handleDeleteQuiz = async (quizId) => {
     if (!window.confirm('Bạn có chắc muốn xóa đề thi này?')) return;
     try {
@@ -392,6 +410,7 @@ const showToast = (text, type = "success") => {
     }
   };
 
+  // Công bố đề thi cùng lớp và thời gian giao đề.
   const handlePublishQuiz = async (quizId, opts = {}) => {
     try {
       const body = {
@@ -413,6 +432,7 @@ const showToast = (text, type = "success") => {
   };
 
   // Mở modal giao đề (create = tạo đề mới rồi giao; publish = giao đề đã có)
+  // Mở modal để chọn lớp và thời gian giao đề.
   const openAssignModal = (mode, opts = {}) => {
     const subject = opts.subject || selectedSubject || '';
     setAssignModal({
@@ -429,6 +449,8 @@ const showToast = (text, type = "success") => {
   };
 
   // Xác nhận giao đề trong modal: luôn gửi đầy đủ lớp + thời gian
+  // Xác nhận giao đề; tạo đề trước nếu modal đang ở chế độ create.
+  // Sau đó gọi handlePublishQuiz để công bố đề.
   const confirmAssign = async () => {
     if (!assignModal.subject) {
       showToast('Vui lòng chọn môn học.', 'error');
@@ -464,6 +486,7 @@ const showToast = (text, type = "success") => {
   /*Tính tổng số trang */
   const totalPages = Math.ceil(quizzes.length / QUIZZES_PER_PAGE);
 
+  // Lấy các đề thi thuộc trang hiện tại.
   const paginatedQuizzes = useMemo(() => {
     const start = (currentPage - 1) * QUIZZES_PER_PAGE;
     return quizzes.slice(start, start + QUIZZES_PER_PAGE);
