@@ -794,6 +794,27 @@ ACTIVITY
     flex-direction:column;
 }
 
+.activity-list--expanded {
+    max-height:420px;
+    overflow-y:auto;
+    padding-right:6px;
+    scrollbar-width:thin;
+    scrollbar-color:#cbd5e1 transparent;
+}
+
+.activity-list--expanded::-webkit-scrollbar {
+    width:6px;
+}
+
+.activity-list--expanded::-webkit-scrollbar-thumb {
+    background:#cbd5e1;
+    border-radius:999px;
+}
+
+.activity-list--expanded::-webkit-scrollbar-track {
+    background:transparent;
+}
+
 .activity-item{
 
     display:flex;

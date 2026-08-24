@@ -747,26 +747,19 @@
     padding:20px;
 
     overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:#d1d5db transparent;
 }
 
-/* Thanh cuộn */
+/* Thanh cuộn gọn, đồng bộ với các danh sách khác */
 
 .modal-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.modal-content::-webkit-scrollbar-track {
-    background: #edf2ff;
-    border-radius: 10px;
+  width: 7px;
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-    background: #93c5fd;
-    border-radius: 10px;
-}
-
-.modal-content::-webkit-scrollbar-thumb:hover {
-    background: #60a5fa;
+  background: #d1d5db;
+  border-radius: 999px;
 }
 
 
@@ -774,6 +767,11 @@
             HEADER
 ******************************/
 .modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+
     margin:-20px -20px 20px -20px;
     padding:16px 20px;
 
@@ -782,6 +780,8 @@
 }
 
 .modal-header h3{
+  min-width:0;
+  margin:0;
     font-size:20px;
     font-weight:600;
     color:#fff;
@@ -825,8 +825,9 @@
 ******************************/
 
 .modal-close-btn{
-    width:40px;
-    height:40px;
+  flex:0 0 32px;
+  width:32px;
+  height:32px;
 
     display:flex;
     justify-content:center;
@@ -840,7 +841,7 @@
 
     cursor:pointer;
 
-    font-size:24px;
+    font-size:20px;
 
     transition:0.25s ease;
 }
