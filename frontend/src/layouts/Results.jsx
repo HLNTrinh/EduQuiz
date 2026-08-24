@@ -145,7 +145,21 @@ return (
           </section>
         )}
 
-      
+        {/* Charts Section */}
+        {attempts.length > 0 && (
+          <section className="charts-grid">
+            {/* Bar Chart */}
+            <div className="card chart-card">
+              <div className="card-head">
+                <h3>Điểm số các bài thi gần đây</h3>
+              </div>
+              {barData.length > 0 && <BarChart data={barData} />}
+            </div>
+
+           
+          </section>
+        )}
+
         {/* History Table */}
         <section className="card history-card">
           <div className="card-head">
