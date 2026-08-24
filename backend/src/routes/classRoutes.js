@@ -56,14 +56,43 @@ router.get("/teacher/:teacherId", authenticate, async (req, res) => {
 
     const classes = ids.size
       ? await Class.find({ _id: { $in: [...ids] } })
-          .select("name students")
+          .select("name year status students")
           .populate("students", "name avatar")
+          .sort({ createdAt: -1 })
           .lean()
       : [];
 
+    // Một lớp có thể được phân công nhiều môn, nên trả về tên các môn đã gán.
+    const assignments = ids.size
+      ? await TeacherAssignment.find({
+          teacher: teacherId,
+          class: { $in: [...ids] },
+          status: 'active',
+        })
+          .populate('subject', 'name')
+          .select('class subject')
+          .lean()
+      : [];
+
+    const subjectsByClass = new Map();
+    assignments.forEach((assignment) => {
+      const subjectName = assignment.subject?.name;
+      if (!subjectName) return;
+
+      const classId = assignment.class.toString();
+      const subjects = subjectsByClass.get(classId) || [];
+      if (!subjects.includes(subjectName)) subjects.push(subjectName);
+      subjectsByClass.set(classId, subjects);
+    });
+
+    const classesWithSubjects = classes.map((classItem) => ({
+      ...classItem,
+      subject: (subjectsByClass.get(classItem._id.toString()) || []).join(', '),
+    }));
+
     res.json({
       success: true,
-      data: classes,
+      data: classesWithSubjects,
     });
   } catch (err) {
     res.status(500).json({

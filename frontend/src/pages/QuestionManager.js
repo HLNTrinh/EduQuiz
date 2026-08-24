@@ -381,7 +381,7 @@ const handleQuestionChange = (questionIndex, field, value) => {
 
     const duplicate = questions.find((question) =>
       question._id !== formData._id &&
-      getQuestionDuplicateKey(question, content, formData.category) ===
+      getQuestionDuplicateKey(question) ===
         getQuestionDuplicateKey(formData, content, formData.category)
     );
     if (duplicate) {
@@ -1607,23 +1607,6 @@ event.target.value = '';
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          {/*
-          <div className="question-page-actions">
-            <div className="filter-select">
-              <select className="form-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-                <option>Tất cả mức độ</option>
-                <option> Dễ</option>
-                <option> Trung bình</option>
-                <option> Khó</option>
-              </select>
-            </div>
-            <div className="filter-select">
-              <select className="form-input" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
-                <option>Mới nhất</option>
-                <option>Cũ nhất</option>
-              </select>
-            </div>
-          </div>*/}
 
           <div className="question-page-actions">
 

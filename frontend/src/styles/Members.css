@@ -375,17 +375,24 @@
 
 .dash-shell .members-hero-card h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
 }
-
+/*
 .dash-shell .members-hero-card > div:first-child > p:last-child {
   max-width: 430px;
   margin: 5px 0 0;
   color: rgba(255, 255, 255, 0.83);
   font-size: 9px;
 }
-
+*/
+.dash-shell .members-hero-card > div:first-child > p:last-child {
+  max-width: 600px;
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  line-height: 1.5;
+}
 .dash-shell .hero-stat {
   display: flex;
   gap: 8px;
@@ -485,29 +492,30 @@
 
 .dash-shell .class-card-title {
   color: #263a5b;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
 }
 
 .dash-shell .class-card-subtitle {
-  max-width: 120px;
-  margin-top: 4px;
+  max-width: 140px;
+  margin-top:6px;
   color: #8190a6;
-  font-size: 10px;
-  line-height: 1.35;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .dash-shell .class-card-header .btn-outline {
-  min-height: 23px;
-  padding: 0 7px;
+  min-height: 37px;
+  padding: 0 9px;
   color: var(--members-blue);
-  font-size: 10px;
+  font-size: 12px;
+  min-width: 110px;
 }
 
 .dash-shell .class-card-meta {
-  margin-top: 12px;
+  margin-top: 14px;
   color: #687893;
-  font-size: 10px;
+  font-size: 14px;
 }
 
 .dash-shell .summary-score-row {
@@ -552,7 +560,7 @@
   width: 100%;
   border-collapse: collapse;
   color: #53637b;
-  font-size: 10px;
+  font-size: 14px;
 }
 
 .dash-shell .members-table th {
@@ -568,11 +576,20 @@
 }
 
 .dash-shell .members-table td {
+  /*
   padding: 11px 9px;
   border-bottom: 1px solid #f0f3f7;
+  white-space: nowrap;*/
+  padding: 14px 12px;
+  border-bottom: 1px solid #f0f3f7;
   white-space: nowrap;
+  font-size: 14px;
 }
-
+.dash-shell .member-profile-cell span {
+  font-size: 14px;
+  font-weight: 700;
+  color: #263a5b;
+}
 .dash-shell .members-table td .member-profile-cell {
   display: inline-flex;
   align-items: center;
