@@ -403,6 +403,24 @@
   box-sizing: border-box;
 }
 
+/* ===== THỐNG NHẤT LAYOUT ADMIN =====
+   .asm-content là container chung duy nhất (padding 32px, max-width 1200px, căn giữa).
+   Reset padding/max-width/margin của container từng trang để mọi trang Admin
+   dùng chung spacing của .asm-content (không mỗi trang tự đặt giá trị khác nhau).
+   Chỉ áp dụng trong .asm-content để không rò rỉ sang trang học sinh/giáo viên. */
+.asm-content > .db-body,
+.asm-content > .page-view,
+.asm-content > .dashboard-content,
+.asm-content > .page-body,
+.asm-content > .asm-content-grid {
+  max-width: none;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* Banner / Page Header */
 .asm-page-header {
   margin-bottom: 32px;

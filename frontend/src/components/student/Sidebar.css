@@ -286,3 +286,20 @@
         padding-top: 68px !important;
     }
 }
+
+/* ============ FIX: chặn rule global leak (sidebar của admin, dash-main của Result)
+   sang layout học sinh. Chỉ áp dụng desktop/tablet, không đụng mobile drawer. ============ */
+@media (min-width: 769px) {
+    .page-shell > .sidebar {
+        position: relative;
+        left: auto;
+        top: auto;
+        z-index: auto;
+    }
+
+    .page-shell > .dash-main {
+        margin-left: 0;
+        width: auto;
+    }
+}
+

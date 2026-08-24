@@ -26,6 +26,7 @@ import { ResultPage } from "./pages/ResultPage";
 import { TakeQuizPage } from "./pages/TakeQuizPage";
 
 import "./App.css";
+import "./styles/responsive.css";
 
 
 // Trang admin

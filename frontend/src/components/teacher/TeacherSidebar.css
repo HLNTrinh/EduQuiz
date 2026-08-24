@@ -353,11 +353,11 @@
 
 
 /* =====================================================
-   RESPONSIVE - ĐIỆN THOẠI (≤480px)
+    RESPONSIVE - TABLET VÀ ĐIỆN THOẠI (≤900px)
    Sidebar trái → Drawer (ngăn kéo) + nút hamburger
 ===================================================== */
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
 
     /* Ẩn thanh menu ngang trên cùng từ tablet */
     .sidebar-teacher {

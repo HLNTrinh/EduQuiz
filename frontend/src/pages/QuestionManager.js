@@ -92,7 +92,7 @@ export const QuestionManager = () => {
   const [subjects, setSubjects] = useState([]);
 
   /* phân trang ngân hàng câu hỏi */
-  const QUESTIONS_PER_PAGE = 50;
+  const QUESTIONS_PER_PAGE = 20;
   const [questionPage, setQuestionPage] = useState(1); 
 
   const tabs = useMemo(() => {
@@ -113,9 +113,14 @@ export const QuestionManager = () => {
   const loadQuestions = async () => {
     try {
       setLoading(true);
+/*
       const response = await questionService.getQuestions({ page: 1, limit: 1000 });
       const items = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
-      setQuestions(items);
+      setQuestions(items);*/
+
+      const items = await questionService.getAllQuestions();
+      setQuestions(Array.isArray(items) ? items : []);
+
     } catch (error) {
      //setMessage(error.message || 'Không thể tải câu hỏi.');
       showToast(error.message || 'Không thể tải câu hỏi.', 'error');
@@ -211,6 +216,14 @@ export const QuestionManager = () => {
     );
   }, [filteredQuestions, questionPage]);
 
+  const displayedQuestionStart = filteredQuestions.length === 0
+    ? 0
+    : (questionPage - 1) * QUESTIONS_PER_PAGE + 1;
+  const displayedQuestionEnd = Math.min(
+    questionPage * QUESTIONS_PER_PAGE,
+    filteredQuestions.length
+  );
+
   const handleOpenForm = (question = null) => {
     // Nếu mở chế độ chỉnh sửa
     if (question) {
@@ -281,7 +294,6 @@ const handleQuestionChange = (questionIndex, field, value) => {
   );
 };
 
-{/**/}
   // Thay đổi nội dung đáp án A/B/C/D
   const handleQuestionOptionChange = (
     questionIndex,
@@ -832,6 +844,16 @@ skipEmptyLines: true,
 
                   const importedQuestions = [];
 
+                  // ==== CHẶN TRÙNG KHI IMPORT CSV ====
+                  // Tập hợp nội dung câu hỏi đã có trong ngân hàng (theo content)
+                  const existingContents = new Set(
+                    (Array.isArray(questions) ? questions : [])
+                      .map((q) => String(q.content || '').trim().toLowerCase())
+                      .filter(Boolean)
+                  );
+                  const seenContents = new Set();
+                  let skippedDuplicateCount = 0;
+
                   for (let i = 0; i < rows.length; i++) {
 
                       const row = rows[i];
@@ -979,6 +1001,14 @@ skipEmptyLines: true,
                           ],
                       };
 
+                      // ==== CHẶN TRÙNG: bỏ qua câu trùng trong file hoặc đã có trong ngân hàng ====
+                      const contentKey = content.trim().toLowerCase();
+                      if (seenContents.has(contentKey) || existingContents.has(contentKey)) {
+                        skippedDuplicateCount += 1;
+                        continue;
+                      }
+                      seenContents.add(contentKey);
+
                       importedQuestions.push(question);
                   }
 
@@ -1028,8 +1058,12 @@ skipEmptyLines: true,
                   // THÔNG BÁO
                   // ==========================================
 
+                  const dupNote =
+                    skippedDuplicateCount > 0
+                      ? `, bỏ qua ${skippedDuplicateCount} câu trùng`
+                      : '';
                   showToast(
-                      `Đã nhập thành công ${savedQuestions.length} câu hỏi từ file CSV.`,
+                      `Đã nhập thành công ${savedQuestions.length} câu hỏi từ file CSV${dupNote}.`,
                       'success'
                   );
 
@@ -1699,7 +1733,9 @@ event.target.value = '';
             </div>
           </div>
           <div className="table-header-actions">
-            <p className="table-header-note">Hiển thị 1-{filteredQuestions.length} trong số {questions.length} câu hỏi</p>
+            <p className="table-header-note">
+              Hiển thị {displayedQuestionStart}-{displayedQuestionEnd} trong số {filteredQuestions.length} câu hỏi
+            </p>
           </div>
         </section>
 
