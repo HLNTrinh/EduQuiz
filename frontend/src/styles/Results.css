@@ -8,10 +8,10 @@
 .top-nav {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 30px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
-  padding: 14px 36px;
+  padding: 8px 36px;
 }
 .top-nav-brand { font-weight: 800; font-size: 18px; color: var(--color-primary); }
 .top-nav-links { display: flex; gap: 26px; flex: 1; }
